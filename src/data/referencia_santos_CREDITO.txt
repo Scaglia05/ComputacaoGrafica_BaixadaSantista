@@ -1,0 +1,11 @@
+Imagem de referência: src/data/referencia_santos.jpg
+
+Título : "Baía de Santos, vista da Ponta da Praia"
+Autor  : Emilio Pechini (Santos, Brasil)
+Fonte  : Wikimedia Commons
+Página : https://commons.wikimedia.org/wiki/File:Baia_de_Santos,_vista_da_Ponta_da_Praia_(2769023980).jpg
+Licença: Creative Commons Attribution 2.0 Generic (CC BY 2.0)
+         https://creativecommons.org/licenses/by/2.0/
+
+Uso permitido com atribuição. Citar o autor e a licença no artigo/relatório
+sempre que a imagem for reproduzida.

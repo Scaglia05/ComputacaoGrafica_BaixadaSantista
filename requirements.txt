@@ -1,0 +1,17 @@
+# Dependências do projeto — Visualização de Elevação Costeira
+# Instale tudo com:  pip install -r requirements.txt
+#
+# O ambiente atual do projeto é o .venv com Python 3.11.9, onde estas
+# bibliotecas já estão instaladas e testadas. As versões abaixo são um
+# piso mínimo ("maior ou igual"): em Python mais novo o pip pega uma
+# versão mais recente que tenha "wheel" pré-compilada, evitando ter que
+# compilar do zero (que exige o Visual C++ Build Tools).
+
+moderngl>=5.11         # API OpenGL moderna e "pythônica" (contextos, buffers, shaders)
+glfw>=2.7              # criação de janela + captura de teclado/mouse
+PyGLM>=2.7             # vetores e matrizes (vec3, mat4, lookAt, perspective) — import: "glm"
+numpy>=1.26            # geração e manipulação vetorizada da malha de terreno
+Pillow>=10.4           # leitura/escrita de imagens (heightmaps em PNG, screenshots)
+opensimplex>=0.4.5     # ruído procedural (Simplex) para gerar o terreno
+matplotlib>=3.8        # gráficos do benchmark (src/bench.py)
+psutil>=5.9            # RAM/CPU do processo, para o perfilamento de recursos (src/bench.py)
