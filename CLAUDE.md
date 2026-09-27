@@ -157,12 +157,28 @@ na raiz — foram renomeados/reorganizados para `exemplos/` e `src/`.
 
 ## Referências usadas no projeto
 
-**IMPORTANTE — citação corrigida em 2026-09:** a especificação oficial do
-professor (Eixo 6) lista o artigo *"Terrain Rendering using Spherical
-Clipmaps"* com autoria **C. C. Tanner, C. J. Migdal, M. T. Jones** — NÃO
-Clasen & Hege como estava registrado antes aqui. Usar a especificação oficial
-como fonte da verdade para a citação no artigo (decisão do usuário: seguir
-as ideias apresentadas nesses artigos, sem precisar confirmar com o professor).
+**Fonte oficial:** [`docs/especificacao_eixo6.pdf`](docs/especificacao_eixo6.pdf)
+— documento do professor ("Especificação de Projeto Científico: Projetos
+Avançados em Computação Gráfica e Visualização Científica") que define os 7
+Eixos de Pesquisa, as 4 etapas do projeto (semanas 1-16) e a estrutura
+obrigatória do artigo final (seções, 4-8 páginas, IEEE Conference Template
+via Overleaf). O Eixo 6 ("Topografia e Sistemas Mobile", o nosso) lista como
+referências obrigatórias *"Terrain Rendering using Spherical Clipmaps"*
+(C. C. Tanner, C. J. Migdal, M. T. Jones) e *"GPU Clipmaps and Ocean
+Simulation"* (R. Welch) — ver a nota abaixo sobre os erros de atribuição
+confirmados nesse próprio documento.
+
+**IMPORTANTE — citações corrigidas em 2026-09:** conferindo `docs/especificacao_eixo6.pdf`
+diretamente, dois erros de atribuição ficaram confirmados na fonte primária:
+(a) o título *"Terrain Rendering using Spherical Clipmaps"*, que a
+especificação atribui a **C. C. Tanner, C. J. Migdal, M. T. Jones**, é na
+verdade de **Clasen & Hege (2006)** — o artigo real de Tanner/Migdal/Jones
+é "The Clipmap: A Virtual Mipmap" (1998); (b) não existe nenhuma fonte real
+localizável com o título *"GPU Clipmaps and Ocean Simulation"* atribuído a
+R. Welch — o trabalho real dele se chama "Real-time ocean simulation"
+(2019, TCC de B.Sc.). `docs/artigo_v3.tex` já cita as 4 referências
+corretamente (Tanner *e* Clasen&Hege como itens distintos e corretos, Welch
+com o título real) — ver item 8 do checklist acima.
 
 - Tanner, Migdal & Jones (1998) — *The Clipmap: A Virtual Mipmap* (obrigatório do eixo, conforme especificação oficial)
 - Clasen & Hege (2006) — *Terrain rendering using spherical clipmaps* (complementar; a técnica de clipmap esférico propriamente dita)

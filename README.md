@@ -33,6 +33,7 @@ ComputacaoGrafica/
 ├── README.md
 ├── CLAUDE.md                 # contexto do projeto p/ sessões de IA (estado, parâmetros, pendências)
 ├── docs/
+│   ├── especificacao_eixo6.pdf # especificação oficial do professor (Eixo 6, etapas, referências obrigatórias)
 │   ├── APRESENTACAO.md       # guia de ponta a ponta (tema, libs, código, o que é novo)
 │   ├── DESENVOLVIMENTO.md    # relato de como o projeto foi construído, fase a fase
 │   ├── metodologia_atual.md/.pdf  # valores exatos de cada parâmetro (fonte da verdade)
