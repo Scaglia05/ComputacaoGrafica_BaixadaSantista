@@ -36,6 +36,7 @@ ComputacaoGrafica/
 │   ├── APRESENTACAO.md       # guia de ponta a ponta (tema, libs, código, o que é novo)
 │   ├── DESENVOLVIMENTO.md    # relato de como o projeto foi construído, fase a fase
 │   ├── metodologia_atual.md/.pdf  # valores exatos de cada parâmetro (fonte da verdade)
+│   ├── COMPLEMENTO_TECNICO.md # companheiro do artigo: glossário + fórmulas + por que cada lib
 │   ├── resumo_projeto.pdf    # resumo de 3 páginas
 │   └── artigo_v2.pdf         # rascunho do artigo científico (IEEE)
 ├── exemplos/                 # estudos isolados (fundamentos do pipeline)

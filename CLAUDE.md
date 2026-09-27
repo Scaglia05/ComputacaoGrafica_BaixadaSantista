@@ -61,7 +61,10 @@ ComputacaoGrafica\
 │   ├── metodologia_atual.md/.pdf   (fonte da verdade sobre parâmetros — leia primeiro)
 │   ├── DESENVOLVIMENTO.md          (relato de como o projeto foi construído, fase a fase)
 │   ├── APRESENTACAO.md             (guia de ponta a ponta / estudo pra apresentação)
-│   └── resumo_projeto.pdf          (resumo de 3 páginas)
+│   ├── COMPLEMENTO_TECNICO.md      (companheiro do artigo: glossário de todo termo técnico,
+│   │                                por que cada lib, como tudo é calculado, com fórmulas)
+│   ├── resumo_projeto.pdf          (resumo de 3 páginas)
+│   └── artigo_v2.pdf               (rascunho do artigo científico, IEEE)
 ├── bench\                        (resultados.csv + gráficos do benchmark)
 ├── exemplos\
 │   ├── janela.py                  (concluído — fundamentos: janela + contexto OpenGL)
