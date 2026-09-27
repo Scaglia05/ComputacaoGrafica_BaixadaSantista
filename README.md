@@ -31,7 +31,13 @@ pip install -r requirements.txt
 ComputacaoGrafica/
 ├── requirements.txt
 ├── README.md
-├── docs/APRESENTACAO.md     # guia de ponta a ponta (tema, libs, código, o que é novo)
+├── CLAUDE.md                 # contexto do projeto p/ sessões de IA (estado, parâmetros, pendências)
+├── docs/
+│   ├── APRESENTACAO.md       # guia de ponta a ponta (tema, libs, código, o que é novo)
+│   ├── DESENVOLVIMENTO.md    # relato de como o projeto foi construído, fase a fase
+│   ├── metodologia_atual.md/.pdf  # valores exatos de cada parâmetro (fonte da verdade)
+│   ├── resumo_projeto.pdf    # resumo de 3 páginas
+│   └── artigo_v2.pdf         # rascunho do artigo científico (IEEE)
 ├── exemplos/                 # estudos isolados (fundamentos do pipeline)
 │   ├── janela.py             # janela + contexto OpenGL + render loop
 │   └── triangulo.py          # VBO, shaders, VAO, rasterização/interpolação
@@ -162,3 +168,20 @@ a foto real via `P`) ajuda a não se perder no terreno.
 - Fontes primárias do DEM: NASA SRTM (terra) e GEBCO (batimetria).
 - Foto de referência: "Baía de Santos, vista da Ponta da Praia", Emilio Pechini,
   Wikimedia Commons, CC BY 2.0 — ver `src/data/referencia_santos_CREDITO.txt`.
+
+## Integrantes
+
+| Nome | RA | E-mail |
+|---|---|---|
+| Guilherme Augusto Scaglia | 111598 | scaglia@alunos.fho.edu.br |
+| João Pedro Denardo | 113036 | denardo749@alunos.fho.edu.br |
+| Pedro Henrique Oliveira de Souza | 113364 | pedro1204@alunos.fho.edu.br |
+
+## Agradecimentos
+
+Ao professor **Renato Luciano Cagnin**, pela orientação na disciplina de
+Computação Gráfica.
+
+---
+
+Projeto acadêmico — uso educacional.
