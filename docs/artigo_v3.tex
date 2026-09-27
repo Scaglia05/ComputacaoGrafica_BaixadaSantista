@@ -17,6 +17,7 @@
 \usepackage{textcomp}
 \usepackage{xcolor}
 \usepackage{booktabs}
+\usepackage{url}
 
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
@@ -100,7 +101,7 @@ deste trabalho. Diferentemente de um projeto cujo objetivo fosse propor
 uma nova técnica de nível de detalhe, este trabalho trata o LOD adaptativo
 como um meio, não como um fim. A pergunta de pesquisa que orienta a
 avaliação experimental (Seção IV) não é ``o CDLOD funciona?'' --- resposta
-já estabelecida por Strugar \cite{strugar2010} --- mas sim ``a partir de
+já estabelecida por Strugar \cite{strugar2009} --- mas sim ``a partir de
 que carga geométrica, num cenário real de visualização de inundação
 costeira, o CDLOD deixa de ser um refinamento de desempenho e passa a ser
 uma condição necessária para a interatividade da aplicação?''. Essa
@@ -186,7 +187,7 @@ deste projeto.
 
 \subsection{Nível de Detalhe Contínuo Baseado em Distância (Strugar)}
 
-Strugar \cite{strugar2010} propôs a técnica CDLOD (\emph{Continuous
+Strugar \cite{strugar2009} propôs a técnica CDLOD (\emph{Continuous
 Distance-Dependent Level of Detail}), que estrutura o terreno em uma
 quadtree de blocos regulares e define o nível de detalhe de cada bloco a
 partir de uma função contínua da distância ao observador, aplicada
@@ -251,7 +252,7 @@ apresentado.
 \textbf{Trabalho} & \textbf{Técnica de LOD} & \textbf{Água dinâmica} & \textbf{Contexto} \\
 \midrule
 Clasen e Hege \cite{clasenhege2006} & Clipmap esférico & Não & Planeta \\
-Strugar \cite{strugar2010} & CDLOD (quadtree) & Não & Terreno genérico \\
+Strugar \cite{strugar2009} & CDLOD (quadtree) & Não & Terreno genérico \\
 DiPaola et al. \cite{dipaola2023} & N/A (SIG) & Não & Costa real \\
 \textbf{Este trabalho} & CDLOD adaptado & Sim (Gerstner) & Costa (erosão) \\
 \bottomrule
@@ -351,7 +352,7 @@ Subseção III-B.
 
 \subsection{Estruturação do Terreno em Quadtree e Nível de Detalhe (CDLOD)}
 
-O algoritmo CDLOD \cite{strugar2010} resolve o seguinte problema:
+O algoritmo CDLOD \cite{strugar2009} resolve o seguinte problema:
 renderizar toda a extensão do terreno na resolução máxima é
 computacionalmente inviável em tempo real, mas reduzir a resolução de
 maneira uniforme degrada a qualidade visual nas regiões próximas ao
@@ -673,7 +674,7 @@ visualização de elevação costeira voltado à análise de cenários de
 erosão e de subida do nível do mar, implementado sobre um DEM real da
 Baixada Santista. A principal contribuição conceitual deste trabalho não
 reside na técnica de nível de detalhe isoladamente --- cuja eficácia já
-está estabelecida na literatura \cite{strugar2010} --- mas na
+está estabelecida na literatura \cite{strugar2009} --- mas na
 determinação experimental do ponto de virada a partir do qual essa
 técnica se torna indispensável para a viabilidade em tempo real de uma
 aplicação de visualização de inundação costeira: aproximadamente cinco
@@ -696,7 +697,7 @@ processamento típica de simulações físicas de fluidos de alta fidelidade.
 
 Este trabalho declara explicitamente as seguintes limitações. Em primeiro
 lugar, a implementação do CDLOD é simplificada em relação à formulação
-original de Strugar \cite{strugar2010}: não inclui \emph{frustum
+original de Strugar \cite{strugar2009}: não inclui \emph{frustum
 culling} (descarte de blocos fora do campo de visão da câmera), e as
 faixas de transição do \emph{geomorphing} não seguem exatamente as
 fórmulas do trabalho original, ainda que cumpram sua função de eliminar
@@ -741,16 +742,17 @@ Conference on Computer Graphics and Interactive Techniques (SIGGRAPH)},
 using spherical clipmaps,'' in \emph{Proceedings of EuroVis 2006}, 2006,
 pp. 91--98.
 
-\bibitem{strugar2010} F.~Strugar, ``Continuous distance-dependent level
-of detail for rendering height maps,'' \emph{Journal of Graphics, GPU,
-and Game Tools}, vol. 14, no. 4, pp. 57--74, 2010.
+\bibitem{strugar2009} F.~Strugar, ``Continuous distance-dependent level
+of detail for rendering heightmaps,'' \emph{Journal of Graphics, GPU,
+and Game Tools}, vol. 14, no. 4, pp. 57--74, 2009.
 
 \bibitem{fournierreeves1986} A.~Fournier e W.~T. Reeves, ``A simple model
 of ocean waves,'' \emph{ACM SIGGRAPH Computer Graphics}, vol. 20, no. 4,
 pp. 75--84, 1986.
 
-\bibitem{welch} R.~Welch, ``GPU clipmaps and ocean simulation,''
-relatório técnico de projeto, [s.d.].
+\bibitem{welch} R.~Welch, ``Real-time ocean simulation,'' trabalho de
+conclusão de curso (B.Sc. em Ciência da Computação), 2019. Disponível em:
+\url{https://ryanwelch.co.uk/project/ocean-simulation/}.
 
 \bibitem{brown2006} I.~Brown, S.~Jude, S.~Koukoulas, R.~Nicholls,
 M.~Dickson, e M.~Walkden, ``Dynamic simulation and visualisation of

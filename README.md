@@ -38,7 +38,8 @@ ComputacaoGrafica/
 │   ├── metodologia_atual.md/.pdf  # valores exatos de cada parâmetro (fonte da verdade)
 │   ├── COMPLEMENTO_TECNICO.md # companheiro do artigo: glossário + fórmulas + por que cada lib
 │   ├── resumo_projeto.pdf    # resumo de 3 páginas
-│   └── artigo_v2.pdf         # rascunho do artigo científico (IEEE)
+│   ├── artigo_v2.pdf         # rascunho do artigo científico (IEEE), do colega
+│   └── artigo_v3.tex         # versão final do artigo (fonte LaTeX, compilar no Overleaf)
 ├── exemplos/                 # estudos isolados (fundamentos do pipeline)
 │   ├── janela.py             # janela + contexto OpenGL + render loop
 │   └── triangulo.py          # VBO, shaders, VAO, rasterização/interpolação
@@ -153,15 +154,23 @@ a foto real via `P`) ajuda a não se perder no terreno.
 
 **Obrigatórias do eixo**
 
-1. Tanner, C. C.; Migdal, C. J.; Jones, M. T. *Terrain Rendering using Spherical Clipmaps.*
-2. R. Welch. *GPU Clipmaps and Ocean Simulation.*
+1. Tanner, C. C.; Migdal, C. J.; Jones, M. T. (1998). *The Clipmap: A Virtual Mipmap.*
+2. Welch, R. (2019). *Real-time ocean simulation* (TCC de B.Sc.). Disponível em:
+   ryanwelch.co.uk/project/ocean-simulation.
 
 **Complementares** (uso a confirmar com o professor)
 
-3. Strugar (2010). *Continuous Distance-Dependent LOD for Rendering Height Maps* (CDLOD).
-4. Fournier & Reeves (1986). *A Simple Model of Ocean Waves.*
-5. Estudo de geovisualização de subida do nível do mar em Vancouver (arXiv).
-6. Brown, Jude et al. (2006). *Dynamic Simulation and Visualisation of Coastal Erosion.*
+3. Clasen, M.; Hege, H.-C. (2006). *Terrain Rendering using Spherical Clipmaps.*
+4. Strugar, F. (2009). *Continuous Distance-Dependent Level of Detail for Rendering Heightmaps* (CDLOD).
+5. Fournier, A.; Reeves, W. T. (1986). *A Simple Model of Ocean Waves.*
+6. DiPaola, S.; Bhardwaj, N.; Sam, A. (2023). Geovisualização de subida do nível do mar.
+7. Brown, I.; Jude, S. et al. (2006). *Dynamic Simulation and Visualisation of Coastal Erosion.*
+
+Todas as referências acima foram validadas (título/autoria/ano conferidos
+contra a fonte original) na versão final do artigo — ver `docs/artigo_v3.tex`
+e o item 8 de `CLAUDE.md` para o histórico das 2 correções encontradas
+(título/ano de Strugar; título de Welch, que na especificação oficial do
+eixo aparece erroneamente como "GPU Clipmaps and Ocean Simulation").
 
 **Dados e mídia**
 

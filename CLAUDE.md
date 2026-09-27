@@ -103,17 +103,24 @@ na raiz — foram renomeados/reorganizados para `exemplos/` e `src/`.
    alterna com a foto via `P`), e tecla `R` pra resetar a câmera
    (`Camera.resetar`/`Camera.bearing_graus` em `camera.py`).
 7. ⬜ Relatório da Etapa 1 (revisão bibliográfica) — não escrito.
-8. 🟡 Artigo IEEE — **existe em `docs/artigo_v2.pdf`** (só o PDF compilado,
-   sem o `.tex` fonte nesta pasta). Qualidade alta, bate com o código quase
-   ponto a ponto (ver `docs/metodologia_atual.md` para conferir). Correções
-   pendentes conhecidas: (a) III-F diz "2,1 milhões de triângulos na
-   resolução máxima testada (2048)" — está errado, o certo é ~8,4 milhões
-   (2,1 M é o valor de 1024); (b) referência [5] (Welch) usa o título
-   antigo "Real-time ocean simulation" — a especificação oficial do eixo
-   usa "GPU Clipmaps and Ocean Simulation"; (c) sugestão de separar a
-   subseção III-F numa seção IV própria ("Resultados e Avaliação de
-   Desempenho"), como a especificação pede. Sem o `.tex`, só dá pra apontar
-   essas correções, não aplicá-las diretamente.
+8. ✅ Artigo IEEE — **versão final em `docs/artigo_v3.tex`** (reescrita
+   completa a partir do `docs/artigo_v2.pdf` do colega, seguindo o
+   "IEEE Conference Template" oficial, com rigor de linguagem/parágrafo em
+   português formal). Correções aplicadas em relação ao artigo_v2: (a)
+   III-F/Seção IV corrigida — o valor certo é ~8,4 milhões de triângulos
+   na resolução máxima testada (2048), não 2,1 milhões (esse é o valor de
+   1024); (b) Seção IV ("Resultados e Avaliação de Desempenho") separada
+   como seção própria, como a especificação pede; (c) **todas as 7
+   referências validadas via busca web em 2026-09** — 2 correções: Strugar
+   tinha título/ano errados ("Height Maps"/2010 → correto é "Heightmaps"
+   [uma palavra]/2009, conforme o DOI); e a referência [5] (Welch) estava
+   citada com o título "GPU Clipmaps and Ocean Simulation" (copiado da
+   especificação oficial do eixo), que **não corresponde a nenhuma fonte
+   real localizável** — o título verificado e real é "Real-time ocean
+   simulation", o TCC (B.Sc.) de 2019 de Ryan Welch, disponível em
+   https://ryanwelch.co.uk/project/ocean-simulation/. Esse é o mesmo tipo
+   de erro já identificado no item 9 (mixup Tanner/Clasen na especificação
+   do professor) — vale reportar ao professor.
 9. ⬜ Confirmar com o professor se as referências complementares podem ser
    citadas junto às duas obrigatórias do eixo (o artigo já cita Tanner,
    Migdal & Jones [1998, "The Clipmap"] E Clasen & Hege [2006, "spherical
@@ -157,12 +164,17 @@ Clasen & Hege como estava registrado antes aqui. Usar a especificação oficial
 como fonte da verdade para a citação no artigo (decisão do usuário: seguir
 as ideias apresentadas nesses artigos, sem precisar confirmar com o professor).
 
-- Tanner, Migdal & Jones — *Terrain Rendering using Spherical Clipmaps* (obrigatório do eixo, conforme especificação oficial)
-- Welch — *GPU Clipmaps and Ocean Simulation* (obrigatório do eixo)
-- Strugar (2010) — CDLOD (complementar; é o algoritmo realmente implementado — adaptação do clipmap/quadtree para terreno plano e limitado, sem a curvatura esférica que a região da Baixada Santista não precisa)
+- Tanner, Migdal & Jones (1998) — *The Clipmap: A Virtual Mipmap* (obrigatório do eixo, conforme especificação oficial)
+- Clasen & Hege (2006) — *Terrain rendering using spherical clipmaps* (complementar; a técnica de clipmap esférico propriamente dita)
+- Welch (2019) — *Real-time ocean simulation* (TCC de B.Sc., obrigatório do eixo; título real
+  validado via web — a especificação oficial do professor usa o título
+  "GPU Clipmaps and Ocean Simulation", que não corresponde a nenhuma fonte
+  real encontrada — ver item 8 do checklist acima)
+- Strugar (2009) — *Continuous distance-dependent level of detail for rendering heightmaps* (complementar; é o algoritmo realmente implementado — título/ano corrigidos via DOI, ver item 8)
 - Fournier & Reeves (1986) — ondas de Gerstner (complementar; é a base matemática real)
 - Brown et al. (2006) — visualização dinâmica de erosão costeira (complementar)
-- Estudo de geovisualização de subida do nível do mar em Vancouver, arXiv (complementar)
+- DiPaola, Bhardwaj & Sam (2023) — geovisualização de subida do nível do mar (complementar)
 
 **Pendência:** confirmar com o professor se as referências complementares
-podem ser citadas junto às duas obrigatórias do eixo.
+podem ser citadas junto às duas obrigatórias do eixo, e reportar a ele o
+possível erro de título na referência [5] (Welch) da especificação oficial.
