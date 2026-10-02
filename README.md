@@ -39,8 +39,8 @@ ComputacaoGrafica/
 │   ├── metodologia_atual.md/.pdf  # valores exatos de cada parâmetro (fonte da verdade)
 │   ├── COMPLEMENTO_TECNICO.md # companheiro do artigo: glossário + fórmulas + por que cada lib
 │   ├── resumo_projeto.pdf    # resumo de 3 páginas
-│   ├── artigo_v2.pdf         # rascunho do artigo científico (IEEE), do colega
-│   └── artigo_v3.tex         # versão final do artigo (fonte LaTeX, compilar no Overleaf)
+│   ├── ArtigoCompGrafica_ElevacaoCosteira.pdf  # artigo científico final (IEEE, 7 páginas)
+│   └── artigo_v3.tex         # fonte LaTeX do artigo final (template IEEE Conference)
 ├── exemplos/                 # estudos isolados (fundamentos do pipeline)
 │   ├── janela.py             # janela + contexto OpenGL + render loop
 │   └── triangulo.py          # VBO, shaders, VAO, rasterização/interpolação

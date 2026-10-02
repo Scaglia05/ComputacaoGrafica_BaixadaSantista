@@ -64,7 +64,9 @@ ComputacaoGrafica\
 │   ├── COMPLEMENTO_TECNICO.md      (companheiro do artigo: glossário de todo termo técnico,
 │   │                                por que cada lib, como tudo é calculado, com fórmulas)
 │   ├── resumo_projeto.pdf          (resumo de 3 páginas)
-│   └── artigo_v2.pdf               (rascunho do artigo científico, IEEE)
+│   ├── ArtigoCompGrafica_ElevacaoCosteira.pdf  (artigo científico FINAL, IEEE, 7 páginas)
+│   ├── artigo_v3.tex               (fonte LaTeX do artigo final)
+│   └── especificacao_eixo6.pdf     (especificação oficial do professor)
 ├── bench\                        (resultados.csv + gráficos do benchmark)
 ├── exemplos\
 │   ├── janela.py                  (concluído — fundamentos: janela + contexto OpenGL)
@@ -103,8 +105,9 @@ na raiz — foram renomeados/reorganizados para `exemplos/` e `src/`.
    alterna com a foto via `P`), e tecla `R` pra resetar a câmera
    (`Camera.resetar`/`Camera.bearing_graus` em `camera.py`).
 7. ⬜ Relatório da Etapa 1 (revisão bibliográfica) — não escrito.
-8. ✅ Artigo IEEE — **versão final em `docs/artigo_v3.tex`** (reescrita
-   completa a partir do `docs/artigo_v2.pdf` do colega, seguindo o
+8. ✅ Artigo IEEE — **FINALIZADO** — PDF em
+   `docs/ArtigoCompGrafica_ElevacaoCosteira.pdf`, fonte em `docs/artigo_v3.tex`
+   (reescrita completa a partir do rascunho `artigo_v2.pdf` do colega, já removido do repo, seguindo o
    "IEEE Conference Template" oficial, com rigor de linguagem/parágrafo em
    português formal). Correções aplicadas em relação ao artigo_v2: (a)
    III-F/Seção IV corrigida — o valor certo é ~8,4 milhões de triângulos
