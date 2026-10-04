@@ -263,7 +263,7 @@ ondas para síntese de imagens, baseado no modelo de Gerstner. Nele, cada
 ponto da superfície da água descreve uma trajetória circular ou elíptica, o
 que produz cristas estreitas e vales largos, como em ondas reais. Somando
 várias ondas de tamanhos diferentes, obtém-se uma superfície de aspecto
-natural, a um custo muito inferior ao dos modelos espectrais. O trabalho
+natural, sem exigir as transformadas de Fourier dos modelos espectrais. O trabalho
 considera ainda a influência da batimetria (profundidade do fundo do mar)
 sobre a refração e a arrebentação das ondas próximas à costa. Welch (2019)
 implementa uma simulação de oceano em tempo real com ondas de Gerstner
@@ -520,12 +520,12 @@ partir de quatro componentes: a cor-base por altitude e inclinação, a
 iluminação difusa, a tonalidade das áreas submersas e a névoa de distância.
 
 A cor-base depende da altitude normalizada $\hat{h} = h / h_{\max}$, em que
-$h_{\max}$ é a maior altura do terreno. Por interpolação linear, ela passa de
+$h_{\max}$ é o maior valor absoluto de altura do terreno. Por interpolação linear, ela passa de
 areia de restinga ($\hat{h} < 0{,}04$) para mata da planície e da baixa
 encosta, depois para mata densa na encosta da serra ($\hat{h} < 0{,}55$) e,
 por fim, para rocha exposta nos cumes. Além disso, a inclinação do terreno
-mistura rocha à cor-base em proporção a $\min(1,\ 2{,}2\,(1 - n_y))$, em que
-$n_y$ é a componente vertical da normal, de modo que os paredões íngremes da
+mistura rocha à cor-base em até 55\%, em proporção a
+$\min(1,\ 2{,}2\,(1 - n_y))$, em que $n_y$ é a componente vertical da normal, de modo que os paredões íngremes da
 escarpa apareçam como rocha e não como mata. A normal é calculada no
 \emph{vertex shader} por diferenças finitas, a partir de quatro amostras do
 \emph{heightmap} vizinhas ao ponto, conforme a Equação~\eqref{eq:normal}:
@@ -550,7 +550,8 @@ Os pontos com altura inferior ao nível do mar $y_0$ têm a cor misturada, em
 65\%, a um tom azul-esverdeado que escurece com a profundidade. É esse
 efeito que torna visível a área inundada nas capturas da
 Figura~\ref{fig:capturas}. Por fim, a partir de 120 u.m. da câmera, a cor é
-misturada à cor do céu, em proporção crescente até 75\% a 380 u.m., o que
+misturada à cor do céu, em proporção crescente até o máximo de 75\%,
+atingido a 315 u.m., o que
 dá noção de escala e esconde o limite distante do terreno.
 
 \begin{figure*}[t]
@@ -738,17 +739,19 @@ Velocidade normal / turbo & - & 40 / 120 u.m./s \\
 \label{sec:resultados}
 
 A Figura~\ref{fig:capturas} mostra a aplicação em funcionamento. No painel
-(a), com o nível do mar em 0 m, a planície costeira e o estuário aparecem
-emersos, e a Serra do Mar forma a escarpa ao fundo. No painel (b), o nível
+(a), com o nível do mar em 0 m, a planície costeira aparece emersa, o
+estuário e o oceano aparecem cobertos pela água e a Serra do Mar forma a
+escarpa ao fundo. No painel (b), o nível
 foi elevado a +10 m, valor escolhido apenas para tornar a inundação
 visível na imagem; os cenários de +0,5 a +2 m usam o mesmo mecanismo, com
 extensão alagada menor. O painel (c) torna visível o refinamento do CDLOD:
-os blocos próximos à câmera têm maior profundidade na \emph{quadtree}. A
-forma do terreno, com os canais do sistema estuarino de Santos e São
-Vicente, as ilhas próximas e a orientação da escarpa da Serra do Mar,
-corresponde à geografia real da região quando comparada a um mapa de
-referência, o que confirma a aquisição e a decodificação descritas na
-Subseção~\ref{sub:aquisicao}.
+os blocos próximos à câmera têm maior profundidade na \emph{quadtree}. Uma
+inspeção visual indica que a forma do terreno, com os canais do sistema
+estuarino de Santos e São Vicente, as ilhas próximas e a orientação da
+escarpa da Serra do Mar, corresponde à geografia real da região quando
+comparada a um mapa de referência, o que sugere que a aquisição e a
+decodificação descritas na Subseção~\ref{sub:aquisicao} estão corretas;
+não foi feita validação quantitativa.
 
 A Tabela~\ref{tab:area} quantifica a área emersa que fica abaixo do nível
 do mar em cada cenário, calculada diretamente sobre o DEM de $1024 \times
