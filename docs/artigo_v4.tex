@@ -1,0 +1,779 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+% ---------------------------------------------------------------------------
+% Versao com linguagem e estrutura segundo as normas da ABNT (NBR 6022:
+% artigo; NBR 6028: resumo; NBR 10520: citacoes; NBR 6023: referencias;
+% NBR 6024: numeracao progressiva), aplicadas sobre o "IEEE Conference
+% Template" oficial do Overleaf, que a especificacao da disciplina exige
+% (leiaute em duas colunas, fontes e margens do template).
+% Para compilar: use o template no Overleaf, substitua o main.tex por este
+% arquivo e envie bench/fps_vs_resolucao.png para a pasta do projeto.
+% ---------------------------------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english,brazil]{babel}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{url}
+
+% Numeracao progressiva em algarismos arabicos (NBR 6024)
+\renewcommand{\thesection}{\arabic{section}}
+\renewcommand{\thesubsection}{\thesection.\arabic{subsection}}
+\renewcommand{\thesubsubsection}{\thesubsection.\arabic{subsubsection}}
+\renewcommand{\thesectiondis}{\thesection}
+\renewcommand{\thesubsectiondis}{\thesection.\arabic{subsection}}
+\renewcommand{\thesubsubsectiondis}{\thesubsection.\arabic{subsubsection}}
+\renewcommand{\thetable}{\arabic{table}}
+\renewcommand{\thefigure}{\arabic{figure}}
+
+\newcommand{\fonte}[1]{\par\vspace{2pt}{\footnotesize Fonte: #1\par}}
+
+\begin{document}
+
+\title{Visualização Interativa de Elevação Costeira com Nível de Detalhe
+Adaptativo e Simulação Oceânica para Análise de Cenários de Subida do
+Nível do Mar}
+
+\author{
+\IEEEauthorblockN{Guilherme Augusto Scaglia, João Pedro Denardo, Pedro Henrique Oliveira de Souza}
+\IEEEauthorblockA{
+Engenharia de Computação\\
+Fundação Hermínio Ometto (FHO)\\
+Araras, SP, Brasil\\
+\{scaglia, denardo749, pedro1204\}@alunos.fho.edu.br}
+}
+
+\maketitle
+
+\begin{abstract}
+Este trabalho apresenta um sistema interativo de visualização científica
+para a análise de cenários de erosão costeira e de subida do nível do mar,
+implementado sobre um Modelo Digital de Elevação (DEM) real da Baixada
+Santista (SP). Os dados, obtidos do serviço \emph{AWS Terrain Tiles},
+combinam observações de radar orbital (SRTM) e batimetria, isto é, a
+profundidade do fundo do mar (GEBCO). O objetivo foi determinar, por
+meio de experimento, a partir de qual carga geométrica a técnica CDLOD
+(\emph{Continuous Distance-Dependent Level of Detail}), proposta por
+Strugar, torna-se indispensável para manter a interatividade da
+aplicação, que tem dispositivos móveis como público-alvo final. A
+superfície oceânica foi modelada por seis componentes de ondas de
+Gerstner, segundo a formulação de Fournier e Reeves, com altura de base
+ajustável em tempo real, o que permite visualizar cenários de subida do
+mar de 0, +0,5, +1 e +2 metros. Um teste de desempenho automatizado, sem
+janela gráfica, executado em uma GPU NVIDIA RTX 3060, comparou a
+renderização com e sem LOD em cinco resoluções de terreno. Os resultados
+indicam um ponto de virada em aproximadamente cinco milhões de
+triângulos, a partir do qual o CDLOD passa a ser mais rápido que a malha
+completa. Conclui-se que o LOD adaptativo é o que torna viável a
+visualização tridimensional de inundação costeira em tempo real.
+
+Palavras-chave: Computação gráfica. Visualização científica. Nível de
+detalhe. Renderização de terreno. Simulação de oceano. Subida do nível do
+mar.
+
+\textit{Abstract}---This paper presents an interactive scientific visualization system for
+analyzing coastal erosion and sea level rise scenarios, built on a real
+Digital Elevation Model (DEM) of the Baixada Santista region (Brazil).
+The data, obtained from the AWS Terrain Tiles service, combine orbital
+radar observations (SRTM) and bathymetry (GEBCO). The goal was to
+determine experimentally the geometric load beyond which the CDLOD
+technique (Continuous Distance-Dependent Level of Detail), proposed by
+Strugar, becomes indispensable to keep the application interactive,
+considering mobile devices as the final target audience. The ocean
+surface was modeled with six Gerstner wave components, following Fournier
+and Reeves, with a base height adjustable in real time, which allows
+sea level rise scenarios of 0, +0.5, +1 and +2 meters to be visualized. An
+automated windowless benchmark, run on an NVIDIA RTX 3060 GPU, compared
+rendering with and without LOD at five terrain resolutions. The results
+indicate a tipping point at approximately five million triangles, beyond
+which CDLOD becomes faster than the full mesh. It is concluded that
+adaptive LOD is what makes real-time three-dimensional visualization of
+coastal flooding feasible.
+
+Keywords: Computer graphics. Scientific visualization. Level of detail.
+Terrain rendering. Ocean simulation. Sea level rise.
+\end{abstract}
+
+\section{Introdução}
+\label{sec:intro}
+
+O aumento do nível médio dos oceanos, associado às mudanças climáticas de
+origem antrópica, figura entre os fenômenos ambientais de maior impacto
+sobre as regiões costeiras. Esse processo intensifica a erosão das linhas
+de costa, amplia a vulnerabilidade das áreas urbanas litorâneas a
+inundações e representa risco direto a infraestruturas, ecossistemas e
+populações. A previsão e a comunicação visual desses riscos são, portanto,
+centrais tanto para o planejamento urbano e ambiental quanto para a
+conscientização pública.
+
+Segundo Brown et al. (2006), um dos principais entraves à comunicação do
+risco costeiro à população e aos gestores públicos é a baixa capacidade
+das ferramentas tradicionais de geovisualização de transmitir a dinâmica
+do fenômeno. A maioria delas adota o chamado modelo de banheira
+(\emph{bathtub model}), no qual toda área abaixo de determinada cota de
+elevação é simplesmente marcada como inundada, sem simulação da
+superfície da água. Para mitigar essa limitação, este trabalho integra a
+renderização de terreno em tempo real e a simulação procedural de ondas
+oceânicas sobre dados reais de relevo (topografia) e de profundidade do
+fundo do mar (batimetria).
+
+A contribuição técnica deste trabalho precisa ser delimitada. O nível de
+detalhe adaptativo (LOD, do inglês \emph{level of detail}) é tratado como
+meio, e não como fim: não se propõe uma nova técnica de LOD. A pergunta de
+pesquisa que orienta a avaliação experimental (Seção~\ref{sec:resultados})
+não é se o CDLOD funciona, o que já foi estabelecido por Strugar (2009),
+mas a partir de que carga geométrica, em um cenário real de visualização
+de inundação costeira, o CDLOD deixa de ser um refinamento de desempenho e
+passa a ser condição necessária para a interatividade. A questão é
+especialmente relevante quando o público-alvo inclui dispositivos móveis,
+cuja capacidade gráfica é inferior à de uma GPU de computador de mesa.
+
+Diferentemente dos sistemas de geovisualização baseados em Sistemas de
+Informação Geográfica (SIG), que representam a subida do mar por camadas
+estáticas sobrepostas a um mapa bidimensional, propõe-se uma cena
+tridimensional interativa, construída sobre um DEM real. Nela, o
+observador navega pelo relevo costeiro e ajusta, em tempo real, a altura
+da superfície oceânica simulada, observando quais áreas seriam submersas
+em cada cenário. A ferramenta destina-se ao público leigo e a gestores
+ambientais.
+
+O sistema foi desenvolvido em Python, com a biblioteca ModernGL para
+acesso à API gráfica OpenGL, a GLFW para o gerenciamento de janela e de
+entradas e a PyGLM para a álgebra linear das transformações de câmera e
+de projeção. A ferramenta busca não apenas renderizar um terreno
+convincente, mas também servir como instrumento de análise visual de
+baixo custo computacional, complementar às abordagens baseadas em SIG.
+
+Este artigo está organizado da seguinte forma. A
+Seção~\ref{sec:fund} apresenta a fundamentação teórica e os trabalhos
+relacionados. A Seção~\ref{sec:metod} descreve a metodologia e a
+modelagem computacional. A Seção~\ref{sec:resultados} apresenta os
+resultados da avaliação de desempenho. A Seção~\ref{sec:conclusao}
+traz a conclusão, as limitações e os trabalhos futuros.
+
+\subsection{Justificativa da Escolha do Cenário e das Técnicas}
+
+A escolha do cenário de erosão costeira justifica-se por três razões.
+Primeiro, trata-se de um cenário com embasamento em trabalhos de
+geovisualização científica (BROWN et al., 2006; DIPAOLA; BHARDWAJ; SAM,
+2023). Segundo, o parâmetro central da simulação de água, a altura de base
+ajustável, corresponde a uma variável de interesse real: as projeções de
+subida do mar, expressas em metros. Terceiro, o problema impõe uma escala
+compatível com o escopo do projeto. Ao contrário da renderização de um
+planeta inteiro (CLASEN; HEGE, 2006), um recorte costeiro local, a Baixada
+Santista, detalhada na Subseção~\ref{sub:aquisicao}, permite simplificar a
+topologia do terreno de esférica para plana sem descaracterizar o
+problema.
+
+A escolha das técnicas, CDLOD para o terreno e ondas de Gerstner para a
+água, segue o mesmo raciocínio de custo e benefício, confirmado
+experimentalmente na Seção~\ref{sec:resultados}. O CDLOD dispensa
+estruturas de dados hierárquicas mais complexas do que as de outras
+técnicas de LOD. O modelo de Gerstner dispensa o custo das transformadas de
+Fourier exigidas por modelos espectrais de oceano, mantendo fidelidade
+visual suficiente para a comunicação de risco e sem inviabilizar a
+execução em hardware de menor capacidade, que é o objetivo final da
+aplicação.
+
+\section{Fundamentação Teórica e Trabalhos Relacionados}
+\label{sec:fund}
+
+A revisão bibliográfica abrange sete trabalhos, organizados em três
+frentes: a renderização eficiente de terrenos extensos, a simulação de
+ondas oceânicas e a geovisualização de risco costeiro. As
+Subseções~\ref{sub:terreno} a~\ref{sub:geovis} descrevem o que cada frente
+propõe e quais são suas limitações para o problema tratado. A
+Subseção~\ref{sub:sintese} reúne essas observações e explicita o que este
+trabalho adota de cada uma e no que se diferencia.
+
+\subsection{Renderização de Terreno em Larga Escala}
+\label{sub:terreno}
+
+Um terreno real extenso, representado como malha de triângulos, pode
+conter milhões de triângulos, o que torna inviável desenhá-lo por inteiro a
+cada quadro. A solução usual é o nível de detalhe (LOD): usar muitos
+triângulos nas regiões próximas ao observador, onde o detalhe é
+perceptível, e poucos nas regiões distantes.
+
+Tanner, Migdal e Jones (1998) introduziram o \emph{clipmap}, estrutura que
+mantém em memória uma ``janela'' de dados em alta resolução centrada no
+observador, cercada por janelas sucessivamente maiores e de resolução
+menor. Assim, apenas os dados próximos precisam ser armazenados em alta
+resolução, o que permite renderizar mapas de elevação maiores do que a
+memória da GPU comportaria. Clasen e Hege (2006) estenderam essa ideia a
+terrenos esféricos, com anéis circulares de detalhe, de modo a visualizar
+planetas inteiros a partir de modelos digitais de elevação de alta
+resolução.
+
+Ambos os trabalhos visam grandes extensões, até a escala planetária. Para
+um recorte costeiro local, de superfície aproximadamente plana, a
+parametrização esférica e a manutenção de janelas aninhadas de dados
+acrescentam uma complexidade que o problema não exige.
+
+\subsection{Nível de Detalhe Contínuo Baseado em Distância}
+\label{sub:cdlod-rel}
+
+Strugar (2009) propôs o CDLOD (\emph{Continuous Distance-Dependent Level of
+Detail}). O terreno é organizado em uma \emph{quadtree}, estrutura em
+árvore na qual um bloco quadrado pode ser dividido em quatro blocos
+menores, e assim recursivamente. Blocos próximos ao observador são
+subdivididos e ganham detalhe, enquanto blocos distantes permanecem grandes
+e grosseiros. A decisão depende de uma função contínua da distância, e a
+troca de nível é suavizada por \emph{geomorphing}: os vértices deslizam
+gradualmente de uma resolução para a seguinte, o que evita saltos visuais
+abruptos e fendas entre blocos vizinhos.
+
+Em comparação com o \emph{clipmap}, o CDLOD é mais simples de implementar,
+pois dispensa janelas de dados aninhadas e se resume a escolher, a cada
+quadro, quais blocos desenhar. O trabalho original foi proposto e avaliado
+para terrenos genéricos, sem vínculo com um cenário de aplicação
+específico.
+
+\subsection{Simulação Procedural de Ondas Oceânicas}
+\label{sub:ondas-rel}
+
+Fournier e Reeves (1986) propuseram um dos primeiros modelos procedurais de
+ondas para síntese de imagens, baseado no modelo de Gerstner. Nele, cada
+ponto da superfície da água descreve uma trajetória circular ou elíptica, o
+que produz cristas estreitas e vales largos, como em ondas reais. Somando
+várias ondas de tamanhos diferentes, obtém-se uma superfície de aspecto
+natural, a um custo muito inferior ao dos modelos espectrais. O trabalho
+considera ainda a influência da batimetria (profundidade do fundo do mar)
+sobre a refração e a arrebentação das ondas próximas à costa. Welch (2019)
+descreve a implementação de uma simulação de oceano em tempo real, com
+ênfase no desempenho interativo em GPU.
+
+Esses trabalhos modelam o oceano com nível médio fixo, isto é, o nível da
+água não é tratado como variável de cenário.
+
+\subsection{Geovisualização de Erosão Costeira e Subida do Nível do Mar}
+\label{sub:geovis}
+
+Brown et al. (2006) discutem a importância de visualizar linhas de costa em
+evolução como ferramenta de conscientização e planejamento frente à erosão,
+e propõem uma metodologia que integra a modelagem científica da erosão a
+modelos digitais de elevação (DEM) e a sistemas de informação geográfica.
+De forma semelhante, DiPaola, Bhardwaj e Sam (2023) constroem mapas
+interativos de subida do nível do mar sobre dados topográficos reais
+(LiDAR aéreo de alta resolução) do North Shore de Vancouver, Canadá,
+quantificando a porcentagem de área afetada em diferentes cenários.
+
+Esses trabalhos são cientificamente rigorosos, mas apresentam o fenômeno por
+meio de mapas bidimensionais ou de modelos de inundação estáticos, sem
+simular a superfície da água.
+
+\subsection{Síntese e Posicionamento deste Trabalho}
+\label{sub:sintese}
+
+Da primeira frente, mantém-se a ideia de concentrar o detalhe próximo ao
+observador. Como o recorte de interesse é local e plano, adota-se a
+\emph{quadtree} do CDLOD em lugar da parametrização esférica do
+\emph{clipmap}. Da segunda frente, adota-se o modelo de Gerstner, na
+formulação de Fournier e Reeves (1986), com uma diferença: a altura média
+da água é um parâmetro ajustável em tempo real, usado para representar
+diferentes cenários de subida do mar. A terceira frente fornece a motivação
+e a escolha do cenário. A diferença está em oferecer uma cena
+tridimensional navegável, com água animada, em vez de mapas bidimensionais
+estáticos, sob a hipótese de que a dinâmica visual da água reforça a
+percepção de risco por parte do observador.
+
+\begin{table}[t]
+\caption{Comparação qualitativa com trabalhos relacionados}
+\label{tab:comparacao}
+\centering
+\begin{tabular}{@{}p{2.0cm}p{2.2cm}p{1.7cm}p{1.6cm}@{}}
+\toprule
+\textbf{Trabalho} & \textbf{Técnica de LOD} & \textbf{Água dinâmica} & \textbf{Contexto} \\
+\midrule
+Clasen e Hege (2006) & Clipmap esférico & Não & Planeta \\
+Strugar (2009) & CDLOD (quadtree) & Não & Terreno \\
+DiPaola et al. (2023) & N/A (SIG) & Não & Costa real \\
+\textbf{Proposta} & CDLOD adaptado & Sim & Costa (erosão) \\
+\bottomrule
+\end{tabular}
+\fonte{elaborada pelos autores.}
+\end{table}
+
+Conforme a Tabela~\ref{tab:comparacao}, a contribuição deste trabalho não é
+uma técnica inédita, mas a integração de técnicas de renderização de
+terreno e de simulação de água, em geral aplicadas a jogos ou à
+visualização genérica, a um cenário de análise ambiental, aliada à
+determinação experimental do ponto a partir do qual o LOD se torna
+necessário (Seção~\ref{sec:resultados}).
+
+\section{Metodologia e Modelagem Computacional}
+\label{sec:metod}
+
+A metodologia foi estruturada em um \emph{pipeline} modular de cinco
+estágios: (a) aquisição e geração dos dados de elevação; (b) estruturação
+do terreno em \emph{quadtree} e nível de detalhe; (c) modelo de câmera de
+navegação; (d) simulação da superfície oceânica; e (e) ambiente de
+desenvolvimento. O protocolo da avaliação experimental decorre
+diretamente dessa metodologia e é apresentado na
+Seção~\ref{sec:resultados}.
+
+\subsection{Aquisição e Geração dos Dados de Elevação}
+\label{sub:aquisicao}
+
+A área de estudo compreende a Baixada Santista (municípios de Santos, São
+Vicente e Guarujá, SP), delimitada pela caixa geográfica de latitude
+$-23{,}70$ a $-24{,}10$ e longitude $-46{,}60$ a $-46{,}05$. O recorte foi
+escolhido por reunir, em uma única área, relevo montanhoso (Serra do Mar),
+planície costeira baixa e o sistema estuarino de Santos e São Vicente
+(região onde rios desembocam no mar).
+
+O relevo é representado por um mapa de elevação (\emph{heightmap}), isto é,
+uma matriz $H \in \mathbb{R}^{n \times n}$, com $n = 1024$, na qual cada
+célula $H(x,z)$ armazena uma altura normalizada. Consideram-se dois métodos
+de obtenção de $H$, sendo o primeiro a fonte primária da implementação de
+referência.
+
+\subsubsection{Dados reais (fonte primária)}
+O terreno é obtido a partir de \emph{tiles} de elevação do serviço
+\emph{AWS Terrain Tiles}, distribuído publicamente sem exigência de chave
+de API, no formato \emph{terrarium}. Nesse formato, a altitude real, em
+metros, é codificada nos três canais de cor de uma imagem PNG, segundo a
+Equação~\eqref{eq:terrarium}:
+\begin{equation}
+h_{\text{real}} = (R \cdot 256 + G + B/256) - 32768
+\label{eq:terrarium}
+\end{equation}
+em que $R$, $G$ e $B$ são os valores dos canais de cor do \emph{tile}
+(0 a 255) e $h_{\text{real}}$ é a elevação decodificada, em metros. Os dados
+subjacentes combinam observações orbitais de radar (SRTM, para a porção
+emersa) e batimetria GEBCO (para o leito oceânico), o que permite
+representar relevo terrestre e profundidade marinha em uma única matriz
+contínua.
+
+Como os \emph{tiles} brutos apresentam ruído pontual, característico de
+dados de sensoriamento remoto, aplica-se um pós-processamento composto por
+três etapas: (i) filtro de mediana $3 \times 3$, em duas passadas, para
+remover valores isolados espúrios (\emph{despiking}) sem suavizar
+excessivamente as feições do relevo; (ii) reamostragem por interpolação
+bilinear para a resolução-alvo de $1024 \times 1024$ células; e (iii)
+imposição de um piso mínimo de elevação de $-40$ m, que evita que
+artefatos de batimetria produzam profundidades irrealistas na região de
+interesse.
+
+A elevação real, em metros, é convertida para unidades de mundo (u.m.) do
+motor gráfico por um fator de escala horizontal e um fator de exagero
+vertical, aplicados conjuntamente, conforme a Equação~\eqref{eq:escala}:
+\begin{equation}
+y_{\text{mundo}} = \frac{h_{\text{real}}}{\sigma} \cdot E
+\label{eq:escala}
+\end{equation}
+em que $\sigma = 167$ m/u.m. é a escala do mundo (um terreno de 300 u.m. de
+lado corresponde a cerca de 50 km reais, cobrindo a extensão da área de
+estudo) e $E = 6$ é o fator de exagero vertical. O exagero vertical é prática
+consolidada em geovisualização e é necessário neste caso porque o relevo
+real da Serra do Mar, com amplitude aproximada de 1,2 km, representa uma
+fração muito pequena da extensão horizontal da área de estudo, de cerca de
+50 km. Sem o fator $E$, o relevo apareceria visualmente quase plano.
+
+\subsubsection{Geração procedural (modo alternativo)}
+Como alternativa independente de conectividade de rede, a matriz $H$ pode
+ser gerada por ruído coerente do tipo \emph{Simplex noise}, somado em
+múltiplas oitavas (\emph{fractal Brownian motion}), conforme a
+Equação~\eqref{eq:fbm}:
+\begin{equation}
+H(x,z) = \frac{1}{\sum_{i=0}^{k-1} p^i} \sum_{i=0}^{k-1} p^i \cdot
+\text{Simplex}(f_0 2^i x,\, f_0 2^i z)
+\label{eq:fbm}
+\end{equation}
+com $k = 5$ oitavas e persistência $p = 0{,}5$.
+
+Independentemente da origem dos dados, cada célula de $H$ é usada para o
+deslocamento vertical dos vértices de uma grade regular (\emph{displacement
+mapping}). A matriz é transferida à GPU como uma textura de ponto flutuante
+de canal único (R32F), com um valor de altura por \emph{texel}, lido
+diretamente pelo \emph{vertex shader} no estágio descrito na
+Subseção~\ref{sub:cdlod}.
+
+\subsection{Estruturação do Terreno em Quadtree e Nível de Detalhe (CDLOD)}
+\label{sub:cdlod}
+
+O algoritmo CDLOD (STRUGAR, 2009) resolve o seguinte problema: renderizar
+toda a extensão do terreno na resolução máxima é inviável em tempo real, mas
+reduzir a resolução de maneira uniforme degrada a qualidade visual nas
+regiões próximas ao observador, onde o detalhe é mais perceptível. A solução
+consiste em variar a densidade de triângulos em função da distância à
+câmera.
+
+\subsubsection{Estrutura de dados}
+O terreno é particionado recursivamente em uma \emph{quadtree}. O nó raiz
+cobre toda a extensão do terreno e cada nó filho cobre um quadrante da área
+do nó pai, até a profundidade máxima $L = 5$, valor implementado e
+suficiente para representar a região costeira de interesse com resolução
+submétrica nas proximidades do observador. Cada nó armazena a mesma
+quantidade fixa de vértices, organizados em uma grade regular de
+$N \times N$ pontos ($N = 33$, correspondendo a $32 \times 32$ subdivisões,
+ou 2048 triângulos por nó). Assim, um nó na profundidade $\ell$ cobre uma
+área de $\left(\frac{W}{2^{\ell}}\right)^2$, sendo $W$ a largura total do
+terreno. Nós mais profundos representam áreas menores com a mesma densidade
+de vértices, o que resulta em maior resolução por unidade de área.
+
+\subsubsection{Critério de seleção de nível}
+Para cada nó de lado $\tau$ (tamanho do bloco na profundidade
+correspondente), calcula-se a distância euclidiana $d$ entre a posição da
+câmera $\vec{c}$ e o ponto mais próximo da borda da caixa delimitadora do
+nó. O critério de subdivisão implementado é dado pela
+Equação~\eqref{eq:subdivisao}:
+\begin{equation}
+\text{subdividir se } d < \tau \cdot 2{,}2
+\label{eq:subdivisao}
+\end{equation}
+Ou seja, um nó é subdividido em quatro filhos de maior detalhe sempre que a
+câmera estiver mais próxima de sua borda do que 2,2 vezes o tamanho do
+próprio bloco. Caso contrário, o nó é renderizado em sua resolução atual.
+Como o tamanho do bloco $\tau$ é reduzido à metade a cada nível de
+profundidade, o critério equivale a um raio de comutação que dobra a cada
+nível, semelhante a um esquema de anéis concêntricos de detalhe centrados na
+câmera, sem exigir o armazenamento de distâncias de corte por nível. Na
+implementação de referência, esse critério resulta tipicamente em 200 a 230
+blocos ativos simultaneamente, contra os $4^5 = 1024$ blocos-folha que
+existiriam caso a árvore inteira fosse forçada à profundidade máxima.
+
+\subsubsection{Eliminação de descontinuidades (\emph{cracks})}
+Blocos adjacentes renderizados em níveis de detalhe diferentes possuem
+densidades de vértices distintas na borda compartilhada, o que pode gerar
+fendas visuais (\emph{cracks}) caso os vértices das duas malhas não
+coincidam exatamente na fronteira. O CDLOD trata o problema por meio do
+\emph{geomorphing}: na faixa de transição de cada bloco, os vértices de
+índice ímpar da grade deslizam progressivamente para a posição dos vértices
+de índice par correspondentes. Isso elimina tanto as fendas quanto o salto
+abrupto (\emph{popping}) que ocorreria quando a câmera se move e um bloco
+muda de nível de detalhe.
+
+\subsection{Modelo de Câmera de Navegação Livre}
+\label{sub:camera}
+
+A navegação pela cena é realizada por uma câmera de movimento livre
+(\emph{free-fly camera}), cuja orientação é parametrizada pelos ângulos de
+Euler \emph{yaw} ($\psi$, rotação em torno do eixo vertical) e \emph{pitch}
+($\theta$, rotação em torno do eixo horizontal lateral). O vetor que indica
+para onde a câmera aponta (\emph{front}) é derivado desses ângulos pela
+Equação~\eqref{eq:front}:
+\begin{equation}
+\vec{f} = \big(\cos\psi\cos\theta,\ \sin\theta,\ \sin\psi\cos\theta\big)
+\label{eq:front}
+\end{equation}
+
+A partir de $\vec{f}$ e do vetor global ``para cima''
+$\vec{u}_{\text{mundo}} = (0,1,0)$, calculam-se os vetores ortogonais
+\emph{right} ($\vec{r} = \vec{f} \times \vec{u}_{\text{mundo}}$,
+normalizado) e \emph{up} ($\vec{u} = \vec{r} \times \vec{f}$), que formam a
+base local da câmera. Esses três vetores, associados à posição $\vec{c}$,
+constroem a matriz de visualização (\emph{view matrix}) por meio da
+transformação \emph{look-at}, que expressa a cena no referencial da câmera.
+
+A cada quadro, as entradas de teclado incrementam $\vec{c}$ na direção de
+$\vec{f}$, $\vec{r}$ ou $\vec{u}$, com velocidade de 40 unidades de mundo
+por segundo no modo normal e de 120 no modo acelerado (\emph{turbo}), ambas
+escaladas pelo tempo decorrido entre quadros (\emph{delta time}) para
+garantir independência da taxa de quadros. O deslocamento do mouse
+incrementa $\psi$ e $\theta$, com $\theta$ restrito ao intervalo
+$(-89^{\circ}, 89^{\circ})$ para evitar a inversão do eixo vertical da
+câmera (\emph{gimbal flip}). A matriz de projeção perspectiva usa campo de
+visão vertical de $60^{\circ}$ e planos de recorte próximo e distante em 0,1
+e 2000 unidades de mundo, respectivamente, intervalo dimensionado para conter
+toda a extensão do terreno descrita na Subseção~\ref{sub:aquisicao} sem
+introduzir imprecisão numérica no \emph{depth buffer}.
+
+Além da navegação, $\vec{c}$ é a entrada direta do critério de distância da
+Subseção~\ref{sub:cdlod}: a cada quadro, a mesma posição de câmera usada
+para construir a matriz de visualização é reutilizada no cálculo de $d$ para
+cada nó da \emph{quadtree}, o que evita manter duas representações
+distintas da posição do observador.
+
+\subsection{Simulação da Superfície Oceânica}
+\label{sub:agua}
+
+A superfície da água é modelada pelo modelo de ondas de Gerstner, também
+chamado trocoidal, na formulação de Fournier e Reeves (1986). Diferentemente
+de uma onda senoidal simples, que desloca os pontos da superfície apenas na
+vertical, o modelo de Gerstner desloca cada ponto também na direção
+horizontal de propagação da onda. As partículas da superfície descrevem,
+assim, trajetórias elípticas, o que produz o perfil característico de
+cristas estreitas e pontiagudas e vales largos e suaves das ondas oceânicas
+reais. Para um ponto de referência $(x_0, z_0)$ no plano da água em repouso,
+a posição deslocada por uma única componente de onda é dada pelas
+Equações~\eqref{eq:gerstner-x} a~\eqref{eq:gerstner-y}:
+\begin{align}
+x &= x_0 + Q A \hat{D}_x \cos(\vec{k} \cdot \vec{x}_0 - \omega t) \label{eq:gerstner-x}\\
+z &= z_0 + Q A \hat{D}_z \cos(\vec{k} \cdot \vec{x}_0 - \omega t) \label{eq:gerstner-z}\\
+y &= A \sin(\vec{k} \cdot \vec{x}_0 - \omega t) \label{eq:gerstner-y}
+\end{align}
+em que $A$ é a amplitude da onda, $\vec{k}$ é o vetor de onda (de módulo
+$2\pi/\lambda$, sendo $\lambda$ o comprimento de onda, e direção de
+propagação $\hat{D}$), $\omega$ é a frequência angular, $t$ é o tempo e
+$Q \in [0,1]$ controla a nitidez das cristas (\emph{steepness}). Valores
+próximos de 1 produzem cristas mais pontiagudas, ao custo de possíveis
+autointerseções da malha caso o limite seja excedido.
+
+A superfície final é obtida pela soma de $m = 6$ componentes de onda, que
+variam de ondulação longa a ondulação curta, com amplitudes
+$A_i \in \{1{,}10;\, 0{,}90;\, 0{,}50;\, 0{,}28;\, 0{,}14;\, 0{,}07\}$ e
+comprimentos de onda $\lambda_i \in \{70;\, 48;\, 26;\, 14;\, 7;\, 4\}$
+unidades de mundo. A nitidez $Q_i$ decresce de 0,60 a 0,28 à medida que a
+frequência aumenta, restrição necessária para evitar a autointerseção da
+malha nas componentes de alta frequência, cujo menor comprimento de onda
+implica menor tolerância geométrica a cristas pronunciadas. A superposição
+evita o padrão artificial e repetitivo de uma única componente e aproxima o
+aspecto irregular de uma superfície oceânica real, ao custo de $m$
+avaliações da Equação~\eqref{eq:gerstner-y} por vértice a cada quadro.
+
+A normal de cada ponto da superfície, necessária para a iluminação, é obtida
+analiticamente, a partir das derivadas parciais da soma das $m$ componentes
+em relação a $x_0$ e $z_0$, e não por diferenças finitas, o que evita o
+custo de amostrar vértices vizinhos. O modelo de iluminação combina um termo
+difuso lambertiano, um termo especular de Blinn-Phong, um termo de
+reflectância dependente do ângulo de visão, dado pela aproximação de
+Fresnel-Schlick, e transparência com fator $\alpha = 0{,}80$, que permite
+perceber parcialmente o relevo submerso através da água.
+
+A altura de base $y_0$ da superfície, que é o plano de repouso em torno do
+qual as componentes de Gerstner oscilam, é um parâmetro ajustável do
+sistema. Ela pode ser controlada de forma discreta, por quatro cenários
+predefinidos (0, +0,5, +1 e +2 metros sobre o nível de referência atual), ou
+de forma contínua, a uma taxa de 0,8 m/s enquanto o comando correspondente
+é mantido pressionado. A submersão de um ponto do terreno é determinada
+pela comparação direta entre a elevação do terreno nessa posição
+(Equação~\eqref{eq:escala}) e $y_0$: os pontos de elevação inferior a $y_0$
+ficam abaixo da superfície da água e, portanto, visualmente submersos, sem
+qualquer alteração na geometria do terreno.
+
+\subsection{Ambiente de Desenvolvimento}
+\label{sub:ambiente}
+
+A aplicação foi desenvolvida em Python, versão 3.11. A biblioteca GLFW cria
+a janela e captura os eventos de teclado e mouse junto ao sistema
+operacional. A ModernGL oferece uma interface mais direta à API OpenGL
+(\emph{core profile}, versão 3.3, correspondente à versão 330 da linguagem
+de \emph{shading} GLSL) para compilar \emph{shaders}, alocar \emph{Vertex
+Buffer Objects} (VBOs) e \emph{Vertex Array Objects} (VAOs) na GPU e emitir
+os comandos de desenho (\emph{draw calls}). A PyGLM fornece os tipos e as
+operações de álgebra linear usados nas Equações~\eqref{eq:front}
+a~\eqref{eq:gerstner-y}. A Pillow é usada tanto para decodificar os
+\emph{tiles} de elevação (Equação~\eqref{eq:terrarium}) quanto para
+renderizar o texto da interface, já que a API OpenGL não oferece suporte
+nativo a texto. A matplotlib é usada exclusivamente pelo módulo de avaliação
+experimental para gerar os gráficos de desempenho. A leitura do modelo
+digital de elevação prescinde de bibliotecas geoespaciais especializadas,
+como GDAL ou \texttt{rasterio}: como os \emph{tiles} no formato
+\emph{terrarium} são imagens PNG convencionais, com a elevação codificada em
+canais de cor, a decodificação é feita diretamente com Pillow e NumPy.
+
+Os cálculos de seleção de nível da \emph{quadtree} (Subseção~\ref{sub:cdlod})
+e de deslocamento de vértice das ondas de Gerstner
+(Subseção~\ref{sub:agua}) são executados no \emph{vertex shader}, e não na
+CPU em Python, de modo que o paralelismo da GPU absorva o custo por vértice
+dessas operações. O código-fonte está organizado em oito módulos
+principais: \texttt{dem.py} (aquisição e pós-processamento do DEM real),
+\texttt{heightmap.py} (geração procedural e grade unitária reutilizada pelo
+CDLOD), \texttt{lod.py} (\emph{quadtree} e seleção de blocos por quadro),
+\texttt{water.py} (geometria do plano de água), \texttt{camera.py} (câmera
+livre), \texttt{scene.py} (montagem da cena na GPU e desenho de um quadro,
+reutilizada pela aplicação interativa e pelo teste de desempenho),
+\texttt{hud.py} (interface de usuário) e \texttt{main.py} (laço principal),
+além do módulo \texttt{bench.py}, descrito na Seção~\ref{sec:resultados}.
+
+A interface inclui uma tela introdutória com o objetivo do sistema, uma
+legenda de comandos em dois níveis de detalhamento, um painel de status com
+o nível do mar corrente, o modo de renderização ativo e o tempo de quadro
+medido, além de uma bússola e de um minimapa de orientação. Esses elementos
+buscam tornar a ferramenta acessível a um público não especializado,
+conforme a motivação apresentada na Seção~\ref{sec:intro}. A
+Tabela~\ref{tab:parametros} sintetiza os parâmetros de configuração da
+implementação de referência.
+
+\begin{table}[t]
+\caption{Parâmetros de configuração da implementação de referência}
+\label{tab:parametros}
+\centering
+\begin{tabular}{@{}p{3.1cm}p{0.9cm}p{2.4cm}@{}}
+\toprule
+\textbf{Parâmetro} & \textbf{Símbolo} & \textbf{Valor} \\
+\midrule
+Resolução do \emph{heightmap} & $n$ & $1024 \times 1024$ \\
+Exagero vertical & $E$ & $6\times$ \\
+Escala do mundo & $\sigma$ & 167 m/u.m. \\
+Profundidade máx. da quadtree & $L$ & 5 níveis \\
+Resolução de vértices por nó & $N$ & $33 \times 33$ \\
+Fator do critério de subdivisão & - & $2{,}2 \times \tau$ \\
+Componentes de onda de Gerstner & $m$ & 6 \\
+Nitidez das ondas (faixa) & $Q$ & 0,60 a 0,28 \\
+Transparência da água & $\alpha$ & 0,80 \\
+Campo de visão da câmera & FOV & $60^{\circ}$ \\
+Planos de recorte (próximo/distante) & - & 0,1 / 2000 u.m. \\
+Velocidade normal / turbo & - & 40 / 120 u.m./s \\
+\bottomrule
+\end{tabular}
+\fonte{elaborada pelos autores, com base no código-fonte da implementação.}
+\end{table}
+
+\section{Resultados e Avaliação de Desempenho}
+\label{sec:resultados}
+
+A avaliação de desempenho foi conduzida por um programa de teste
+(\emph{benchmark}) dedicado (\texttt{bench.py}), executado sem abrir janela
+(modo \emph{headless}). O programa reutiliza a mesma lógica de montagem de
+cena (\texttt{scene.py}) da aplicação interativa, de modo que a medição
+reflita o custo real de renderização e não uma via de código simplificada.
+O protocolo sincronizou a GPU ao final de cada quadro, para que o
+\emph{buffering} assíncrono não mascarasse o tempo real de processamento,
+descartou os 30 quadros iniciais, de aquecimento (\emph{warm-up}), e mediu
+os 150 quadros seguintes.
+
+O experimento variou três fatores: (i) a técnica de renderização, com malha
+única na resolução total (sem LOD), CDLOD completo e CDLOD sem
+\emph{geomorphing} (Subseção~\ref{sub:cdlod}); (ii) a resolução do
+\emph{heightmap}, em cinco níveis (256, 512, 1024, 1536 e 2048); e (iii) a
+posição da câmera, em quatro configurações distintas dentro da cena. Também
+foram registrados o consumo de memória do processo (RAM) e o uso de memória
+de vídeo (VRAM) e de GPU, por meio da biblioteca \texttt{psutil} e da
+ferramenta \texttt{nvidia-smi}, respectivamente. Os testes foram executados
+em uma GPU NVIDIA RTX 3060. A Figura~\ref{fig:fps} apresenta a taxa de
+quadros média, calculada sobre as quatro posições de câmera, em função da
+resolução do \emph{heightmap}, para as três condições avaliadas.
+
+\begin{figure}[t]
+\centering
+\caption{Taxa de quadros média em função da resolução do \emph{heightmap}.
+O CDLOD, com e sem \emph{geomorphing}, mantém custo de renderização
+praticamente constante, enquanto a malha sem LOD degrada linearmente com o
+aumento da resolução}
+\label{fig:fps}
+\includegraphics[width=\columnwidth]{fps_vs_resolucao.png}
+\fonte{elaborada pelos autores, com dados do teste de desempenho.}
+\end{figure}
+
+Os resultados confirmam a hipótese subjacente ao CDLOD. Como o algoritmo
+limita a contagem de blocos ativos a um valor aproximadamente constante (200
+a 230 blocos, Subseção~\ref{sub:cdlod}), independentemente da resolução
+total do \emph{heightmap}, o tempo de quadro da condição CDLOD permanece
+próximo de 1 ms em todas as resoluções testadas, o que corresponde a uma
+carga estável de cerca de 0,4 milhão de triângulos por quadro. Em contraste,
+a condição sem LOD, que renderiza a malha completa a cada quadro, tem tempo
+de quadro crescente com o número de triângulos da malha, que chega a cerca
+de 8,4 milhões na resolução máxima testada (2048), contra 2,1 milhões na
+resolução intermediária de 1024.
+
+As curvas das duas condições se cruzam em aproximadamente cinco milhões de
+triângulos de carga geométrica. Esse é o ponto de virada (\emph{tipping
+point}) a partir do qual o custo do CDLOD passa a ser inferior ao da
+renderização da malha completa nessa GPU. Abaixo desse ponto, a malha sem LOD
+é ligeiramente mais rápida, pois o CDLOD introduz uma sobrecarga fixa de
+gerenciamento da \emph{quadtree}, que não se paga em cargas geométricas
+pequenas. O resultado valida diretamente a hipótese da
+Seção~\ref{sec:intro}: o CDLOD não é vantajoso de forma incondicional, mas
+passa a ser indispensável a partir de uma carga geométrica identificável
+experimentalmente. Em uma GPU de menor capacidade, como as de dispositivos
+móveis, espera-se que o ponto de virada ocorra em resolução de terreno ainda
+menor, o que tornaria o CDLOD relativamente mais vantajoso. O custo do
+\emph{geomorphing}, obtido pela comparação entre as condições ``CDLOD'' e
+``CDLOD sem \emph{morphing}'' na Figura~\ref{fig:fps}, ficou dentro da
+margem de ruído da medição; logo, a eliminação de \emph{cracks} e de
+\emph{popping} tem custo de desempenho desprezível.
+
+Quanto ao consumo de recursos, a memória do processo (RAM) cresceu de
+aproximadamente 110 MB, na resolução 256, para 255 MB, na resolução 2048, e
+a memória de vídeo (VRAM) cresceu de aproximadamente 740 MB para 910 MB no
+mesmo intervalo. O crescimento acompanha a resolução do dado de entrada (o
+tamanho da textura de altura e dos \emph{buffers} correspondentes) e não o
+modo de renderização: nas condições avaliadas, a malha completa e as duas
+variantes do CDLOD compartilham, em uma mesma execução, os mesmos recursos
+residentes na GPU. Portanto, o experimento não isola o ganho de memória
+atribuível ao LOD, o que fica como trabalho futuro (Seção~\ref{sec:conclusao}).
+
+Por fim, verificou-se que a forma do terreno gerado, com os canais do
+sistema estuarino de Santos e São Vicente, as ilhas próximas e a orientação
+da escarpa da Serra do Mar, corresponde à geografia real da região quando
+comparada a um mapa de referência, o que confirma a integridade do processo
+de aquisição e decodificação descrito na Subseção~\ref{sub:aquisicao}.
+
+\section{Conclusão e Trabalhos Futuros}
+\label{sec:conclusao}
+
+Este artigo apresentou um sistema interativo que exibe em três dimensões o
+relevo real da Baixada Santista e uma superfície de água animada, cuja
+altura pode ser elevada em 0, $+0{,}5$, $+1$ e $+2$ metros, permitindo
+observar quais áreas ficariam submersas em cada cenário de subida do mar.
+
+O principal resultado vem do teste de desempenho. Com o CDLOD, o tempo para
+desenhar um quadro da cena completa (terreno e água) ficou próximo de 1 ms
+em todas as resoluções de terreno testadas. Sem LOD, esse tempo cresce
+junto com o tamanho da malha. As duas curvas se cruzam em aproximadamente
+cinco milhões de triângulos: abaixo desse valor, desenhar a malha completa
+é ligeiramente mais rápido; acima dele, o CDLOD passa a ser indispensável
+para manter a interatividade. O custo do \emph{geomorphing} mostrou-se
+desprezível. A eficácia do CDLOD já é conhecida na literatura (STRUGAR,
+2009); o que este trabalho acrescenta é a medição desse ponto de virada em
+um cenário aplicado de inundação costeira.
+
+Algumas limitações devem ser consideradas. Primeiro, a implementação do
+CDLOD é simplificada: não descarta os blocos fora do campo de visão da
+câmera (\emph{frustum culling}) e as faixas de transição do
+\emph{geomorphing} não seguem exatamente as fórmulas do trabalho original
+(STRUGAR, 2009). Segundo, o teste foi feito apenas em uma GPU de computador
+de mesa (RTX 3060); a expectativa de que o ponto de virada ocorra mais cedo
+em celulares, público-alvo final, é uma hipótese razoável, mas não foi
+medida. Terceiro, o relevo foi exagerado verticalmente em $6\times$
+(Equação~\eqref{eq:escala}) para que a Serra do Mar fosse perceptível na
+escala da área, o que é uma distorção deliberada, comum em geovisualização,
+mas que precisa ser declarada. Quarto, a água não interage com o terreno
+(não há espuma na costa nem refração da luz), e a medição de memória não
+separa o efeito do LOD, pois os três modos testados compartilham os mesmos
+recursos na GPU.
+
+Como trabalhos futuros, propõem-se quatro passos, cada um respondendo a uma
+limitação apontada. (i) Repetir o teste de desempenho em um celular ou em
+uma GPU mais fraca, para confirmar o ponto de virada nesses dispositivos e
+medir a memória de cada modo separadamente. (ii) Implementar o
+\emph{frustum culling}, de modo a não desenhar os blocos atrás da câmera e
+reduzir ainda mais o custo por quadro. (iii) Acrescentar espuma e
+arrebentação na linha de costa, para tornar a água mais realista. (iv)
+Apresentar a ferramenta a especialistas em gestão costeira, a fim de
+avaliar se ela de fato auxilia a comunicar o risco de inundação.
+
+\section*{Referências}
+\begingroup
+\footnotesize
+\raggedright
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+
+BROWN, I.; JUDE, S.; KOUKOULAS, S.; NICHOLLS, R.; DICKSON, M.; WALKDEN,
+M. Dynamic simulation and visualisation of coastal erosion. \textbf{Computers,
+Environment and Urban Systems}, v. 30, n. 6, p. 840-860, 2006.
+
+CLASEN, M.; HEGE, H.-C. Terrain rendering using spherical clipmaps. In:
+EUROVIS 2006. \textbf{Proceedings} [...]. [S. l.]: [s. n.], 2006. p. 91-98.
+
+DIPAOLA, F.; BHARDWAJ, A.; SAM, L. Generating an interactive online map of
+future sea level rise along the North Shore of Vancouver: methods and
+insights on enabling geovisualisation for coastal communities. \textbf{arXiv},
+[S. l.], arXiv:2304.07469, 2023. Disponível em:
+\url{https://arxiv.org/abs/2304.07469}. Acesso em: 26 set. 2026.
+
+FOURNIER, A.; REEVES, W. T. A simple model of ocean waves. \textbf{ACM
+SIGGRAPH Computer Graphics}, v. 20, n. 4, p. 75-84, 1986.
+
+STRUGAR, F. Continuous distance-dependent level of detail for rendering
+heightmaps. \textbf{Journal of Graphics, GPU, and Game Tools}, v. 14, n. 4,
+p. 57-74, 2009.
+
+TANNER, C. C.; MIGDAL, C. J.; JONES, M. T. The clipmap: a virtual mipmap.
+In: ANNUAL CONFERENCE ON COMPUTER GRAPHICS AND INTERACTIVE TECHNIQUES, 25.,
+1998, [S. l.]. \textbf{Proceedings} [...]. [S. l.]: ACM, 1998. p. 151-158.
+
+WELCH, R. \textbf{Real-time ocean simulation}. 2019. Trabalho de Conclusão
+de Curso (Bacharelado em Ciência da Computação) -- [S. l.], 2019.
+Disponível em: \url{https://ryanwelch.co.uk/project/ocean-simulation/}.
+Acesso em: 26 set. 2026.
+\endgroup
+
+\end{document}

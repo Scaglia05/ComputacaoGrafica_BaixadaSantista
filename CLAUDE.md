@@ -65,7 +65,7 @@ ComputacaoGrafica\
 │   │                                por que cada lib, como tudo é calculado, com fórmulas)
 │   ├── resumo_projeto.pdf          (resumo de 3 páginas)
 │   ├── ArtigoCompGrafica_ElevacaoCosteira.pdf  (artigo científico FINAL, IEEE, 7 páginas)
-│   ├── artigo_v3.tex               (fonte LaTeX do artigo final)
+│   ├── artigo_v4.tex               (fonte LaTeX do artigo final)
 │   └── especificacao_eixo6.pdf     (especificação oficial do professor)
 ├── bench\                        (resultados.csv + gráficos do benchmark)
 ├── exemplos\
@@ -106,10 +106,14 @@ na raiz — foram renomeados/reorganizados para `exemplos/` e `src/`.
    (`Camera.resetar`/`Camera.bearing_graus` em `camera.py`).
 7. ⬜ Relatório da Etapa 1 (revisão bibliográfica) — não escrito.
 8. ✅ Artigo IEEE — **FINALIZADO** — PDF em
-   `docs/ArtigoCompGrafica_ElevacaoCosteira.pdf`, fonte em `docs/artigo_v3.tex`
+   `docs/ArtigoCompGrafica_ElevacaoCosteira.pdf`, fonte em `docs/artigo_v4.tex`
    (reescrita completa a partir do rascunho `artigo_v2.pdf` do colega, já removido do repo, seguindo o
    "IEEE Conference Template" oficial, com rigor de linguagem/parágrafo em
-   português formal). Correções aplicadas em relação ao artigo_v2: (a)
+   português formal e, a pedido do grupo, **normas ABNT** aplicadas à linguagem e à
+   estrutura: texto impessoal, resumo + abstract + palavras-chave, numeração
+   arábica, citações autor-data (NBR 10520), referências NBR 6023, legendas
+   com "Fonte:". O leiaute em duas colunas segue o template IEEE, exigido pela
+   especificação). Correções aplicadas em relação ao artigo_v2: (a)
    III-F/Seção IV corrigida — o valor certo é ~8,4 milhões de triângulos
    na resolução máxima testada (2048), não 2,1 milhões (esse é o valor de
    1024); (b) Seção IV ("Resultados e Avaliação de Desempenho") separada
@@ -179,7 +183,7 @@ verdade de **Clasen & Hege (2006)** — o artigo real de Tanner/Migdal/Jones
 é "The Clipmap: A Virtual Mipmap" (1998); (b) não existe nenhuma fonte real
 localizável com o título *"GPU Clipmaps and Ocean Simulation"* atribuído a
 R. Welch — o trabalho real dele se chama "Real-time ocean simulation"
-(2019, TCC de B.Sc.). `docs/artigo_v3.tex` já cita as 4 referências
+(2019, TCC de B.Sc.). `docs/artigo_v4.tex` já cita as 4 referências
 corretamente (Tanner *e* Clasen&Hege como itens distintos e corretos, Welch
 com o título real) — ver item 8 do checklist acima.
 

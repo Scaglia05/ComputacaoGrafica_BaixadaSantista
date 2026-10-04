@@ -40,7 +40,7 @@ ComputacaoGrafica/
 │   ├── COMPLEMENTO_TECNICO.md # companheiro do artigo: glossário + fórmulas + por que cada lib
 │   ├── resumo_projeto.pdf    # resumo de 3 páginas
 │   ├── ArtigoCompGrafica_ElevacaoCosteira.pdf  # artigo científico final (IEEE, 7 páginas)
-│   └── artigo_v3.tex         # fonte LaTeX do artigo final (template IEEE Conference)
+│   └── artigo_v4.tex         # fonte LaTeX do artigo final (template IEEE Conference)
 ├── exemplos/                 # estudos isolados (fundamentos do pipeline)
 │   ├── janela.py             # janela + contexto OpenGL + render loop
 │   └── triangulo.py          # VBO, shaders, VAO, rasterização/interpolação
@@ -168,7 +168,7 @@ a foto real via `P`) ajuda a não se perder no terreno.
 7. Brown, I.; Jude, S. et al. (2006). *Dynamic Simulation and Visualisation of Coastal Erosion.*
 
 Todas as referências acima foram validadas (título/autoria/ano conferidos
-contra a fonte original) na versão final do artigo — ver `docs/artigo_v3.tex`
+contra a fonte original) na versão final do artigo — ver `docs/artigo_v4.tex`
 e o item 8 de `CLAUDE.md` para o histórico das 2 correções encontradas
 (título/ano de Strugar; título de Welch, que na especificação oficial do
 eixo aparece erroneamente como "GPU Clipmaps and Ocean Simulation").
