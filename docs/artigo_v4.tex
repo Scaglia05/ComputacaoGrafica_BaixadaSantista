@@ -337,11 +337,11 @@ necessário (Seção~\ref{sec:resultados}).
 \section{Metodologia e Modelagem Computacional}
 \label{sec:metod}
 
-A metodologia foi estruturada em um \emph{pipeline} modular de cinco
+A metodologia foi estruturada em um \emph{pipeline} modular de seis
 estágios: a) aquisição e geração dos dados de elevação; b) estruturação do
-terreno em \emph{quadtree} e nível de detalhe; c) modelo de câmera de
-navegação; d) simulação da superfície oceânica; e e) ambiente de
-desenvolvimento. O protocolo da avaliação experimental decorre
+terreno em \emph{quadtree} e nível de detalhe; c) modelagem visual do
+terreno; d) modelo de câmera de navegação; e) simulação da superfície
+oceânica; e f) ambiente de desenvolvimento. O protocolo da avaliação experimental decorre
 diretamente dessa metodologia e é apresentado na
 Seção~\ref{sec:resultados}.
 
@@ -512,6 +512,59 @@ y <- amostrar(heightmap, g)
 \end{verbatim}}
 \fonte{Elaborado pelos autores (2026), com base no código-fonte (\texttt{terrain.vert}).}
 
+\subsection{Modelagem Visual do Terreno}
+\label{sub:visual}
+
+A cor de cada ponto do terreno é calculada no \emph{fragment shader} a
+partir de quatro componentes: a cor-base por altitude e inclinação, a
+iluminação difusa, a tonalidade das áreas submersas e a névoa de distância.
+
+A cor-base depende da altitude normalizada $\hat{h} = h / h_{\max}$, em que
+$h_{\max}$ é a maior altura do terreno. Por interpolação linear, ela passa de
+areia de restinga ($\hat{h} < 0{,}04$) para mata da planície e da baixa
+encosta, depois para mata densa na encosta da serra ($\hat{h} < 0{,}55$) e,
+por fim, para rocha exposta nos cumes. Além disso, a inclinação do terreno
+mistura rocha à cor-base em proporção a $\min(1,\ 2{,}2\,(1 - n_y))$, em que
+$n_y$ é a componente vertical da normal, de modo que os paredões íngremes da
+escarpa apareçam como rocha e não como mata. A normal é calculada no
+\emph{vertex shader} por diferenças finitas, a partir de quatro amostras do
+\emph{heightmap} vizinhas ao ponto, conforme a Equação~\eqref{eq:normal}:
+\begin{equation}
+\vec{n} = \frac{(h_E - h_D,\ 2\varepsilon,\ h_B - h_C)}{\left\lVert (h_E - h_D,\ 2\varepsilon,\ h_B - h_C) \right\rVert}
+\label{eq:normal}
+\end{equation}
+em que $h_E$, $h_D$, $h_B$ e $h_C$ são as alturas amostradas à esquerda, à
+direita, abaixo e acima do ponto, a uma distância $\varepsilon$ de 2,5 texels,
+valor que suaviza o ruído do \emph{heightmap}.
+
+A iluminação difusa segue a lei de Lambert, com uma parcela de luz ambiente
+para que nenhuma região fique totalmente escura, conforme a
+Equação~\eqref{eq:lambert}:
+\begin{equation}
+\text{cor} = \text{cor}_{\text{base}} \cdot \big(0{,}25 + 0{,}85\,\max(\vec{n} \cdot \vec{l},\, 0)\big)
+\label{eq:lambert}
+\end{equation}
+em que $\vec{l}$ é o vetor unitário que aponta do ponto para o Sol.
+
+Os pontos com altura inferior ao nível do mar $y_0$ têm a cor misturada, em
+65\%, a um tom azul-esverdeado que escurece com a profundidade. É esse
+efeito que torna visível a área inundada nas capturas da
+Figura~\ref{fig:capturas}. Por fim, a partir de 120 u.m. da câmera, a cor é
+misturada à cor do céu, em proporção crescente até 75\% a 380 u.m., o que
+dá noção de escala e esconde o limite distante do terreno.
+
+\begin{figure*}[t]
+\centering
+\caption{Capturas da aplicação, a partir da mesma posição de câmera: (a)
+nível do mar em 0 m, com as feições identificadas; (b) nível do mar em +10 m,
+cenário extremo usado apenas para demonstração; (c) blocos da
+\emph{quadtree} coloridos por profundidade, do azul (blocos grandes e
+distantes) ao vermelho (blocos pequenos e próximos)}
+\label{fig:capturas}
+\includegraphics[width=\textwidth]{capturas_sistema.png}
+\fonte{Elaborado pelos autores (2026).}
+\end{figure*}
+
 \subsection{Modelo de Câmera de Navegação Livre}
 \label{sub:camera}
 
@@ -612,7 +665,21 @@ qualquer alteração na geometria do terreno. O valor de $y_0$ é informado em
 metros e convertido para unidades de mundo pelo mesmo fator $E/\sigma$ da
 Equação~\eqref{eq:escala}; assim, o exagero vertical atua de modo idêntico
 sobre o terreno e sobre a água, e a área submersa corresponde à elevação
-real, em metros.
+real, em metros. A Figura~\ref{fig:detalhes}(a) mostra a superfície
+resultante: as cristas estreitas das ondas de Gerstner, o brilho especular
+do Sol e a transparência, que deixa ver o terreno submerso.
+
+\begin{figure*}[t]
+\centering
+\caption{Detalhes do sistema: (a) superfície da água vista de perto, com
+as cristas das ondas de Gerstner, o brilho especular do Sol e a
+transparência sobre o terreno submerso; (b) interface, com a legenda de
+comandos, o painel de status (nível do mar em +2,00 m, modo de detalhe e
+tempo de quadro), a bússola e o minimapa}
+\label{fig:detalhes}
+\includegraphics[width=0.85\textwidth]{detalhes_agua_interface.png}
+\fonte{Elaborado pelos autores (2026).}
+\end{figure*}
 
 \subsection{Ambiente de Desenvolvimento}
 \label{sub:ambiente}
@@ -637,7 +704,7 @@ organizado em oito módulos (aquisição do DEM, geração procedural,
 principal), além do módulo de teste de desempenho
 (Seção~\ref{sec:resultados}). A interface inclui tela introdutória, legenda
 de comandos em dois níveis, painel de status (nível do mar, modo de
-renderização e tempo de quadro), bússola e minimapa, elementos que buscam
+renderização e tempo de quadro), bússola e minimapa (Figura~\ref{fig:detalhes}b), elementos que buscam
 tornar a ferramenta acessível a um público não especializado. A
 Tabela~\ref{tab:parametros} sintetiza os parâmetros da implementação de
 referência.
@@ -669,17 +736,6 @@ Velocidade normal / turbo & - & 40 / 120 u.m./s \\
 
 \section{Resultados e Avaliação de Desempenho}
 \label{sec:resultados}
-
-\begin{figure*}[t]
-\centering
-\caption{Capturas da aplicação, a partir da mesma posição de câmera: (a)
-nível do mar em 0 m; (b) nível do mar em +10 m, cenário extremo usado apenas
-para demonstração; (c) blocos da \emph{quadtree} coloridos por profundidade,
-sendo que cores diferentes correspondem a níveis de detalhe diferentes}
-\label{fig:capturas}
-\includegraphics[width=\textwidth]{capturas_sistema.png}
-\fonte{Elaborado pelos autores (2026).}
-\end{figure*}
 
 A Figura~\ref{fig:capturas} mostra a aplicação em funcionamento. No painel
 (a), com o nível do mar em 0 m, a planície costeira e o estuário aparecem
