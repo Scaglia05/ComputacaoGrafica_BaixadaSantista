@@ -916,8 +916,12 @@ separa o efeito do LOD, pois os três modos testados compartilham os mesmos
 recursos na GPU. Quinto, a exatidão vertical dos dados de origem não foi
 validada: se ela for da ordem dos próprios cenários (+0,5 a +2 m), as áreas
 alagadas devem ser lidas como demonstração do método, e não como previsão.
+Sexto, a análise estatística se limita à média e ao percentil 95 de uma única
+série de medições, sem intervalos de confiança, e o ponto de virada foi
+estimado por interpolação linear entre duas resoluções; assim, os valores de
+2,7 e 4,2 milhões de triângulos são estimativas, e não medidas diretas.
 
-Como trabalhos futuros, propõem-se cinco passos, cada um respondendo a uma
+Como trabalhos futuros, propõem-se seis passos, cada um respondendo a uma
 limitação apontada: a) repetir o teste de desempenho em um celular ou em
 uma GPU mais fraca, para confirmar o ponto de virada nesses dispositivos e
 medir a memória de cada modo separadamente; b) implementar o
@@ -925,9 +929,12 @@ medir a memória de cada modo separadamente; b) implementar o
 reduzir ainda mais o custo por quadro; c) acrescentar espuma e arrebentação
 na linha de costa, para tornar a água mais realista; d) apresentar a
 ferramenta a especialistas em gestão costeira, a fim de avaliar se ela de
-fato auxilia a comunicar o risco de inundação; e e) validar a exatidão
-vertical do DEM contra uma fonte de maior precisão e tratar as células de
-elevação nula.
+fato auxilia a comunicar o risco de inundação; e) validar a exatidão
+vertical do DEM contra uma fonte de maior precisão, avaliar a sensibilidade
+das áreas alagadas ao erro vertical e tratar as células de elevação nula; e
+f) repetir o teste de desempenho em execuções independentes, com mais
+resoluções entre 1024 e 1536, para obter intervalos de confiança e medir
+diretamente o ponto de virada.
 
 \section*{Referências}
 \begingroup
