@@ -453,7 +453,7 @@ de vértices, o que resulta em maior resolução por unidade de área.
 
 \subsubsection{Critério de seleção de nível}
 Para cada nó de lado $\tau$ (tamanho do bloco na profundidade
-correspondente), calcula-se a distância euclidiana $d$ entre a posição da
+correspondente), calcula-se a distância euclidiana $d$, no plano horizontal, entre a posição da
 câmera $\vec{c}$ e o ponto mais próximo da borda da caixa delimitadora do
 nó. O critério de subdivisão implementado é dado pela
 Equação~\eqref{eq:subdivisao}:
@@ -472,6 +472,19 @@ implementação de referência, esse critério resulta tipicamente em 200 a 230
 blocos ativos simultaneamente, contra os $4^5 = 1024$ blocos-folha que
 existiriam caso a árvore inteira fosse forçada à profundidade máxima.
 
+\par\smallskip\noindent{\footnotesize Algoritmo 1 \textendash\ Seleção dos blocos da \emph{quadtree} a cada quadro}
+{\footnotesize
+\begin{verbatim}
+SELECIONAR(no, c, k, saida)
+  d <- distancia_horizontal(c, borda de no)
+  se no tem filhos e d < k * no.lado:
+      para cada filho de no:
+          SELECIONAR(filho, c, k, saida)
+  senao:
+      adicionar no a saida
+\end{verbatim}}
+\fonte{Elaborado pelos autores (2026), com base no código-fonte (\texttt{lod.py}).}
+
 \subsubsection{Eliminação de descontinuidades (\emph{cracks})}
 Blocos adjacentes renderizados em níveis de detalhe diferentes possuem
 densidades de vértices distintas na borda compartilhada, o que pode gerar
@@ -488,6 +501,16 @@ com fator 0 o vértice permanece na posição própria e com fator 1 coincide
 com a grade mais grossa do bloco-pai. Isso elimina tanto as fendas quanto o salto
 abrupto (\emph{popping}) que ocorreria quando a câmera se move e um bloco
 muda de nível de detalhe.
+
+\par\smallskip\noindent{\footnotesize Algoritmo 2 \textendash\ Transição do \emph{geomorphing} por vértice (\emph{vertex shader})}
+{\footnotesize
+\begin{verbatim}
+d <- distancia(c, vertice)
+f <- limitar((d - d_ini)/(d_fim - d_ini), 0, 1)
+g <- g - f * resto(g)   // vertice impar -> par
+y <- amostrar(heightmap, g)
+\end{verbatim}}
+\fonte{Elaborado pelos autores (2026), com base no código-fonte (\texttt{terrain.vert}).}
 
 \subsection{Modelo de Câmera de Navegação Livre}
 \label{sub:camera}

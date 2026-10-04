@@ -168,8 +168,8 @@ na raiz — foram renomeados/reorganizados para `exemplos/` e `src/`.
 — documento do professor ("Especificação de Projeto Científico: Projetos
 Avançados em Computação Gráfica e Visualização Científica") que define os 7
 Eixos de Pesquisa, as 4 etapas do projeto (semanas 1-16) e a estrutura
-obrigatória do artigo final (seções, 4-8 páginas, IEEE Conference Template
-via Overleaf). O Eixo 6 ("Topografia e Sistemas Mobile", o nosso) lista como
+obrigatória do artigo final (seções, 4-8 páginas conforme o PDF; o grupo informou que o
+limite real é de até 10 páginas; IEEE Conference Template via Overleaf). O Eixo 6 ("Topografia e Sistemas Mobile", o nosso) lista como
 referências obrigatórias *"Terrain Rendering using Spherical Clipmaps"*
 (C. C. Tanner, C. J. Migdal, M. T. Jones) e *"GPU Clipmaps and Ocean
 Simulation"* (R. Welch) — ver a nota abaixo sobre os erros de atribuição
