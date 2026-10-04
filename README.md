@@ -40,7 +40,8 @@ ComputacaoGrafica/
 │   ├── COMPLEMENTO_TECNICO.md # companheiro do artigo: glossário + fórmulas + por que cada lib
 │   ├── resumo_projeto.pdf    # resumo de 3 páginas
 │   ├── ArtigoCompGrafica_ElevacaoCosteira.pdf  # artigo científico final (IEEE, 7 páginas)
-│   └── artigo_v4.tex         # fonte LaTeX do artigo final (template IEEE Conference)
+│   ├── artigo_v4.tex         # fonte LaTeX do artigo final (template IEEE Conference)
+│   └── figuras/              # capturas do sistema e gráfico de custo × carga usados no artigo
 ├── exemplos/                 # estudos isolados (fundamentos do pipeline)
 │   ├── janela.py             # janela + contexto OpenGL + render loop
 │   └── triangulo.py          # VBO, shaders, VAO, rasterização/interpolação
@@ -99,11 +100,11 @@ Resultado numa RTX 3060:
 - o CDLOD segura o tempo de frame ~constante (~1 ms) em qualquer resolução,
   porque desenha sempre ~0,4 M triângulos;
 - a malha ingênua cresce linear com a resolução e **ultrapassa o CDLOD por
-  volta de 1536² (~5 M triângulos)** — esse é o "ponto de virada";
+  volta de 1536² (~2,7 M (p95) a ~4,2 M (média) de triângulos)** — esse é o "ponto de virada";
 - o custo do *morphing* é desprezível (dentro do ruído de medição);
 - o ~1 ms fixo do CDLOD é overhead de CPU (percorrer o quadtree + ~200 draw
   calls em Python) — numa GPU fraca / mobile o ponto de virada chega bem antes;
-- RAM (~110→255 MB) e VRAM (~740→910 MB) crescem com a **resolução do DEM**,
+- RAM (~110→255 MB) e VRAM (~620→805 MB) crescem com a **resolução do DEM**,
   não com o modo de LOD (as 3 condições compartilham a mesma cena de teste).
 
 ### Controles (`src/main.py`)

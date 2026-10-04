@@ -354,7 +354,7 @@ com 30 frames de aquecimento + 150 medidos. Salva `bench/resultados.csv` e
 | Dados | — | **DEM real da Baixada Santista** (SRTM + batimetria GEBCO), com despike e reamostragem |
 | Aplicação | Embasamento (estudos de erosão / subida do mar sobre DEM) | **Realce da faixa submersa** reagindo ao nível do mar; **cenários em metros reais** (0 / +0,5 / +1 / +2 m) |
 | Combinação | Cada artigo trata terreno **ou** água | **Acoplamento** terreno + água + parâmetro de inundação, com propósito analítico |
-| Avaliação | Os artigos **apresentam** o algoritmo | **Experimento controlado** que mediu o *trade-off* e achou o **ponto de virada** (~5 M triângulos numa RTX 3060) |
+| Avaliação | Os artigos **apresentam** o algoritmo | **Experimento controlado** que mediu o *trade-off* e achou o **ponto de virada** (~2,7 M (p95) a ~4,2 M (média) de triângulos numa RTX 3060) |
 
 **Frase-resumo para a apresentação:** *"Pegamos o LOD de terreno de um
 artigo e a água dinâmica de outro, implementamos os dois em cima de um DEM
@@ -371,14 +371,14 @@ Rodando `bench.py` numa **RTX 3060**:
 - O **CDLOD** mantém o tempo de frame quase **constante** (~1 ms) em
   qualquer resolução do heightmap, porque desenha sempre ~0,4 M triângulos.
 - A **malha ingênua** (sem LOD) cresce linearmente com a resolução e
-  **ultrapassa o CDLOD por volta de 1536² (~5 M triângulos)** — o *ponto
+  **ultrapassa o CDLOD entre 1024² e 1536² (~2,7 M (p95) a ~4,2 M (média) de triângulos)** — o *ponto
   de virada*.
 - O custo do **morphing** é desprezível (dentro do ruído de medição).
 - O ~1 ms fixo do CDLOD é **overhead de CPU** (percorrer o quadtree em
   Python + ~200 draw calls). Numa GPU fraca ou **mobile** (o eixo do
   projeto), o ponto de virada chega **muito antes** — é o argumento a favor
   do LOD.
-- **Recursos:** RAM do processo (~110→255 MB) e VRAM (~740→910 MB) crescem
+- **Recursos:** RAM do processo (~110→255 MB) e VRAM (~620→805 MB) crescem
   com a **resolução do DEM**, não com o modo de LOD — as três condições
   são medidas na mesma cena de teste, então isso mostra o custo do dado de
   entrada, não uma comparação de memória "com LOD × sem LOD".

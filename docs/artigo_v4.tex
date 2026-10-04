@@ -7,7 +7,8 @@
 % Template" oficial do Overleaf, que a especificacao da disciplina exige
 % (leiaute em duas colunas, fontes e margens do template).
 % Para compilar: use o template no Overleaf, substitua o main.tex por este
-% arquivo e envie bench/fps_vs_resolucao.png para a pasta do projeto.
+% arquivo e envie docs/figuras/capturas_sistema.png e
+% docs/figuras/custo_vs_carga.png para a pasta do projeto.
 % ---------------------------------------------------------------------------
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -72,9 +73,9 @@ tempo real, o que permite visualizar cenários de subida do mar de 0, +0,5,
 +1 e +2 metros. Um teste de desempenho automatizado, sem janela gráfica,
 executado em uma unidade de processamento gráfico (GPU) NVIDIA RTX 3060,
 comparou a renderização com e sem nível de detalhe em cinco resoluções de
-terreno. Os resultados indicam um ponto de virada em aproximadamente cinco
-milhões de triângulos, a partir do qual o CDLOD passa a ser mais rápido do
-que a malha completa. Conclui-se que o nível de detalhe adaptativo é o que
+terreno. Os resultados indicam um ponto de virada entre 2,7 e 4,2 milhões de
+triângulos, conforme o critério (percentil 95 ou média), a partir do qual
+o CDLOD passa a ser mais rápido do que a malha completa. Conclui-se que o nível de detalhe adaptativo é o que
 torna viável a visualização tridimensional de inundação costeira em tempo
 real.
 
@@ -98,8 +99,8 @@ allows sea level rise scenarios of 0, +0.5, +1 and +2 meters to be
 visualized. An automated windowless benchmark, run on an NVIDIA RTX 3060
 graphics processing unit (GPU), compared rendering with and without level
 of detail at five terrain resolutions. The results indicate a tipping point
-at approximately five million triangles, beyond which CDLOD becomes faster
-than the full mesh. It is concluded that adaptive level of detail is what
+between 2.7 and 4.2 million triangles, depending on the criterion (95th
+percentile or mean), beyond which CDLOD becomes faster than the full mesh. It is concluded that adaptive level of detail is what
 makes real-time three-dimensional visualization of coastal flooding
 feasible.
 
@@ -143,10 +144,20 @@ especialmente relevante quando o público-alvo inclui dispositivos móveis,
 cuja capacidade gráfica é inferior à de uma unidade de processamento
 gráfico (GPU) de computador de mesa.
 
+O objetivo geral é construir uma ferramenta interativa de visualização de
+cenários de subida do nível do mar sobre um Modelo Digital de Elevação
+(DEM) real e determinar experimentalmente a partir de qual carga geométrica
+o LOD adaptativo se torna necessário. Os objetivos específicos são: a)
+implementar o terreno com CDLOD sobre o DEM; b) simular a superfície
+oceânica com altura de base ajustável; e c) medir o tempo de quadro e o
+consumo de memória com e sem LOD. A hipótese é que, acima de certa carga
+geométrica, a malha completa deixa de ser interativa, enquanto o CDLOD
+mantém custo aproximadamente constante.
+
 Diferentemente dos sistemas de geovisualização baseados em Sistemas de
 Informação Geográfica (SIG), que representam a subida do mar por camadas
 estáticas sobrepostas a um mapa bidimensional, propõe-se uma cena
-tridimensional interativa, construída sobre um Modelo Digital de Elevação (DEM) real. Nela, o
+tridimensional interativa, construída sobre o DEM. Nela, o
 observador navega pelo relevo costeiro e ajusta, em tempo real, a altura
 da superfície oceânica simulada, observando quais áreas seriam submersas
 em cada cenário. A ferramenta destina-se ao público leigo e a gestores
@@ -255,11 +266,16 @@ várias ondas de tamanhos diferentes, obtém-se uma superfície de aspecto
 natural, a um custo muito inferior ao dos modelos espectrais. O trabalho
 considera ainda a influência da batimetria (profundidade do fundo do mar)
 sobre a refração e a arrebentação das ondas próximas à costa. Welch (2019)
-descreve a implementação de uma simulação de oceano em tempo real, com
-ênfase no desempenho interativo em GPU.
+implementa uma simulação de oceano em tempo real com ondas de Gerstner
+calculadas em \emph{shaders} GLSL sobre uma geometria estática em
+\emph{clipmap}: a GPU desloca os vértices e calcula as normais a cada quadro.
+O trabalho acrescenta iluminação fisicamente baseada, reflexos e espuma e
+relata taxa média superior a 60 quadros por segundo em hardware de gama
+intermediária, a 1920$\times$1080. Transformada rápida de Fourier, refração
+e águas rasas ficaram como trabalho futuro.
 
-Esses trabalhos modelam o oceano com nível médio fixo, isto é, o nível da
-água não é tratado como variável de cenário.
+Nenhum desses trabalhos trata o nível médio da água como variável de
+cenário: o oceano é apresentado em nível fixo.
 
 \subsection{Geovisualização de Erosão Costeira e Subida do Nível do Mar}
 \label{sub:geovis}
@@ -285,7 +301,8 @@ Da primeira frente, mantém-se a ideia de concentrar o detalhe próximo ao
 observador. Como o recorte de interesse é local e plano, adota-se a
 \emph{quadtree} do CDLOD em lugar da parametrização esférica do
 \emph{clipmap}. Da segunda frente, adota-se o modelo de Gerstner, na
-formulação de Fournier e Reeves (1986), com uma diferença: a altura média
+formulação de Fournier e Reeves (1986), cuja viabilidade em tempo real na GPU é demonstrada por Welch
+(2019), com uma diferença: a altura média
 da água é um parâmetro ajustável em tempo real, usado para representar
 diferentes cenários de subida do mar. A terceira frente fornece a motivação
 e a escolha do cenário. A diferença está em oferecer uma cena
@@ -303,6 +320,7 @@ percepção de risco por parte do observador.
 \midrule
 Clasen e Hege (2006) & Clipmap esférico & Não & Planeta \\
 Strugar (2009) & CDLOD (quadtree) & Não & Terreno \\
+Welch (2019) & Clipmap & Sim & Oceano \\
 DiPaola, Bhardwaj e Sam (2023) & N/A (SIG) & Não & Costa real \\
 \textbf{Proposta} & CDLOD adaptado & Sim & Costa (erosão) \\
 \bottomrule
@@ -312,8 +330,7 @@ DiPaola, Bhardwaj e Sam (2023) & N/A (SIG) & Não & Costa real \\
 
 Conforme a Tabela~\ref{tab:comparacao}, a contribuição deste trabalho não é
 uma técnica inédita, mas a integração de técnicas de renderização de
-terreno e de simulação de água, em geral aplicadas a jogos ou à
-visualização genérica, a um cenário de análise ambiental, aliada à
+terreno e de simulação de água, tratadas em trabalhos distintos da literatura, a um cenário de análise ambiental, aliada à
 determinação experimental do ponto a partir do qual o LOD se torna
 necessário (Seção~\ref{sec:resultados}).
 
@@ -340,7 +357,8 @@ planície costeira baixa e o sistema estuarino de Santos e São Vicente
 
 O relevo é representado por um mapa de elevação (\emph{heightmap}), isto é,
 uma matriz $H \in \mathbb{R}^{n \times n}$, com $n = 1024$, na qual cada
-célula $H(x,z)$ armazena uma altura normalizada. Consideram-se dois métodos
+célula $H(x,z)$ armazena a altura do terreno em unidades de mundo
+(Equação~\eqref{eq:escala}). Consideram-se dois métodos
 de obtenção de $H$, sendo o primeiro a fonte primária da implementação de
 referência.
 
@@ -397,7 +415,11 @@ H(x,z) = \frac{1}{\sum_{i=0}^{k-1} p^i} \sum_{i=0}^{k-1} p^i \cdot
 \text{Simplex}(f_0 2^i x,\, f_0 2^i z)
 \label{eq:fbm}
 \end{equation}
-com $k = 5$ oitavas e persistência $p = 0{,}5$.
+com $k = 5$ oitavas e persistência $p = 0{,}5$, em que $f_0 = 2$ é a
+frequência base da primeira oitava e $\text{Simplex}(\cdot)$ é uma função de
+ruído coerente que devolve valores contínuos entre $-1$ e $1$. Cada oitava
+$i$ dobra a frequência ($2^i$) e reduz a contribuição por $p^i$: as oitavas
+finas acrescentam detalhes pequenos ao relevo grosseiro das primeiras.
 
 Independentemente da origem dos dados, cada célula de $H$ é usada para o
 deslocamento vertical dos vértices de uma grade regular (\emph{displacement
@@ -457,7 +479,13 @@ fendas visuais (\emph{cracks}) caso os vértices das duas malhas não
 coincidam exatamente na fronteira. O CDLOD trata o problema por meio do
 \emph{geomorphing}: na faixa de transição de cada bloco, os vértices de
 índice ímpar da grade deslizam progressivamente para a posição dos vértices
-de índice par correspondentes. Isso elimina tanto as fendas quanto o salto
+de índice par correspondentes. A faixa de transição de um bloco começa a
+55\% do caminho entre o seu alcance de seleção, $r = 2{,}2\,\tau$
+(Equação~\eqref{eq:subdivisao}), e o alcance do bloco-pai, $2r$, e termina
+neste último. Nesse intervalo, o fator de transição de cada vértice,
+calculado a partir de sua distância à câmera, cresce linearmente de 0 a 1:
+com fator 0 o vértice permanece na posição própria e com fator 1 coincide
+com a grade mais grossa do bloco-pai. Isso elimina tanto as fendas quanto o salto
 abrupto (\emph{popping}) que ocorreria quando a câmera se move e um bloco
 muda de nível de detalhe.
 
@@ -557,51 +585,39 @@ de forma contínua, a uma taxa de 0,8 m/s enquanto o comando correspondente
 pela comparação direta entre a elevação do terreno nessa posição
 (Equação~\eqref{eq:escala}) e $y_0$: os pontos de elevação inferior a $y_0$
 ficam abaixo da superfície da água e, portanto, visualmente submersos, sem
-qualquer alteração na geometria do terreno.
+qualquer alteração na geometria do terreno. O valor de $y_0$ é informado em
+metros e convertido para unidades de mundo pelo mesmo fator $E/\sigma$ da
+Equação~\eqref{eq:escala}; assim, o exagero vertical atua de modo idêntico
+sobre o terreno e sobre a água, e a área submersa corresponde à elevação
+real, em metros.
 
 \subsection{Ambiente de Desenvolvimento}
 \label{sub:ambiente}
 
-A aplicação foi desenvolvida em Python, versão 3.11. A biblioteca GLFW cria
-a janela e captura os eventos de teclado e mouse junto ao sistema
-operacional. A ModernGL oferece uma interface mais direta à API OpenGL
-(\emph{core profile}, versão 3.3, correspondente à versão 330 da linguagem
-de \emph{shading} GLSL) para compilar \emph{shaders}, alocar \emph{Vertex
-Buffer Objects} (VBOs) e \emph{Vertex Array Objects} (VAOs) na GPU e emitir
-os comandos de desenho (\emph{draw calls}). A PyGLM fornece os tipos e as
-operações de álgebra linear usados nas Equações~\eqref{eq:front}
-a~\eqref{eq:gerstner-y}. A Pillow é usada tanto para decodificar os
-\emph{tiles} de elevação (Equação~\eqref{eq:terrarium}) quanto para
-renderizar o texto da interface, já que a API OpenGL não oferece suporte
-nativo a texto. A matplotlib é usada exclusivamente pelo módulo de avaliação
-experimental para gerar os gráficos de desempenho. A leitura do modelo
-digital de elevação prescinde de bibliotecas geoespaciais especializadas,
-como GDAL ou \texttt{rasterio}: como os \emph{tiles} no formato
-\emph{terrarium} são imagens PNG convencionais, com a elevação codificada em
-canais de cor, a decodificação é feita diretamente com Pillow e NumPy.
+A aplicação foi desenvolvida em Python 3.11. A biblioteca GLFW cria a janela
+e captura teclado e mouse. A ModernGL dá acesso ao OpenGL 3.3 (\emph{core
+profile}, GLSL versão 330) para compilar \emph{shaders}, alocar \emph{buffers}
+na GPU e emitir os comandos de desenho. A PyGLM fornece a álgebra linear das
+Equações~\eqref{eq:front} a~\eqref{eq:gerstner-y}. A Pillow decodifica os
+\emph{tiles} de elevação (Equação~\eqref{eq:terrarium}) e renderiza o texto da
+interface, e a matplotlib gera os gráficos de desempenho. Por serem imagens
+PNG convencionais, os \emph{tiles} dispensam bibliotecas geoespaciais, como
+GDAL ou \texttt{rasterio}: a decodificação usa apenas Pillow e NumPy.
 
-Os cálculos de seleção de nível da \emph{quadtree} (Subseção~\ref{sub:cdlod})
-e de deslocamento de vértice das ondas de Gerstner
-(Subseção~\ref{sub:agua}) são executados no \emph{vertex shader}, e não na
-unidade central de processamento (CPU) em Python, de modo que o paralelismo da GPU absorva o custo por vértice
-dessas operações. O código-fonte está organizado em oito módulos
-principais: \texttt{dem.py} (aquisição e pós-processamento do DEM real),
-\texttt{heightmap.py} (geração procedural e grade unitária reutilizada pelo
-CDLOD), \texttt{lod.py} (\emph{quadtree} e seleção de blocos por quadro),
-\texttt{water.py} (geometria do plano de água), \texttt{camera.py} (câmera
-livre), \texttt{scene.py} (montagem da cena na GPU e desenho de um quadro,
-reutilizada pela aplicação interativa e pelo teste de desempenho),
-\texttt{hud.py} (interface de usuário) e \texttt{main.py} (laço principal),
-além do módulo \texttt{bench.py}, descrito na Seção~\ref{sec:resultados}.
-
-A interface inclui uma tela introdutória com o objetivo do sistema, uma
-legenda de comandos em dois níveis de detalhamento, um painel de status com
-o nível do mar corrente, o modo de renderização ativo e o tempo de quadro
-medido, além de uma bússola e de um minimapa de orientação. Esses elementos
-buscam tornar a ferramenta acessível a um público não especializado,
-conforme a motivação apresentada na Seção~\ref{sec:intro}. A
-Tabela~\ref{tab:parametros} sintetiza os parâmetros de configuração da
-implementação de referência.
+A seleção dos blocos da \emph{quadtree} (Subseção~\ref{sub:cdlod}) é feita
+na unidade central de processamento (CPU) a cada quadro. O deslocamento dos
+vértices pelo \emph{heightmap}, a transição do \emph{geomorphing} e as ondas
+de Gerstner (Subseção~\ref{sub:agua}) são calculados no \emph{vertex shader},
+para que o paralelismo da GPU absorva o custo por vértice. O código é
+organizado em oito módulos (aquisição do DEM, geração procedural,
+\emph{quadtree}, geometria da água, câmera, cena, interface e laço
+principal), além do módulo de teste de desempenho
+(Seção~\ref{sec:resultados}). A interface inclui tela introdutória, legenda
+de comandos em dois níveis, painel de status (nível do mar, modo de
+renderização e tempo de quadro), bússola e minimapa, elementos que buscam
+tornar a ferramenta acessível a um público não especializado. A
+Tabela~\ref{tab:parametros} sintetiza os parâmetros da implementação de
+referência.
 
 \begin{table}[t]
 \caption{Parâmetros de configuração da implementação de referência}
@@ -631,6 +647,30 @@ Velocidade normal / turbo & - & 40 / 120 u.m./s \\
 \section{Resultados e Avaliação de Desempenho}
 \label{sec:resultados}
 
+\begin{figure*}[t]
+\centering
+\caption{Capturas da aplicação, a partir da mesma posição de câmera: (a)
+nível do mar em 0 m; (b) nível do mar em +10 m, cenário extremo usado apenas
+para demonstração; (c) blocos da \emph{quadtree} coloridos por profundidade,
+sendo que cores diferentes correspondem a níveis de detalhe diferentes}
+\label{fig:capturas}
+\includegraphics[width=\textwidth]{capturas_sistema.png}
+\fonte{Elaborado pelos autores (2026).}
+\end{figure*}
+
+A Figura~\ref{fig:capturas} mostra a aplicação em funcionamento. No painel
+(a), com o nível do mar em 0 m, a planície costeira e o estuário aparecem
+emersos, e a Serra do Mar forma a escarpa ao fundo. No painel (b), o nível
+foi elevado a +10 m, valor escolhido apenas para tornar a inundação
+visível na imagem; os cenários de +0,5 a +2 m usam o mesmo mecanismo, com
+extensão alagada menor. O painel (c) torna visível o refinamento do CDLOD:
+os blocos próximos à câmera têm maior profundidade na \emph{quadtree}. A
+forma do terreno, com os canais do sistema estuarino de Santos e São
+Vicente, as ilhas próximas e a orientação da escarpa da Serra do Mar,
+corresponde à geografia real da região quando comparada a um mapa de
+referência, o que confirma a aquisição e a decodificação descritas na
+Subseção~\ref{sub:aquisicao}.
+
 A avaliação de desempenho foi conduzida por um programa de teste
 (\emph{benchmark}) dedicado (\texttt{bench.py}), executado sem abrir janela
 (modo \emph{headless}). O programa reutiliza a mesma lógica de montagem de
@@ -647,66 +687,82 @@ O experimento variou três fatores: a) a técnica de renderização, com malha
 \emph{heightmap}, em cinco níveis (256, 512, 1024, 1536 e 2048); e c) a
 posição da câmera, em quatro configurações distintas dentro da cena. Também
 foram registrados o consumo de memória do processo (RAM) e o uso de memória
-de vídeo (VRAM) e de GPU, por meio da biblioteca \texttt{psutil} e da
-ferramenta \texttt{nvidia-smi}, respectivamente. Os testes foram executados
-em uma GPU NVIDIA RTX 3060. A Figura~\ref{fig:fps} apresenta a taxa de
-quadros média, calculada sobre as quatro posições de câmera, em função da
-resolução do \emph{heightmap}, para as três condições avaliadas.
+de vídeo (VRAM), por meio da biblioteca \texttt{psutil} e da ferramenta
+\texttt{nvidia-smi}, respectivamente. Os testes foram executados em uma
+GPU NVIDIA RTX 3060.
+
+A Tabela~\ref{tab:tempos} apresenta o tempo médio de quadro e o percentil
+95 (p95), isto é, o tempo abaixo do qual ficam 95\% dos quadros, que indica
+a regularidade da animação. Os valores são médias das quatro posições de
+câmera. A Figura~\ref{fig:custo} mostra os mesmos dados em função do número
+de triângulos da malha completa.
+
+\begin{table}[t]
+\caption{Tempo de quadro por resolução do \emph{heightmap}}
+\label{tab:tempos}
+\centering
+\begin{tabular}{@{}p{1.5cm}p{1.7cm}p{2.0cm}p{2.0cm}@{}}
+\toprule
+\textbf{Resolução} & \textbf{Triângulos sem LOD (milhões)} & \textbf{Sem LOD, média / p95 (ms)} & \textbf{CDLOD, média / p95 (ms)} \\
+\midrule
+256  & 0,26 & 0,17 / 0,24 & 1,06 / 1,29 \\
+512  & 0,65 & 0,40 / 0,67 & 1,21 / 1,70 \\
+1024 & 2,23 & 0,74 / 1,27 & 1,06 / 1,35 \\
+1536 & 4,85 & 1,18 / 1,70 & 1,07 / 1,33 \\
+2048 & 8,52 & 2,05 / 2,75 & 1,10 / 1,42 \\
+\bottomrule
+\end{tabular}
+\fonte{Elaborado pelos autores (2026), com dados do teste de desempenho. Os
+triângulos incluem a água. O CDLOD desenha cerca de 0,43 milhão de
+triângulos por quadro em todas as resoluções.}
+\end{table}
 
 \begin{figure}[t]
 \centering
-\caption{Taxa de quadros média em função da resolução do \emph{heightmap}.
-O CDLOD, com e sem \emph{geomorphing}, mantém custo de renderização
-praticamente constante, enquanto a malha sem LOD degrada linearmente com o
-aumento da resolução}
-\label{fig:fps}
-\includegraphics[width=\columnwidth]{fps_vs_resolucao.png}
+\caption{Tempo de quadro em função do número de triângulos da malha
+completa, para a média e o p95. As linhas pontilhadas marcam os
+cruzamentos estimados por interpolação linear}
+\label{fig:custo}
+\includegraphics[width=\columnwidth]{custo_vs_carga.png}
 \fonte{Elaborado pelos autores (2026), com dados do teste de desempenho.}
 \end{figure}
 
-Os resultados confirmam a hipótese subjacente ao CDLOD. Como o algoritmo
-limita a contagem de blocos ativos a um valor aproximadamente constante (200
-a 230 blocos, Subseção~\ref{sub:cdlod}), independentemente da resolução
-total do \emph{heightmap}, o tempo de quadro da condição CDLOD permanece
-próximo de 1 ms em todas as resoluções testadas, o que corresponde a uma
-carga estável de cerca de 0,4 milhão de triângulos por quadro. Em contraste,
-a condição sem LOD, que renderiza a malha completa a cada quadro, tem tempo
-de quadro crescente com o número de triângulos da malha, que chega a cerca
-de 8,4 milhões na resolução máxima testada (2048), contra 2,1 milhões na
-resolução intermediária de 1024.
+Com o CDLOD, o tempo médio de quadro permanece entre 1,06 e 1,21 ms em todas
+as resoluções, o que corresponde a uma carga estável de cerca de 0,43 milhão
+de triângulos por quadro (200 a 230 blocos, Subseção~\ref{sub:cdlod}). Sem
+LOD, o tempo cresce com o tamanho da malha, que chega a 8,5 milhões de
+triângulos na resolução 2048, contra 2,2 milhões na resolução 1024.
 
-As curvas das duas condições se cruzam em aproximadamente cinco milhões de
-triângulos de carga geométrica. Esse é o ponto de virada (\emph{tipping
-point}) a partir do qual o custo do CDLOD passa a ser inferior ao da
-renderização da malha completa nessa GPU. Abaixo desse ponto, a malha sem LOD
-é ligeiramente mais rápida, pois o CDLOD introduz uma sobrecarga fixa de
-gerenciamento da \emph{quadtree}, que não se paga em cargas geométricas
-pequenas. O resultado valida diretamente a hipótese da
-Seção~\ref{sec:intro}: o CDLOD não é vantajoso de forma incondicional, mas
-passa a ser indispensável a partir de uma carga geométrica identificável
-experimentalmente. Em uma GPU de menor capacidade, como as de dispositivos
-móveis, espera-se que o ponto de virada ocorra em resolução de terreno ainda
-menor, o que tornaria o CDLOD relativamente mais vantajoso. O custo do
-\emph{geomorphing}, obtido pela comparação entre as condições ``CDLOD'' e
-``CDLOD sem \emph{morphing}'' na Figura~\ref{fig:fps}, ficou dentro da
-margem de ruído da medição; logo, a eliminação de \emph{cracks} e de
-\emph{popping} tem custo de desempenho desprezível.
+Os valores medidos delimitam o ponto de virada entre as resoluções 1024 e
+1536, isto é, entre 2,2 e 4,9 milhões de triângulos. Por interpolação linear
+entre esses dois pontos, as curvas de tempo médio se cruzam em cerca de 4,2
+milhões de triângulos e as de p95, em cerca de 2,7 milhões
+(Figura~\ref{fig:custo}). Abaixo desse ponto, a malha sem LOD é mais rápida,
+pois o CDLOD tem uma sobrecarga fixa, a de percorrer a \emph{quadtree} e
+emitir cerca de 200 chamadas de desenho a cada quadro, que não se paga em
+cargas pequenas. Como o p95 representa o pior caso de regularidade, a
+interatividade se perde na malha completa antes do que o tempo médio sugere.
+O resultado valida a hipótese da Seção~\ref{sec:intro}: o CDLOD não é
+vantajoso de forma incondicional, mas passa a ser indispensável a partir de
+uma carga geométrica identificável. Em uma GPU de menor capacidade, como as
+de dispositivos móveis, espera-se que o ponto de virada ocorra em resolução
+menor, o que não foi medido (Seção~\ref{sec:conclusao}). O custo do
+\emph{geomorphing}, dado pela diferença entre as condições ``CDLOD'' e
+``CDLOD sem \emph{morphing}'', foi de no máximo 0,06 ms, dentro da margem de
+ruído; logo, a eliminação de \emph{cracks} e de \emph{popping} tem custo de
+desempenho desprezível.
 
-Quanto ao consumo de recursos, a memória do processo (RAM) cresceu de
-aproximadamente 110 MB, na resolução 256, para 255 MB, na resolução 2048, e
-a memória de vídeo (VRAM) cresceu de aproximadamente 740 MB para 910 MB no
-mesmo intervalo. O crescimento acompanha a resolução do dado de entrada (o
-tamanho da textura de altura e dos \emph{buffers} correspondentes) e não o
-modo de renderização: nas condições avaliadas, a malha completa e as duas
-variantes do CDLOD compartilham, em uma mesma execução, os mesmos recursos
-residentes na GPU. Portanto, o experimento não isola o ganho de memória
-atribuível ao LOD, o que fica como trabalho futuro (Seção~\ref{sec:conclusao}).
-
-Por fim, verificou-se que a forma do terreno gerado, com os canais do
-sistema estuarino de Santos e São Vicente, as ilhas próximas e a orientação
-da escarpa da Serra do Mar, corresponde à geografia real da região quando
-comparada a um mapa de referência, o que confirma a integridade do processo
-de aquisição e decodificação descrito na Subseção~\ref{sub:aquisicao}.
+Quanto ao consumo de recursos, a memória do processo (RAM) cresceu de cerca
+de 109 MB, na resolução 256, para 256 MB, na resolução 2048. A memória de
+vídeo (VRAM) cresceu de cerca de 620 MB para 805 MB no mesmo intervalo; esse
+valor é o uso total da GPU informado pelo \texttt{nvidia-smi}, que inclui
+outros processos do sistema. O crescimento acompanha a resolução do dado de
+entrada (o tamanho da textura de altura e dos \emph{buffers}
+correspondentes) e não o modo de renderização: nas condições avaliadas, a
+malha completa e as duas variantes do CDLOD compartilham, em uma mesma
+execução, os mesmos recursos residentes na GPU. Portanto, o experimento não
+isola o ganho de memória atribuível ao LOD, o que fica como trabalho futuro
+(Seção~\ref{sec:conclusao}).
 
 \section{Conclusão e Trabalhos Futuros}
 \label{sec:conclusao}
@@ -719,10 +775,10 @@ observar quais áreas ficariam submersas em cada cenário de subida do mar.
 O principal resultado vem do teste de desempenho. Com o CDLOD, o tempo para
 desenhar um quadro da cena completa (terreno e água) ficou próximo de 1 ms
 em todas as resoluções de terreno testadas. Sem LOD, esse tempo cresce
-junto com o tamanho da malha. As duas curvas se cruzam em aproximadamente
-cinco milhões de triângulos: abaixo desse valor, desenhar a malha completa
-é ligeiramente mais rápido; acima dele, o CDLOD passa a ser indispensável
-para manter a interatividade. O custo do \emph{geomorphing} mostrou-se
+junto com o tamanho da malha. As duas curvas se cruzam entre 2,7 e 4,2
+milhões de triângulos, conforme se use o percentil 95 ou a média: abaixo
+desse valor, desenhar a malha completa é mais rápido; acima dele, o CDLOD
+passa a ser indispensável para manter a interatividade. O custo do \emph{geomorphing} mostrou-se
 desprezível. A eficácia do CDLOD já é conhecida na literatura (STRUGAR,
 2009); o que este trabalho acrescenta é a medição desse ponto de virada em
 um cenário aplicado de inundação costeira. Assim, o objetivo proposto foi

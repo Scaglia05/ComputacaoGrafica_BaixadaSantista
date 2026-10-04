@@ -94,7 +94,7 @@ na raiz — foram renomeados/reorganizados para `exemplos/` e `src/`.
 2. ✅ CDLOD: quadtree, seleção por distância, morphing anti-*crack*.
 3. ✅ Água: 6 ondas de Gerstner, Fresnel, Blinn-Phong, nível ajustável.
 4. ✅ Avaliação de desempenho: benchmark headless achou o "ponto de virada"
-   (~5 M triângulos numa RTX 3060) + perfilamento de RAM/VRAM/GPU (`psutil` +
+   (~2,7 M (p95) a ~4,2 M (média) de triângulos numa RTX 3060) + perfilamento de RAM/VRAM/GPU (`psutil` +
    `nvidia-smi`) — ver `docs/metodologia_atual.md` §8.
 5. ✅ UX para leigos (`src/hud.py` + `src/main.py`): tela de boas-vindas
    (`I`), legenda em 2 níveis (`H`: nenhuma→básica→completa), painel de

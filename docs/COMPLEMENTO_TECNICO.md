@@ -293,7 +293,7 @@ estimativa), e uma amostra de RAM/VRAM/uso de GPU.
   ~2,4 ms na resolução máxima (2048). As curvas se cruzam por volta de
   **5 milhões de triângulos** — o ponto de virada.
 - **Custo do morphing**: dentro do ruído de medição — praticamente grátis.
-- **Recursos**: RAM (~110→255 MB) e VRAM (~740→910 MB) crescem com a
+- **Recursos**: RAM (~110→255 MB) e VRAM (~620→805 MB) crescem com a
   **resolução do dado**, não com o modo de LOD (nesta bateria de testes as
   três condições compartilham a mesma cena — ver `docs/metodologia_atual.md`
   para a ressalva completa).
