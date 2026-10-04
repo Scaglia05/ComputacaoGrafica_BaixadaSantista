@@ -87,6 +87,7 @@ python src/dem.py               # baixa/prepara o DEM da Baixada Santista
 python src/lod.py               # testa a seleção de blocos do quadtree
 python src/main.py              # cena completa: terreno + LOD + água
 python src/bench.py             # benchmark (--rapido para subconjunto)
+python src/area_alagada.py      # área emersa alagada em cada cenário de nível do mar
 ```
 
 ### Benchmark (Etapa 4)

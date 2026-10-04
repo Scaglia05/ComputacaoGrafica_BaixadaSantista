@@ -750,6 +750,38 @@ corresponde à geografia real da região quando comparada a um mapa de
 referência, o que confirma a aquisição e a decodificação descritas na
 Subseção~\ref{sub:aquisicao}.
 
+A Tabela~\ref{tab:area} quantifica a área emersa que fica abaixo do nível
+do mar em cada cenário, calculada diretamente sobre o DEM de $1024 \times
+1024$ células, em que cada célula cobre cerca de 49 m $\times$ 49 m
+(0,0024 km$^2$). Considera-se emersa a célula de elevação maior ou igual a
+0 m, o que totaliza 1927 km$^2$. Há 104,6 km$^2$ de células com elevação
+exatamente igual a 0 m, que são alagadas assim que o nível passa de zero.
+É provável que correspondam a corpos d'água e a áreas costeiras planas do
+produto de origem, mas essa hipótese não foi verificada. Descontando essas
+células, a área alagada cresce de 14,8 km$^2$ em +0,5 m para 38,9 km$^2$ em
++2 m. Isso explica por que os cenários de +0,5 a +2 m produzem pouca
+diferença visual em uma vista oblíqua, como a da Figura~\ref{fig:capturas},
+e por que o painel (b) usa +10 m.
+
+\begin{table}[t]
+\caption{Área emersa alagada em cada cenário de nível do mar}
+\label{tab:area}
+\centering
+\begin{tabular}{@{}p{1.3cm}p{1.9cm}p{2.0cm}p{2.3cm}@{}}
+\toprule
+\textbf{Nível} & \textbf{Área alagada (km$^2$)} & \textbf{Parcela da área emersa} & \textbf{Sem as células a 0 m (km$^2$)} \\
+\midrule
++0,5 m & 119,4 & 6,2\% & 14,8 \\
++1 m   & 127,7 & 6,6\% & 23,1 \\
++2 m   & 143,5 & 7,4\% & 38,9 \\
++10 m  & 505,0 & 26,2\% & 400,4 \\
+\bottomrule
+\end{tabular}
+\fonte{Elaborado pelos autores (2026), a partir do DEM de 1024 $\times$ 1024
+células. Área emersa: células com elevação maior ou igual a 0 m (1927
+km$^2$).}
+\end{table}
+
 A avaliação de desempenho foi conduzida por um programa de teste
 (\emph{benchmark}) dedicado (\texttt{bench.py}), executado sem abrir janela
 (modo \emph{headless}). O programa reutiliza a mesma lógica de montagem de
@@ -878,17 +910,21 @@ escala da área, o que é uma distorção deliberada, comum em geovisualização
 mas que precisa ser declarada. Quarto, a água não interage com o terreno
 (não há espuma na costa nem refração da luz), e a medição de memória não
 separa o efeito do LOD, pois os três modos testados compartilham os mesmos
-recursos na GPU.
+recursos na GPU. Quinto, a exatidão vertical dos dados de origem não foi
+validada: se ela for da ordem dos próprios cenários (+0,5 a +2 m), as áreas
+alagadas devem ser lidas como demonstração do método, e não como previsão.
 
-Como trabalhos futuros, propõem-se quatro passos, cada um respondendo a uma
+Como trabalhos futuros, propõem-se cinco passos, cada um respondendo a uma
 limitação apontada: a) repetir o teste de desempenho em um celular ou em
 uma GPU mais fraca, para confirmar o ponto de virada nesses dispositivos e
 medir a memória de cada modo separadamente; b) implementar o
 \emph{frustum culling}, de modo a não desenhar os blocos atrás da câmera e
 reduzir ainda mais o custo por quadro; c) acrescentar espuma e arrebentação
-na linha de costa, para tornar a água mais realista; e d) apresentar a
+na linha de costa, para tornar a água mais realista; d) apresentar a
 ferramenta a especialistas em gestão costeira, a fim de avaliar se ela de
-fato auxilia a comunicar o risco de inundação.
+fato auxilia a comunicar o risco de inundação; e e) validar a exatidão
+vertical do DEM contra uma fonte de maior precisão e tratar as células de
+elevação nula.
 
 \section*{Referências}
 \begingroup
