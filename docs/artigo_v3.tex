@@ -301,7 +301,8 @@ célula $H(x,z)$ armazena uma altura normalizada. Consideram-se dois
 métodos de obtenção de $H$, sendo o primeiro a fonte primária da
 implementação de referência.
 
-\textbf{Dados reais (fonte primária).} O terreno é obtido a partir de
+\subsubsection{Dados reais (fonte primária)}
+O terreno é obtido a partir de
 \emph{tiles} de elevação do serviço \emph{AWS Terrain Tiles}, distribuído
 publicamente sem exigência de chave de API, no formato \emph{terrarium},
 que codifica a altitude real em metros diretamente nos três canais de cor
@@ -343,7 +344,8 @@ caso porque o relevo real da Serra do Mar (amplitude aproximada de
 área de estudo (aproximadamente 50 km): sem o fator $E$, o relevo
 apareceria visualmente quase plano.
 
-\textbf{Geração procedural (modo alternativo).} Como alternativa
+\subsubsection{Geração procedural (modo alternativo)}
+Como alternativa
 independente de conectividade de rede, contempla-se a geração de $H$ por
 ruído coerente do tipo \emph{Simplex noise}, somado em múltiplas oitavas
 (\emph{fractal Brownian motion}):
@@ -370,7 +372,8 @@ maneira uniforme degrada a qualidade visual nas regiões próximas ao
 observador, onde o detalhe é mais perceptível. A solução consiste em
 variar a densidade de triângulos em função da distância à câmera.
 
-\textbf{Estrutura de dados.} O terreno é particionado recursivamente em
+\subsubsection{Estrutura de dados}
+O terreno é particionado recursivamente em
 uma quadtree: o nó raiz cobre toda a extensão do terreno; cada nó filho
 cobre um quadrante da área do nó pai, até uma profundidade máxima
 $L = 5$ (valor implementado, suficiente para representar a região
@@ -384,7 +387,8 @@ terreno. Nós mais profundos representam, portanto, áreas menores com a
 mesma densidade de vértices, resultando em maior resolução por unidade de
 área.
 
-\textbf{Critério de seleção de nível.} Para cada nó de lado $\tau$
+\subsubsection{Critério de seleção de nível}
+Para cada nó de lado $\tau$
 (tamanho do bloco na profundidade correspondente), calcula-se a distância
 euclidiana $d$ entre a posição da câmera $\vec{c}$ e o ponto mais próximo
 da borda da caixa delimitadora do nó. O critério de subdivisão
@@ -405,7 +409,8 @@ implementação de referência, esse critério resulta tipicamente em 200 a
 230 blocos ativos simultaneamente, frente aos $4^5 = 1024$ blocos-folha
 que existiriam caso a árvore inteira fosse forçada à profundidade máxima.
 
-\textbf{Eliminação de descontinuidades (\emph{cracks}).} Blocos
+\subsubsection{Eliminação de descontinuidades (\emph{cracks})}
+Blocos
 adjacentes renderizados em níveis de detalhe diferentes possuem
 densidades de vértices distintas em sua borda compartilhada, o que pode
 gerar fendas visuais (\emph{cracks}) caso os vértices das duas malhas não
