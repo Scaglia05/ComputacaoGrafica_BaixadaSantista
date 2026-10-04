@@ -725,7 +725,10 @@ cinco milhões de triângulos: abaixo desse valor, desenhar a malha completa
 para manter a interatividade. O custo do \emph{geomorphing} mostrou-se
 desprezível. A eficácia do CDLOD já é conhecida na literatura (STRUGAR,
 2009); o que este trabalho acrescenta é a medição desse ponto de virada em
-um cenário aplicado de inundação costeira.
+um cenário aplicado de inundação costeira. Assim, o objetivo proposto foi
+atingido e a hipótese inicial, de que o nível de detalhe adaptativo é o
+mecanismo que viabiliza a visualização tridimensional de inundação costeira
+em tempo real, foi confirmada.
 
 Algumas limitações devem ser consideradas. Primeiro, a implementação do
 CDLOD é simplificada: não descarta os blocos fora do campo de visão da
@@ -743,14 +746,14 @@ separa o efeito do LOD, pois os três modos testados compartilham os mesmos
 recursos na GPU.
 
 Como trabalhos futuros, propõem-se quatro passos, cada um respondendo a uma
-limitação apontada. a) Repetir o teste de desempenho em um celular ou em
+limitação apontada: a) repetir o teste de desempenho em um celular ou em
 uma GPU mais fraca, para confirmar o ponto de virada nesses dispositivos e
-medir a memória de cada modo separadamente. b) Implementar o
+medir a memória de cada modo separadamente; b) implementar o
 \emph{frustum culling}, de modo a não desenhar os blocos atrás da câmera e
-reduzir ainda mais o custo por quadro. c) Acrescentar espuma e
-arrebentação na linha de costa, para tornar a água mais realista. d)
-Apresentar a ferramenta a especialistas em gestão costeira, a fim de
-avaliar se ela de fato auxilia a comunicar o risco de inundação.
+reduzir ainda mais o custo por quadro; c) acrescentar espuma e arrebentação
+na linha de costa, para tornar a água mais realista; e d) apresentar a
+ferramenta a especialistas em gestão costeira, a fim de avaliar se ela de
+fato auxilia a comunicar o risco de inundação.
 
 \section*{Referências}
 \begingroup
