@@ -64,7 +64,7 @@ ComputacaoGrafica\
 │   ├── COMPLEMENTO_TECNICO.md      (companheiro do artigo: glossário de todo termo técnico,
 │   │                                por que cada lib, como tudo é calculado, com fórmulas)
 │   ├── resumo_projeto.pdf          (resumo de 3 páginas)
-│   ├── ArtigoCompGrafica_ElevacaoCosteira.pdf  (artigo científico FINAL, IEEE, 7 páginas)
+│   ├── ArtigoCompGrafica_ElevacaoCosteira.pdf  (artigo científico FINAL, IEEE, 9 páginas)
 │   ├── artigo_v4.tex               (fonte LaTeX do artigo final)
 │   └── especificacao_eixo6.pdf     (especificação oficial do professor)
 ├── bench\                        (resultados.csv + gráficos do benchmark)
