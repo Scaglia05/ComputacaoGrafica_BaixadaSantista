@@ -106,29 +106,24 @@ class _Painel:
         dy = 2.0 * self.h / alt_janela
         mx = 2.0 * m / larg_janela
         my = 2.0 * m / alt_janela
-        if self.ancora == "inferior-direita":
-            x1 = 1.0 - mx
-            x0 = x1 - dx
-            ybase = -1.0 + my
-            ytopo = ybase + dy
-        elif self.ancora == "inferior-esquerda":
-            x0 = -1.0 + mx
-            x1 = x0 + dx
-            ybase = -1.0 + my
-            ytopo = ybase + dy
-        elif self.ancora == "superior-direita":
-            x1 = 1.0 - mx
-            x0 = x1 - dx
-            ytopo = 1.0 - my
-            ybase = ytopo - dy
-        elif self.ancora == "centro":
+        if self.ancora == "centro":
             x0, x1 = -dx / 2.0, dx / 2.0
             ytopo, ybase = dy / 2.0, -dy / 2.0
-        else:  # superior-esquerda
-            x0 = -1.0 + mx
-            x1 = x0 + dx
-            ytopo = 1.0 - my
-            ybase = ytopo - dy
+        else:
+            # "<vertical>-<horizontal>"; o que não for reconhecido vira "superior-esquerda".
+            vertical, _, horizontal = self.ancora.partition("-")
+            if horizontal == "direita":
+                x1 = 1.0 - mx
+                x0 = x1 - dx
+            else:
+                x0 = -1.0 + mx
+                x1 = x0 + dx
+            if vertical == "inferior":
+                ybase = -1.0 + my
+                ytopo = ybase + dy
+            else:
+                ytopo = 1.0 - my
+                ybase = ytopo - dy
         if self._vao is not None:
             self._vao.release()
         vbo = self.ctx.buffer(_quad(x0, ytopo, x1, ybase).tobytes())
@@ -376,15 +371,11 @@ class Hud:
 
     # ------------------------------------------------------------------
     def atualizar_viewport(self, larg: int, alt: int) -> None:
-        self._ajuda_basica.posicionar(larg, alt)
-        self._ajuda_completa.posicionar(larg, alt)
-        self._boasvindas.posicionar(larg, alt)
-        self._status.posicionar(larg, alt)
-        self._bussola.posicionar(larg, alt)
-        if self._foto is not None:
-            self._foto.posicionar(larg, alt)
-        if self._minimapa is not None:
-            self._minimapa.posicionar(larg, alt)
+        paineis = (self._ajuda_basica, self._ajuda_completa, self._boasvindas,
+                   self._status, self._bussola, self._foto, self._minimapa)
+        for painel in paineis:
+            if painel is not None:       # foto e minimapa são opcionais
+                painel.posicionar(larg, alt)
 
     def atualizar_status(
         self, metros: float, lod_ligado: bool, morph_ligado: bool, tempo_render_ms: float,

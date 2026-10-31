@@ -16,15 +16,13 @@ Mais adiante no projeto, esta mesma grade poderá vir de um dado real
 
 Da grade à MALHA (mesh)
 -----------------------
-A GPU só desenha triângulos. Convertemos a grade N x N em:
-  - array de VÉRTICES: para cada ponto (i, j) guardamos
-    [x, y, z, nx, ny, nz]  (posição no mundo + normal para iluminação);
-  - array de ÍNDICES: cada célula do grid vira 2 triângulos que
-    referenciam os vértices pelo número (Element Buffer). Índices evitam
-    repetir vértices compartilhados entre triângulos vizinhos.
-
-As NORMAIS são estimadas pelo gradiente do campo de altura (quão inclinado
-está o terreno em x e em z naquele ponto).
+A GPU só desenha triângulos. Aqui a altura NÃO vira vértice na CPU: criamos
+uma grade plana reaproveitável (`build_unit_grid`) e o vertex shader
+(shaders/terrain.vert) desloca cada vértice lendo a altura numa textura.
+  - VÉRTICES: pontos (x, z) em [0, 1] x [0, 1];
+  - ÍNDICES : cada célula da grade vira 2 triângulos que referenciam os
+    vértices pelo número (Element Buffer). Índices evitam repetir vértices
+    compartilhados entre triângulos vizinhos (ver `grid_indices`).
 """
 
 from __future__ import annotations
@@ -77,45 +75,6 @@ def generate_heightmap(
     return heights.astype(np.float32)
 
 
-def build_mesh(heights: np.ndarray, world_size: float = 200.0):
-    """Converte a grade de alturas em (vertices, indices) prontos para a GPU.
-
-    Retorna
-    -------
-    vertices : np.ndarray float32, forma (N*N, 6) -> [x, y, z, nx, ny, nz]
-    indices  : np.ndarray uint32,  forma (n_triangulos * 3,)
-
-    O terreno fica centrado na origem: x e z variam de -world_size/2 a +world_size/2.
-    Convenção de eixos: X = leste/oeste, Y = altura (para cima), Z = norte/sul.
-    """
-    res = heights.shape[0]
-
-    # --- posições (x, z) da grade, centradas na origem --------------------
-    lin = np.linspace(-world_size / 2.0, world_size / 2.0, res, dtype=np.float32)
-    # xs[i, j] = lin[j] (varia na coluna);  zs[i, j] = lin[i] (varia na linha).
-    xs, zs = np.meshgrid(lin, lin)
-    ys = heights  # y[i, j] é a altura naquele ponto
-
-    # --- normais via gradiente do campo de altura -----------------------
-    spacing = world_size / (res - 1)          # distância entre pontos vizinhos
-    # np.gradient devolve [derivada ao longo das linhas (z), ao longo das colunas (x)].
-    dz_dz, dz_dx = np.gradient(ys, spacing)
-    nx = -dz_dx
-    ny = np.ones_like(ys)
-    nz = -dz_dz
-    inv_len = 1.0 / np.sqrt(nx * nx + ny * ny + nz * nz)
-    nx *= inv_len
-    ny *= inv_len
-    nz *= inv_len
-
-    # --- empacota tudo em (N*N, 6) --------------------------------------
-    vertices = np.stack([xs, ys, zs, nx, ny, nz], axis=-1).astype(np.float32)
-    vertices = vertices.reshape(-1, 6)
-
-    indices = grid_indices(res)
-    return vertices, indices
-
-
 def build_unit_grid(subdivisions: int):
     """Grade quadrada em [0, 1] x [0, 1] com (subdivisions+1)^2 vértices.
 
@@ -157,10 +116,10 @@ def grid_indices(resolution: int) -> np.ndarray:
     return np.concatenate([tri1, tri2], axis=1).ravel().astype(np.uint32)
 
 
-# --- teste rápido sem OpenGL:  python -m src.heightmap  --------------------
+# --- teste rápido sem OpenGL:  python src/heightmap.py ---------------------
 if __name__ == "__main__":
     h = generate_heightmap(resolution=64)
-    v, idx = build_mesh(h)
+    v, idx = build_unit_grid(32)
     print(f"heightmap : {h.shape}, min={h.min():.2f}, max={h.max():.2f}")
-    print(f"vertices  : {v.shape}  (esperado: {64 * 64} x 6)")
+    print(f"vertices  : {v.shape}  (esperado: {33 * 33} x 2)")
     print(f"indices   : {idx.shape}  (triângulos: {idx.size // 3})")
