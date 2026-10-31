@@ -106,29 +106,24 @@ class _Painel:
         dy = 2.0 * self.h / alt_janela
         mx = 2.0 * m / larg_janela
         my = 2.0 * m / alt_janela
-        if self.ancora == "inferior-direita":
-            x1 = 1.0 - mx
-            x0 = x1 - dx
-            ybase = -1.0 + my
-            ytopo = ybase + dy
-        elif self.ancora == "inferior-esquerda":
-            x0 = -1.0 + mx
-            x1 = x0 + dx
-            ybase = -1.0 + my
-            ytopo = ybase + dy
-        elif self.ancora == "superior-direita":
-            x1 = 1.0 - mx
-            x0 = x1 - dx
-            ytopo = 1.0 - my
-            ybase = ytopo - dy
-        elif self.ancora == "centro":
+        if self.ancora == "centro":
             x0, x1 = -dx / 2.0, dx / 2.0
             ytopo, ybase = dy / 2.0, -dy / 2.0
-        else:  # superior-esquerda
-            x0 = -1.0 + mx
-            x1 = x0 + dx
-            ytopo = 1.0 - my
-            ybase = ytopo - dy
+        else:
+            # "<vertical>-<horizontal>"; o que não for reconhecido vira "superior-esquerda".
+            vertical, _, horizontal = self.ancora.partition("-")
+            if horizontal == "direita":
+                x1 = 1.0 - mx
+                x0 = x1 - dx
+            else:
+                x0 = -1.0 + mx
+                x1 = x0 + dx
+            if vertical == "inferior":
+                ybase = -1.0 + my
+                ytopo = ybase + dy
+            else:
+                ytopo = 1.0 - my
+                ybase = ytopo - dy
         if self._vao is not None:
             self._vao.release()
         vbo = self.ctx.buffer(_quad(x0, ytopo, x1, ybase).tobytes())
@@ -271,7 +266,8 @@ class Hud:
 
     @staticmethod
     def _img_status(
-        metros: float, lod_ligado: bool, morph_ligado: bool, tempo_render_ms: float
+        metros: float, lod_ligado: bool, morph_ligado: bool, tempo_render_ms: float,
+        culling_ligado: bool = False,
     ) -> Image.Image:
         """Painel de status: nível do mar + selo colorido + modo atual +
         tempo de render do quadro (o número que muda quando você aperta L).
@@ -280,7 +276,7 @@ class Hud:
         classificação científica oficial) — servem para dar leitura rápida
         a quem não é da área.
         """
-        larg, alt = 300, 200
+        larg, alt = 300, 222
         img = Image.new("RGBA", (larg, alt), (10, 14, 20, 218))
         d = ImageDraw.Draw(img)
         d.rectangle([0, 0, larg - 1, alt - 1], outline=(255, 255, 255, 60))
@@ -308,12 +304,14 @@ class Hud:
         cor_morph = (200, 200, 200) if morph_ligado else (255, 150, 90)
         d.text((14, 130), f"Detalhe: {txt_lod}", font=_fonte(13), fill=(210, 210, 210, 255))
         d.text((14, 150), f"Suavização: {txt_morph}", font=_fonte(13), fill=(*cor_morph, 255))
+        txt_culling = "ligado" if culling_ligado else "desligado"
+        d.text((14, 170), f"Corte fora da tela: {txt_culling}", font=_fonte(13), fill=(210, 210, 210, 255))
 
         # Tempo de render do quadro — o número que muda de verdade quando
         # se aperta L (o FPS na tela, com V-Sync, fica travado em ~60 e
         # some a diferença; este tempo é medido igual ao benchmark).
         fps_equiv = 1000.0 / tempo_render_ms if tempo_render_ms > 0 else 0.0
-        d.text((14, 172), f"Render: {tempo_render_ms:.2f} ms  (~{fps_equiv:.0f} fps sem limite)",
+        d.text((14, 194), f"Render: {tempo_render_ms:.2f} ms  (~{fps_equiv:.0f} fps sem limite)",
                font=_fonte(12), fill=(150, 210, 150, 255))
         return img
 
@@ -373,28 +371,25 @@ class Hud:
 
     # ------------------------------------------------------------------
     def atualizar_viewport(self, larg: int, alt: int) -> None:
-        self._ajuda_basica.posicionar(larg, alt)
-        self._ajuda_completa.posicionar(larg, alt)
-        self._boasvindas.posicionar(larg, alt)
-        self._status.posicionar(larg, alt)
-        self._bussola.posicionar(larg, alt)
-        if self._foto is not None:
-            self._foto.posicionar(larg, alt)
-        if self._minimapa is not None:
-            self._minimapa.posicionar(larg, alt)
+        paineis = (self._ajuda_basica, self._ajuda_completa, self._boasvindas,
+                   self._status, self._bussola, self._foto, self._minimapa)
+        for painel in paineis:
+            if painel is not None:       # foto e minimapa são opcionais
+                painel.posicionar(larg, alt)
 
     def atualizar_status(
-        self, metros: float, lod_ligado: bool, morph_ligado: bool, tempo_render_ms: float
+        self, metros: float, lod_ligado: bool, morph_ligado: bool, tempo_render_ms: float,
+        culling_ligado: bool = False,
     ) -> None:
         """Chamar 1x por frame. Só redesenha a textura quando algo muda de
         verdade (nível arredondado a 1 cm, tempo de render arredondado a
-        0,1 ms, ou os modos de LOD/morphing)."""
-        chave = (round(metros, 2), lod_ligado, morph_ligado, round(tempo_render_ms, 1))
+        0,1 ms, ou os modos de LOD/morphing/culling)."""
+        chave = (round(metros, 2), lod_ligado, morph_ligado, round(tempo_render_ms, 1), culling_ligado)
         if chave == self._status_chave:
             return
         self._status_chave = chave
         self._status.atualizar_imagem(
-            self._img_status(metros, lod_ligado, morph_ligado, tempo_render_ms)
+            self._img_status(metros, lod_ligado, morph_ligado, tempo_render_ms, culling_ligado)
         )
 
     def atualizar_bussola(self, bearing_graus: float) -> None:
