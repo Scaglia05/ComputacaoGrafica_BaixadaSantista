@@ -149,23 +149,28 @@ def _vram_e_util():
     return vram_mb, gpu_util_pct
 
 
+def _desenhar_quadro(cena, fbo, view, proj, cam_pos, lod_ligado, morph, culling):
+    """Limpa a tela e desenha UM quadro (o mesmo passo do aquecimento e da medição)."""
+    fbo.use()
+    fbo.clear(*CEU)
+    return cena.desenhar(view, proj, cam_pos, lod_ligado=lod_ligado, morph=morph,
+                         frustum_culling=culling)
+
+
 def medir(ctx, cena, fbo, view, proj, cam_pos, *, lod_ligado, morph, culling=False):
-    stats = None
+    """Mede o tempo de quadro de UMA combinação (técnica x câmera).
+
+    Devolve (estatísticas do quadro, tempos em ms ORDENADOS, RAM, VRAM, uso de GPU).
+    """
     for _ in range(FRAMES_AQUECIMENTO):
-        fbo.use()
-        fbo.clear(*CEU)
-        stats = cena.desenhar(view, proj, cam_pos, lod_ligado=lod_ligado, morph=morph,
-                              frustum_culling=culling)
+        stats = _desenhar_quadro(cena, fbo, view, proj, cam_pos, lod_ligado, morph, culling)
     ctx.finish()
 
     tempos = []
     for _ in range(FRAMES_MEDIDA):
         t0 = time.perf_counter()
-        fbo.use()
-        fbo.clear(*CEU)
-        cena.desenhar(view, proj, cam_pos, lod_ligado=lod_ligado, morph=morph,
-                      frustum_culling=culling)
-        ctx.finish()
+        _desenhar_quadro(cena, fbo, view, proj, cam_pos, lod_ligado, morph, culling)
+        ctx.finish()                      # espera a GPU terminar: o tempo medido é real
         tempos.append((time.perf_counter() - t0) * 1000.0)
 
     tempos.sort()
@@ -206,12 +211,8 @@ def medir_memoria(modo: str, resolucao: int) -> dict:
 
     # Desenha alguns quadros para que tudo (buffers, texturas, shaders) esteja
     # de fato residente antes de medir.
-    stats = None
     for _ in range(FRAMES_AQUECIMENTO):
-        fbo.use()
-        fbo.clear(*CEU)
-        stats = cena.desenhar(view, proj, pos, lod_ligado=lod_on, morph=morph_on,
-                              frustum_culling=culling_on)
+        stats = _desenhar_quadro(cena, fbo, view, proj, pos, lod_on, morph_on, culling_on)
     ctx.finish()
 
     rss_depois = _rss_mb()
@@ -292,23 +293,16 @@ def _grafico_memoria(linhas, saida: Path) -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    cores = {"sem_lod": "#c1443c", "cdlod": "#2f7d4f", "cdlod_sem_morph": "#4a6fb0",
-             "cdlod_frustum": "#8a4fb0"}
+    modos = list(dict.fromkeys(r["modo"] for r in linhas))
     fig, eixos = plt.subplots(1, 2, figsize=(11, 4.2))
     for ax, campo, titulo in (
         (eixos[0], "bytes_app_mb", "Memória alocada pela aplicação na GPU (MB)"),
         (eixos[1], "rss_pico_mb", "Pico de RAM do processo (MB)"),
     ):
-        for modo in dict.fromkeys(r["modo"] for r in linhas):
-            porres: dict[int, list[float]] = {}
-            for r in linhas:
-                if r["modo"] == modo:
-                    porres.setdefault(r["resolucao"], []).append(r[campo])
-            serie = {res: statistics.fmean(v) for res, v in sorted(porres.items())}
-            ax.plot(list(serie), list(serie.values()), "o-", color=cores.get(modo), label=modo)
+        _plotar_series(ax, linhas, modos, campo, coluna="modo")
         ax.set_xlabel("resolução do heightmap (lado)")
-        ax.set_title(titulo)
         ax.grid(alpha=0.3)
+        ax.set_title(titulo)
         ax.legend()
     fig.suptitle("Cada modo medido em processo separado, só com a malha que usa")
     fig.tight_layout()
@@ -327,6 +321,28 @@ def _argumentos():
     p.add_argument("--resolucoes", default=None, help="lista separada por vírgula, ex.: 256,1024")
     p.add_argument("--repeticoes", type=int, default=3, help="repetições da medição de memória")
     return p.parse_args()
+
+
+def _linha_resultado(resolucao, condicao, camera, gpu, stats, tempos, ram_mb, vram_mb, gpu_util):
+    """Uma linha do CSV: as estatísticas do quadro e os tempos (ordenados) de uma combinação."""
+    media = statistics.fmean(tempos)
+    return {
+        "resolucao": resolucao,
+        "condicao": condicao,
+        "camera": camera,
+        "blocos": stats.blocos,
+        "draw_calls": stats.draw_calls,
+        "triangulos": stats.triangulos,
+        "ms_media": round(media, 3),
+        "ms_p50": round(tempos[len(tempos) // 2], 3),
+        "ms_p95": round(tempos[min(len(tempos) - 1, int(len(tempos) * 0.95))], 3),
+        "fps": round(1000.0 / media, 1),
+        "ram_mb": round(ram_mb, 1),
+        "vram_mb": round(vram_mb, 1) if vram_mb is not None else "",
+        "gpu_util_pct": gpu_util if gpu_util is not None else "",
+        "nos_podados": stats.nos_podados,
+        "gpu": gpu,
+    }
 
 
 def main() -> None:
@@ -370,29 +386,13 @@ def main() -> None:
                     ctx, cena, fbo, view, proj, pos,
                     lod_ligado=lod_on, morph=morph_on, culling=culling_on,
                 )
-                media = statistics.fmean(tempos)
-                linha = {
-                    "resolucao": res,
-                    "condicao": nome_cond,
-                    "camera": nome_cam,
-                    "blocos": stats.blocos,
-                    "draw_calls": stats.draw_calls,
-                    "triangulos": stats.triangulos,
-                    "ms_media": round(media, 3),
-                    "ms_p50": round(tempos[len(tempos) // 2], 3),
-                    "ms_p95": round(tempos[min(len(tempos) - 1, int(len(tempos) * 0.95))], 3),
-                    "fps": round(1000.0 / media, 1),
-                    "ram_mb": round(ram_mb, 1),
-                    "vram_mb": round(vram_mb, 1) if vram_mb is not None else "",
-                    "gpu_util_pct": gpu_util if gpu_util is not None else "",
-                    "nos_podados": stats.nos_podados,
-                    "gpu": gpu,
-                }
+                linha = _linha_resultado(res, nome_cond, nome_cam, gpu,
+                                         stats, tempos, ram_mb, vram_mb, gpu_util)
                 linhas.append(linha)
                 extra = f" | {vram_mb:.0f} MB VRAM" if vram_mb is not None else ""
                 print(f"  {nome_cam:9s} {nome_cond:16s} "
                       f"{stats.triangulos / 1e6:6.2f} M tri | "
-                      f"{media:8.3f} ms | {linha['fps']:8.1f} fps | "
+                      f"{linha['ms_media']:8.3f} ms | {linha['fps']:8.1f} fps | "
                       f"{ram_mb:6.0f} MB RAM{extra}")
         del cena
 
@@ -408,13 +408,54 @@ def main() -> None:
 
 
 # ---------------------------------------------------------------------------
-def _media_por(linhas, chave_cond, campo, filtro=lambda r: True):
-    """Média de 'campo' agrupada por resolução, para uma condição."""
+# Gráficos (matplotlib é importado só aqui dentro, para o benchmark não depender dele)
+# ---------------------------------------------------------------------------
+CORES = {"sem_lod": "#c1443c", "cdlod": "#2f7d4f", "cdlod_sem_morph": "#4a6fb0",
+         "cdlod_frustum": "#8a4fb0"}
+
+
+def _media_por(linhas, chave_cond, campo, filtro=lambda r: True, coluna="condicao"):
+    """Média de 'campo' agrupada por resolução, só para as linhas da condição pedida."""
     porres: dict[int, list[float]] = {}
     for r in linhas:
-        if r["condicao"] == chave_cond and filtro(r):
+        if r[coluna] == chave_cond and filtro(r):
             porres.setdefault(r["resolucao"], []).append(r[campo])
     return {res: statistics.fmean(v) for res, v in sorted(porres.items())}
+
+
+def _plotar_series(ax, linhas, nomes, campo, filtro=lambda r: True, coluna="condicao"):
+    """Uma linha por condição: eixo x = resolução, eixo y = média de `campo`."""
+    for nome in nomes:
+        serie = _media_por(linhas, nome, campo, filtro, coluna)
+        if serie:
+            ax.plot(list(serie), list(serie.values()), "o-", color=CORES.get(nome), label=nome)
+
+
+def _plotar_barras_por_camera(ax, linhas, condicoes, cameras_, res):
+    """Barras agrupadas: uma posição por câmera, uma barra por condição."""
+    largura = 0.8 / len(condicoes)
+    for i, cond in enumerate(condicoes):
+        valores = []
+        for cam in cameras_:
+            m = [r["ms_media"] for r in linhas
+                 if r["condicao"] == cond and r["camera"] == cam and r["resolucao"] == res]
+            valores.append(m[0] if m else 0.0)
+        xs = [j + i * largura for j in range(len(cameras_))]
+        ax.bar(xs, valores, largura, color=CORES.get(cond), label=cond)
+    ax.set_xticks([j + largura * (len(condicoes) - 1) / 2 for j in range(len(cameras_))])
+    ax.set_xticklabels(cameras_)
+    ax.set_ylabel("tempo de frame (ms)")
+    ax.grid(alpha=0.3, axis="y")
+
+
+def _salvar_figura(fig, ax, titulo: str, caminho: Path) -> None:
+    """Título + legenda + grade (se faltar) e grava o PNG."""
+    import matplotlib.pyplot as plt
+    ax.set_title(titulo)
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(caminho, dpi=130)
+    plt.close(fig)
 
 
 def _gerar_graficos(linhas, rapido: bool, saida: Path) -> None:
@@ -423,109 +464,58 @@ def _gerar_graficos(linhas, rapido: bool, saida: Path) -> None:
     import matplotlib.pyplot as plt
 
     condicoes = sorted({r["condicao"] for r in linhas})
-    cores = {"sem_lod": "#c1443c", "cdlod": "#2f7d4f", "cdlod_sem_morph": "#4a6fb0",
-             "cdlod_frustum": "#8a4fb0"}
+    cameras_ = sorted({r["camera"] for r in linhas})
     res_max = max(r["resolucao"] for r in linhas)
 
-    # --- 1. FPS medio x resolucao -------------------------------------
+    # 1. FPS médio x resolução
     fig, ax = plt.subplots(figsize=(7, 4.2))
-    for cond in condicoes:
-        serie = _media_por(linhas, cond, "fps")
-        ax.plot(list(serie), list(serie.values()), "o-", color=cores.get(cond), label=cond)
+    _plotar_series(ax, linhas, condicoes, "fps")
     ax.set_xlabel("resolução do heightmap (lado)")
     ax.set_ylabel("FPS médio (4 câmeras)")
-    ax.set_title("FPS x resolução — CDLOD mantém o custo baixo")
     ax.grid(alpha=0.3)
-    ax.legend()
-    fig.tight_layout()
-    fig.savefig(saida / "fps_vs_resolucao.png", dpi=130)
-    plt.close(fig)
+    _salvar_figura(fig, ax, "FPS x resolução — CDLOD mantém o custo baixo",
+                   saida / "fps_vs_resolucao.png")
 
-    # --- 2. tempo de frame por camera (resolucao maxima) -----------
-    cams = sorted({r["camera"] for r in linhas})
+    # 2. Tempo de frame por câmera (na resolução máxima)
     fig, ax = plt.subplots(figsize=(8, 4.2))
-    largura = 0.8 / len(condicoes)
-    for i, cond in enumerate(condicoes):
-        vals = []
-        for cam in cams:
-            m = [r["ms_media"] for r in linhas
-                 if r["condicao"] == cond and r["camera"] == cam and r["resolucao"] == res_max]
-            vals.append(m[0] if m else 0.0)
-        xs = [j + i * largura for j in range(len(cams))]
-        ax.bar(xs, vals, largura, color=cores.get(cond), label=cond)
-    ax.set_xticks([j + largura * (len(condicoes) - 1) / 2 for j in range(len(cams))])
-    ax.set_xticklabels(cams)
-    ax.set_ylabel("tempo de frame (ms)")
-    ax.set_title(f"Tempo de frame por câmera — heightmap {res_max}")
-    ax.grid(alpha=0.3, axis="y")
-    ax.legend()
-    fig.tight_layout()
-    fig.savefig(saida / "tempo_por_camera.png", dpi=130)
-    plt.close(fig)
+    _plotar_barras_por_camera(ax, linhas, condicoes, cameras_, res_max)
+    _salvar_figura(fig, ax, f"Tempo de frame por câmera — heightmap {res_max}",
+                   saida / "tempo_por_camera.png")
 
-    # --- 3. triangulos x tempo de frame (dispersao) ---------------
+    # 3. Triângulos x tempo de frame (dispersão)
     fig, ax = plt.subplots(figsize=(7, 4.2))
     for cond in condicoes:
-        pts = [(r["triangulos"] / 1e6, r["ms_media"]) for r in linhas if r["condicao"] == cond]
-        if pts:
-            xs, ys = zip(*pts)
-            ax.scatter(xs, ys, color=cores.get(cond), label=cond, alpha=0.8)
+        pontos = [(r["triangulos"] / 1e6, r["ms_media"]) for r in linhas if r["condicao"] == cond]
+        if pontos:
+            xs, ys = zip(*pontos)
+            ax.scatter(xs, ys, color=CORES.get(cond), label=cond, alpha=0.8)
     ax.set_xlabel("triângulos por frame (milhões)")
     ax.set_ylabel("tempo de frame (ms)")
-    ax.set_title("Custo x carga geométrica")
     ax.grid(alpha=0.3)
-    ax.legend()
-    fig.tight_layout()
-    fig.savefig(saida / "triangulos_vs_tempo.png", dpi=130)
-    plt.close(fig)
+    _salvar_figura(fig, ax, "Custo x carga geométrica", saida / "triangulos_vs_tempo.png")
 
-    # --- 4b. VRAM/RAM x resolucao (perfilamento de recursos) -------
-    # Nota: as 3 condições compartilham a MESMA `Cena` (mesma textura de
-    # heightmap + os DOIS VAOs, o pequeno do CDLOD e a malha ingênua, sempre
-    # residentes juntos) — por isso as 3 curvas praticamente coincidem. Este
-    # gráfico mostra o crescimento de VRAM com a RESOLUÇÃO DO DEM, não uma
-    # comparação de memória entre "com LOD" x "sem LOD" (para isolar isso
-    # seria preciso montar cenas separadas, sem a malha ingênua residente).
-    tem_vram = any(isinstance(r["vram_mb"], (int, float)) for r in linhas)
-    if tem_vram:
+    # 4. VRAM x resolução. As condições compartilham a MESMA `Cena` (a malha
+    # ingênua fica sempre residente), então as curvas quase coincidem: o gráfico
+    # mostra o crescimento com a resolução do DEM, não "com LOD" x "sem LOD"
+    # (essa comparação está em memoria_isolada.png).
+    def tem_vram(r):
+        return isinstance(r["vram_mb"], (int, float))
+
+    if any(tem_vram(r) for r in linhas):
         fig, ax = plt.subplots(figsize=(7, 4.2))
-        for cond in condicoes:
-            porres: dict[int, list[float]] = {}
-            for r in linhas:
-                if r["condicao"] == cond and isinstance(r["vram_mb"], (int, float)):
-                    porres.setdefault(r["resolucao"], []).append(r["vram_mb"])
-            serie = {res: statistics.fmean(v) for res, v in sorted(porres.items())}
-            if serie:
-                ax.plot(list(serie), list(serie.values()), "o-", color=cores.get(cond), label=cond)
+        _plotar_series(ax, linhas, condicoes, "vram_mb", filtro=tem_vram)
         ax.set_xlabel("resolução do heightmap (lado)")
         ax.set_ylabel("VRAM usada (MB, GPU inteira)")
-        ax.set_title("VRAM x resolução do DEM (mesma cena p/ todas as condições)")
         ax.grid(alpha=0.3)
-        ax.legend()
-        fig.tight_layout()
-        fig.savefig(saida / "recursos_vs_resolucao.png", dpi=130)
-        plt.close(fig)
+        _salvar_figura(fig, ax, "VRAM x resolução do DEM (mesma cena p/ todas as condições)",
+                       saida / "recursos_vs_resolucao.png")
 
-    # --- 5. custo do morphing (so no modo completo) --------------
+    # 5. Custo do morphing (só no modo completo)
     if not rapido and "cdlod_sem_morph" in condicoes:
         fig, ax = plt.subplots(figsize=(8, 4.2))
-        for i, cond in enumerate(("cdlod_sem_morph", "cdlod")):
-            vals = []
-            for cam in cams:
-                m = [r["ms_media"] for r in linhas
-                     if r["condicao"] == cond and r["camera"] == cam and r["resolucao"] == res_max]
-                vals.append(m[0] if m else 0.0)
-            xs = [j + i * 0.4 for j in range(len(cams))]
-            ax.bar(xs, vals, 0.4, color=cores.get(cond), label=cond)
-        ax.set_xticks([j + 0.2 for j in range(len(cams))])
-        ax.set_xticklabels(cams)
-        ax.set_ylabel("tempo de frame (ms)")
-        ax.set_title(f"Custo do morphing — heightmap {res_max}")
-        ax.grid(alpha=0.3, axis="y")
-        ax.legend()
-        fig.tight_layout()
-        fig.savefig(saida / "custo_do_morph.png", dpi=130)
-        plt.close(fig)
+        _plotar_barras_por_camera(ax, linhas, ("cdlod_sem_morph", "cdlod"), cameras_, res_max)
+        _salvar_figura(fig, ax, f"Custo do morphing — heightmap {res_max}",
+                       saida / "custo_do_morph.png")
 
 
 if __name__ == "__main__":

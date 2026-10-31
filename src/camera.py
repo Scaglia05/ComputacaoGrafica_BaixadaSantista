@@ -75,19 +75,17 @@ class Camera:
     # Input de teclado — 'direction' é uma string; dt = tempo do frame (s)
     # ------------------------------------------------------------------
     def process_keyboard(self, direction: str, dt: float) -> None:
-        v = self.speed * dt
-        if direction == "FORWARD":
-            self.position += self.front * v
-        elif direction == "BACKWARD":
-            self.position -= self.front * v
-        elif direction == "LEFT":
-            self.position -= self.right * v
-        elif direction == "RIGHT":
-            self.position += self.right * v
-        elif direction == "UP":
-            self.position += self.world_up * v
-        elif direction == "DOWN":
-            self.position -= self.world_up * v
+        """Move a câmera na direção pedida (uma string desconhecida é ignorada)."""
+        sentido = {
+            "FORWARD": self.front,
+            "BACKWARD": -self.front,
+            "LEFT": -self.right,
+            "RIGHT": self.right,
+            "UP": self.world_up,
+            "DOWN": -self.world_up,
+        }.get(direction)
+        if sentido is not None:
+            self.position += sentido * (self.speed * dt)
 
     # ------------------------------------------------------------------
     # Input de mouse — dx, dy = deslocamento em pixels desde o último frame

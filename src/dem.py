@@ -63,6 +63,23 @@ def _baixar_tile(z: int, x: int, y: int) -> Path:
     return destino
 
 
+def _juntar_tiles(x0: int, x1: int, y0: int, y1: int, z: int) -> np.ndarray:
+    """Baixa os tiles do retângulo [x0..x1] x [y0..y1] e os cola numa imagem RGB só."""
+    linhas = []
+    for ty in range(y0, y1 + 1):
+        colunas = []
+        for tx in range(x0, x1 + 1):
+            imagem = Image.open(_baixar_tile(z, tx, ty)).convert("RGB")
+            colunas.append(np.asarray(imagem, dtype=np.float64))
+        linhas.append(np.hstack(colunas))   # lado a lado
+    return np.vstack(linhas)                # uma linha de tiles embaixo da outra
+
+
+def _rgb_para_metros(rgb: np.ndarray) -> np.ndarray:
+    """Decodifica o formato terrarium: elev = R*256 + G + B/256 - 32768."""
+    return rgb[:, :, 0] * 256.0 + rgb[:, :, 1] + rgb[:, :, 2] / 256.0 - 32768.0
+
+
 def _mosaico_metros(bbox, z: int) -> np.ndarray:
     """Junta os tiles que cobrem a bbox e recorta na área exata. Retorna metros."""
     norte, sul, oeste, leste = bbox
@@ -71,18 +88,9 @@ def _mosaico_metros(bbox, z: int) -> np.ndarray:
     x0, x1 = math.floor(fx0), math.floor(fx1)
     y0, y1 = math.floor(fy0), math.floor(fy1)
 
-    linhas = []
-    for ty in range(y0, y1 + 1):
-        colunas = []
-        for tx in range(x0, x1 + 1):
-            im = Image.open(_baixar_tile(z, tx, ty)).convert("RGB")
-            colunas.append(np.asarray(im, dtype=np.float64))
-        linhas.append(np.hstack(colunas))
-    rgb = np.vstack(linhas)
+    elev = _rgb_para_metros(_juntar_tiles(x0, x1, y0, y1, z))
 
-    elev = rgb[:, :, 0] * 256.0 + rgb[:, :, 1] + rgb[:, :, 2] / 256.0 - 32768.0
-
-    # recorta as frações de tile que sobram fora da bbox
+    # Os tiles inteiros cobrem um pouco mais que a bbox: recorta o que sobra.
     topo = round((fy0 - y0) * PIXELS_POR_TILE)
     base = round((fy1 - y0) * PIXELS_POR_TILE)
     esq = round((fx0 - x0) * PIXELS_POR_TILE)
@@ -124,8 +132,8 @@ def carregar_heightmap(
         padrão em geovisualização; DECLARAR esse valor no artigo.
     """
     elev_m = _mosaico_metros(bbox, zoom)
-    elev_m = _remover_spikes(elev_m, limiar_m=60.0)
-    elev_m = _remover_spikes(elev_m, limiar_m=60.0)   # 2ª passada pega clusters pequenos
+    for _ in range(2):   # 2ª passada pega clusters pequenos que a 1ª deixou
+        elev_m = _remover_spikes(elev_m, limiar_m=60.0)
 
     # Abaixo de 'piso_metros' está tudo submerso de qualquer jeito: achata para
     # o oceano profundo não estourar a normalização de cor do terreno.

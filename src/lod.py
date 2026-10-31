@@ -74,31 +74,22 @@ def build_quadtree(world_size: float, max_depth: int) -> QuadNode:
     """Monta o quadtree completo uma única vez (na inicialização)."""
     root = QuadNode(0.0, 0.0, float(world_size), 0)
     _subdivide(root, max_depth)
-    _numerar(root, [0])
+    # Cada nó recebe o seu número (0, 1, 2...), em pré-ordem: pai antes dos
+    # filhos. É esse número que liga o nó à sua posição nos vetores numpy do
+    # frustum culling.
+    for numero, no in enumerate(listar_nos(root)):
+        no.indice = numero
     return root
 
 
-def _numerar(node: QuadNode, contador: list[int]) -> None:
-    """Dá a cada nó um índice único, em pré-ordem (pai antes dos filhos).
-
-    É esse índice que liga o nó à sua posição nos vetores numpy do culling.
-    """
-    node.indice = contador[0]
-    contador[0] += 1
-    for child in node.children:
-        _numerar(child, contador)
-
-
 def listar_nos(raiz: QuadNode) -> list[QuadNode]:
-    """Todos os nós, na ordem do índice (nos[i].indice == i)."""
-    nos: list[QuadNode] = []
+    """Todos os nós, em pré-ordem (pai antes dos filhos).
 
-    def visitar(no: QuadNode) -> None:
-        nos.append(no)
-        for filho in no.children:
-            visitar(filho)
-
-    visitar(raiz)
+    Depois de `build_quadtree`, vale nos[i].indice == i.
+    """
+    nos = [raiz]
+    for filho in raiz.children:
+        nos.extend(listar_nos(filho))
     return nos
 
 
@@ -147,14 +138,12 @@ def select(
     Devolve quantos nós foram podados (0 sem culling).
     """
     if visiveis is not None and not visiveis[node.indice]:
-        return 1
-    tem_filhos = bool(node.children)
+        return 1                                   # podado: nem desenha nem desce
     perto = _dist_para_bloco(node, cam_x, cam_z) < node.size * split_factor
-    if tem_filhos and perto:
-        podados = 0
-        for child in node.children:
-            podados += select(child, cam_x, cam_z, split_factor, out, visiveis)
-        return podados
+    if node.children and perto:
+        # Câmera perto: troca este bloco pelos 4 filhos (mais detalhe).
+        return sum(select(filho, cam_x, cam_z, split_factor, out, visiveis)
+                   for filho in node.children)
     out.append(node)
     return 0
 

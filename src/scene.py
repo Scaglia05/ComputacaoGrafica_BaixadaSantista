@@ -73,76 +73,85 @@ class Cena:
         self.lod_subdivisoes = lod_subdivisoes
         self.lod_fator_split = lod_fator_split
 
-        # --- heightmap -> textura R32F --------------------------------
+        alturas = self._carregar_alturas(fonte, escala_altura, seed, verboso)
+        self.altura_ref = max(abs(float(alturas.min())), abs(float(alturas.max()))) or 1.0
+        self._criar_textura_altura(alturas)
+        self._criar_terreno(construir_lod, construir_ingenuo)
+        self._criar_quadtree(alturas, lod_profundidade)
+        self._criar_agua(resolucao_agua)
+
+    # --- montagem (chamada uma vez, no construtor) --------------------
+    def _carregar_alturas(self, fonte: str, escala_altura: float, seed: int, verboso: bool):
+        """Devolve a matriz de alturas (N x N, unidades de mundo) e define
+        `self.unidades_por_metro` (quantas unidades de mundo valem 1 metro)."""
         if fonte == "dem":
             if verboso:
                 print("Carregando DEM da Baixada Santista (baixa tiles na 1a vez)...")
             alturas, self.unidades_por_metro = dem.carregar_heightmap(
-                resolution=resolucao_heightmap, world_size=tamanho_mundo
+                resolution=self.resolucao_heightmap, world_size=self.tamanho_mundo
             )
         else:
             if verboso:
                 print("Gerando terreno procedural...")
             alturas = heightmap.generate_heightmap(
-                resolution=resolucao_heightmap, height_scale=escala_altura, seed=seed
+                resolution=self.resolucao_heightmap, height_scale=escala_altura, seed=seed
             )
             # Sem escala geográfica real: amplitude ~ 600 m só para os
             # cenários de nível do mar (em metros) fazerem sentido.
             self.unidades_por_metro = escala_altura / 600.0
+        return alturas
 
-        self.altura_ref = max(abs(float(alturas.min())), abs(float(alturas.max()))) or 1.0
-
-        self._tex = ctx.texture(
-            (resolucao_heightmap, resolucao_heightmap), 1, alturas.tobytes(), dtype="f4"
-        )
+    def _criar_textura_altura(self, alturas) -> None:
+        """Sobe as alturas para a GPU como textura R32F (1 float por texel)."""
+        n = self.resolucao_heightmap
+        self._tex = self.ctx.texture((n, n), 1, alturas.tobytes(), dtype="f4")
         self._tex.filter = (moderngl.LINEAR, moderngl.LINEAR)
         self._tex.repeat_x = False
         self._tex.repeat_y = False
         self._tex.use(location=0)
-        # R32F = 4 bytes por texel
-        self._bytes_textura = self._tex.width * self._tex.height * self._tex.components * 4
+        self._bytes_textura = n * n * 4          # R32F = 4 bytes por texel
 
-        # --- programa do terreno + grades ---------------------------
-        self.prog = _programa(ctx, "terrain")
+    def _criar_terreno(self, construir_lod: bool, construir_ingenuo: bool) -> None:
+        """Programa (shaders) do terreno + as duas grades: a do CDLOD (pequena,
+        desenhada várias vezes) e a ingênua (uma malha só, na resolução total)."""
+        self.prog = _programa(self.ctx, "terrain")
         self.prog["u_heightmap"].value = 0
-        self.prog["u_world_size"].value = (tamanho_mundo, tamanho_mundo)
+        self.prog["u_world_size"].value = (self.tamanho_mundo, self.tamanho_mundo)
         self.prog["u_height_scale"].value = self.altura_ref
         self.prog["u_light_dir"].value = DIRECAO_LUZ
 
         self._vao_bloco, self._bytes_malha_lod = (
-            self._grade(lod_subdivisoes) if construir_lod else (None, 0)
+            self._grade(self.lod_subdivisoes) if construir_lod else (None, 0)
         )
         self._vao_ingenuo, self._bytes_malha_ingenua = (
-            self._grade(resolucao_heightmap) if construir_ingenuo else (None, 0)
+            self._grade(self.resolucao_heightmap) if construir_ingenuo else (None, 0)
         )
+        self.triangulos_por_bloco = self.lod_subdivisoes ** 2 * 2
+        self.triangulos_ingenuo = self.resolucao_heightmap ** 2 * 2
 
-        self._quadtree = lod.build_quadtree(tamanho_mundo, lod_profundidade)
+    def _criar_quadtree(self, alturas, profundidade: int) -> None:
+        self._quadtree = lod.build_quadtree(self.tamanho_mundo, profundidade)
         # Caixas dos nós para o frustum culling: a faixa de altura de cada bloco
         # sai do heightmap, uma vez só (aqui), e o frame só consulta os vetores.
-        lod.atribuir_faixas_altura(self._quadtree, alturas, tamanho_mundo)
+        lod.atribuir_faixas_altura(self._quadtree, alturas, self.tamanho_mundo)
         self._caixas = lod.caixas_dos_nos(self._quadtree)
-        self._bloco_raiz = lod.QuadNode(0.0, 0.0, tamanho_mundo, 0)
+        self._bloco_raiz = lod.QuadNode(0.0, 0.0, self.tamanho_mundo, 0)   # a malha ingênua = 1 bloco só
 
-        self.triangulos_por_bloco = lod_subdivisoes * lod_subdivisoes * 2
-        self.triangulos_ingenuo = resolucao_heightmap * resolucao_heightmap * 2
-
-        # --- água ---------------------------------------------------
-        av, ai = water.build_water_plane(
-            resolution=resolucao_agua, world_size=tamanho_mundo * 1.6
+    def _criar_agua(self, resolucao_agua: int) -> None:
+        vertices, indices = water.build_water_plane(
+            resolution=resolucao_agua, world_size=self.tamanho_mundo * 1.6
         )
-        self.prog_agua = _programa(ctx, "water")
+        self.prog_agua = _programa(self.ctx, "water")
         self.prog_agua["u_light_dir"].value = DIRECAO_LUZ
-        vbo_agua, ibo_agua = ctx.buffer(av.tobytes()), ctx.buffer(ai.tobytes())
-        self._vao_agua = ctx.vertex_array(
-            self.prog_agua,
-            [(vbo_agua, "3f", "in_position")],
-            index_buffer=ibo_agua,
-            index_element_size=4,
+        vbo = self.ctx.buffer(vertices.tobytes())
+        ibo = self.ctx.buffer(indices.tobytes())
+        self._vao_agua = self.ctx.vertex_array(
+            self.prog_agua, [(vbo, "3f", "in_position")],
+            index_buffer=ibo, index_element_size=4,
         )
-        self.triangulos_agua = int(ai.size // 3)
-        self._bytes_agua = vbo_agua.size + ibo_agua.size
+        self.triangulos_agua = int(indices.size // 3)
+        self._bytes_agua = vbo.size + ibo.size
 
-    # ------------------------------------------------------------------
     def _grade(self, subdivisoes: int) -> tuple[moderngl.VertexArray, int]:
         """Cria a grade unitária e devolve (VAO, bytes ocupados na GPU pelos buffers)."""
         v, i = heightmap.build_unit_grid(subdivisoes)
@@ -168,6 +177,7 @@ class Cena:
         partes["total"] = sum(partes.values())
         return partes
 
+    # --- seleção de blocos ---------------------------------------------
     def _selecionar(self, cam_x: float, cam_z: float, visiveis=None):
         """Seleção de blocos; devolve (blocos, nós_podados)."""
         blocos: list[lod.QuadNode] = []
@@ -179,7 +189,7 @@ class Cena:
     def selecionar_blocos(self, cam_x: float, cam_z: float) -> list[lod.QuadNode]:
         return self._selecionar(cam_x, cam_z)[0]
 
-    # ------------------------------------------------------------------
+    # --- desenho (todo frame) ------------------------------------------
     def desenhar(
         self,
         view: glm.mat4,
@@ -199,17 +209,29 @@ class Cena:
         fora do campo de visão. Vem DESLIGADO por padrão para que as medições
         antigas continuem reproduzíveis; a imagem gerada é idêntica nos dois casos.
         """
-        ctx = self.ctx
         cam_pos = tuple(cam_pos)
-        view_b = view.to_bytes()
-        proj_b = proj.to_bytes()
 
         # Reafirma a textura de altura na unidade 0 a cada frame — outras
         # partes (HUD) podem ter usado essa unidade no frame anterior.
         self._tex.use(location=0)
 
-        self.prog["u_view"].write(view_b)
-        self.prog["u_proj"].write(proj_b)
+        blocos, podados, triangulos_por_bloco = self._desenhar_terreno(
+            view, proj, cam_pos, nivel_mar, lod_ligado, morph, debug_lod, frustum_culling,
+        )
+        self._desenhar_agua(view, proj, cam_pos, nivel_mar, tempo)
+
+        return EstatisticasFrame(
+            blocos=len(blocos),
+            draw_calls=len(blocos) + 1,
+            triangulos=len(blocos) * triangulos_por_bloco + self.triangulos_agua,
+            nos_podados=podados,
+        )
+
+    def _desenhar_terreno(self, view, proj, cam_pos, nivel_mar,
+                          lod_ligado, morph, debug_lod, frustum_culling):
+        """Escolhe os blocos e desenha cada um. Devolve (blocos, podados, triângulos por bloco)."""
+        self.prog["u_view"].write(view.to_bytes())
+        self.prog["u_proj"].write(proj.to_bytes())
         self.prog["u_camera_pos"].value = cam_pos
         self.prog["u_sea_level"].value = nivel_mar
         self.prog["u_debug_lod"].value = bool(debug_lod)
@@ -224,15 +246,16 @@ class Cena:
                 visiveis = lod.nos_visiveis(self._caixas, lod.planos_do_frustum(view, proj))
             blocos, podados = self._selecionar(cam_pos[0], cam_pos[2], visiveis)
             vao = self._vao_bloco
-            self.prog["u_grid_dim"].value = float(self.lod_subdivisoes)
-            tri_bloco = self.triangulos_por_bloco
+            grade = self.lod_subdivisoes
+            triangulos_por_bloco = self.triangulos_por_bloco
         else:
             if self._vao_ingenuo is None:
                 raise RuntimeError("Cena criada sem a malha ingênua (construir_ingenuo=False).")
             blocos = [self._bloco_raiz]
             vao = self._vao_ingenuo
-            self.prog["u_grid_dim"].value = float(self.resolucao_heightmap)
-            tri_bloco = self.triangulos_ingenuo
+            grade = self.resolucao_heightmap
+            triangulos_por_bloco = self.triangulos_ingenuo
+        self.prog["u_grid_dim"].value = float(grade)
 
         k = self.lod_fator_split
         for bloco in blocos:
@@ -244,19 +267,14 @@ class Cena:
             self.prog["u_morph_start"].value = r_bloco + 0.55 * (r_pai - r_bloco)
             self.prog["u_morph_end"].value = r_pai
             vao.render(moderngl.TRIANGLES)
+        return blocos, podados, triangulos_por_bloco
 
-        ctx.enable(moderngl.BLEND)
-        self.prog_agua["u_view"].write(view_b)
-        self.prog_agua["u_proj"].write(proj_b)
+    def _desenhar_agua(self, view, proj, cam_pos, nivel_mar, tempo) -> None:
+        self.ctx.enable(moderngl.BLEND)
+        self.prog_agua["u_view"].write(view.to_bytes())
+        self.prog_agua["u_proj"].write(proj.to_bytes())
         self.prog_agua["u_camera_pos"].value = cam_pos
         self.prog_agua["u_sea_level"].value = nivel_mar
         self.prog_agua["u_time"].value = tempo
         self._vao_agua.render(moderngl.TRIANGLES)
-        ctx.disable(moderngl.BLEND)
-
-        return EstatisticasFrame(
-            blocos=len(blocos),
-            draw_calls=len(blocos) + 1,
-            triangulos=len(blocos) * tri_bloco + self.triangulos_agua,
-            nos_podados=podados,
-        )
+        self.ctx.disable(moderngl.BLEND)
