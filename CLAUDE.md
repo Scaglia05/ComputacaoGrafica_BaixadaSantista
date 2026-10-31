@@ -64,8 +64,10 @@ ComputacaoGrafica\
 │   ├── COMPLEMENTO_TECNICO.md      (companheiro do artigo: glossário de todo termo técnico,
 │   │                                por que cada lib, como tudo é calculado, com fórmulas)
 │   ├── resumo_projeto.pdf          (resumo de 3 páginas)
-│   ├── ArtigoCompGrafica_ElevacaoCosteira.pdf  (artigo científico FINAL, IEEE, 9 páginas)
-│   ├── artigo_v4.tex               (fonte LaTeX do artigo final)
+│   ├── artigo_final\               (ARTIGO FINAL: ABNT em duas colunas, template IEEE do Overleaf, até 8 págs;
+│   │                                artigo_final_v3_abnt.tex / _overleaf.zip / _previa.pdf)
+│   ├── ArtigoCompGrafica_ElevacaoCosteira.pdf  (versão anterior do artigo, IEEE — histórico)
+│   ├── artigo_v4.tex               (fonte LaTeX da versão anterior — histórico)
 │   └── especificacao_eixo6.pdf     (especificação oficial do professor)
 ├── bench\                        (resultados.csv + gráficos do benchmark — DADOS DO ARTIGO, não sobrescrever;
 │                                 medições novas ficam em bench\v2\: memoria.csv, run1..run3)
@@ -107,7 +109,10 @@ na raiz — foram renomeados/reorganizados para `exemplos/` e `src/`.
    alterna com a foto via `P`), e tecla `R` pra resetar a câmera
    (`Camera.resetar`/`Camera.bearing_graus` em `camera.py`).
 7. ⬜ Relatório da Etapa 1 (revisão bibliográfica) — não escrito.
-8. ✅ Artigo IEEE — **FINALIZADO** — PDF em
+8. ✅ Artigo — **versão atual: `docs/artigo_final/artigo_final_v3_abnt.tex`** (ABNT em duas colunas no
+   template IEEE do Overleaf, decisão do grupo; já inclui culling, memória isolada, link do repositório;
+   páginas de Strugar e Tanner foram omitidas por não confirmadas; falta compilar no Overleaf e
+   conferir o limite de 8 páginas). Histórico da versão anterior: PDF em
    `docs/ArtigoCompGrafica_ElevacaoCosteira.pdf`, fonte em `docs/artigo_v4.tex`
    (reescrita completa a partir do rascunho `artigo_v2.pdf` do colega, já removido do repo, seguindo o
    "IEEE Conference Template" oficial, com rigor de linguagem/parágrafo em
@@ -135,15 +140,16 @@ na raiz — foram renomeados/reorganizados para `exemplos/` e `src/`.
    Migdal & Jones [1998, "The Clipmap"] E Clasen & Hege [2006, "spherical
    clipmaps"] como referências distintas e corretas — mais rigoroso do que
    uma correção anterior deste arquivo, que tinha fundido as duas).
-10. ⬜ Ideal: rodar o benchmark também numa GPU mais fraca / mobile. **Bloqueado por
+10. ⬜ (trabalho futuro, declarado no artigo) Rodar o benchmark também numa GPU mais fraca / mobile. **Bloqueado por
     hardware:** esta máquina (i5-10400F, sem vídeo integrado) só tem a RTX 3060; precisa de
     um notebook com GPU integrada de um colega. Celular não roda (Python + OpenGL 3.3 core).
 11. ✅ Frustum culling + memória isolada por modo (branch `feat/frustum-culling-memoria-isolada`,
     escrito com testes antes). Resultados em `bench/v2/` (README, seção "Extensões"):
     culling −22% de tempo de quadro em média (−33%/−38% nas câmeras rasante/encosta, ≈0% na
-    aérea) e ponto de virada 4,1 M → 2,4 M de triângulos; memória a 2048²: 19 MB (CDLOD) × 153 MB
-    (malha completa). **O artigo ainda não reflete isso** (limitações "frustum culling" e
-    "memória não isolada" seguem declaradas lá). Cuidado: `bench.py` SEM `--saida` sobrescreve
+    aérea) e ponto de virada ~4,0 M → ~2,3 M de triângulos; memória a 2048²: 19 MB (CDLOD) × 153 MB
+    (malha completa). **O artigo (v2 em diante) já reflete isso.** Commits: código original com culling em
+    `feat/frustum-culling-memoria-isolada`; versão simplificada para leitura (+ teclas Tab e F11) em
+    `refactor/codigo-simplificado`. Cuidado: `bench.py` SEM `--saida` sobrescreve
     `bench/resultados.csv`, que sustenta os números do artigo.
     **Réplica das 3 execuções novas:** o ponto de virada pela MÉDIA reproduz (4,1 M × 4,2 M do
     artigo), mas o pelo p95 NÃO: o artigo diz ~2,7 M, as novas dão ~4,3 M (a cauda do artigo era

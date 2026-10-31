@@ -1,5 +1,7 @@
 # Visualização de Elevação Costeira — Computação Gráfica
 
+[![Abrir o artigo (PDF)](https://img.shields.io/badge/%F0%9F%93%84%20Abrir%20o%20artigo-PDF-b31b1b?style=for-the-badge)](docs/artigo_final/artigo_final_v3_previa.pdf)
+
 Renderização de terreno (heightmap) com **LOD adaptativo** por distância da
 câmera, combinado a um **plano de água com ondas**, cujo nível do mar é
 ajustável para visualizar áreas submersas em cenários de subida do mar
@@ -39,8 +41,12 @@ ComputacaoGrafica/
 │   ├── metodologia_atual.md/.pdf  # valores exatos de cada parâmetro (fonte da verdade)
 │   ├── COMPLEMENTO_TECNICO.md # companheiro do artigo: glossário + fórmulas + por que cada lib
 │   ├── resumo_projeto.pdf    # resumo de 3 páginas
-│   ├── ArtigoCompGrafica_ElevacaoCosteira.pdf  # artigo científico final (IEEE, 7 páginas)
-│   ├── artigo_v4.tex         # fonte LaTeX do artigo final (template IEEE Conference)
+│   ├── artigo_final/         # ARTIGO FINAL (ABNT em duas colunas, template IEEE do Overleaf, até 8 páginas)
+│   │   ├── artigo_final_v3_abnt.tex       # fonte LaTeX (versão atual)
+│   │   ├── artigo_final_v3_overleaf.zip   # pacote pronto para subir no Overleaf (.tex + figuras)
+│   │   └── artigo_final_v3_previa.pdf     # prévia em PDF (botão no topo deste README)
+│   ├── ArtigoCompGrafica_ElevacaoCosteira.pdf  # versão anterior do artigo (IEEE) — histórico
+│   ├── artigo_v4.tex         # fonte LaTeX da versão anterior — histórico
 │   └── figuras/              # capturas do sistema e gráfico de custo × carga usados no artigo
 ├── exemplos/                 # estudos isolados (fundamentos do pipeline)
 │   ├── janela.py             # janela + contexto OpenGL + render loop
@@ -55,6 +61,7 @@ ComputacaoGrafica/
     ├── camera.py             # câmera livre (yaw/pitch, matrizes view/projection)
     ├── scene.py              # classe Cena: todo o setup de GPU + desenhar() (usada por main e bench)
     ├── hud.py                # sobreposições 2D: legenda de comandos + foto de referência
+    ├── area_alagada.py       # área emersa alagada em cada cenário de nível do mar (tabela do artigo)
     ├── main.py               # janela + input + laço
     ├── bench.py              # mede tempo de frame com/sem LOD -> bench/*.csv e *.png
     ├── data/referencia_santos.jpg      # foto da Baía de Santos (CC BY 2.0 — ver _CREDITO.txt)
@@ -104,13 +111,16 @@ Resultado numa RTX 3060:
 
 - o CDLOD segura o tempo de frame ~constante (~1 ms) em qualquer resolução,
   porque desenha sempre ~0,4 M triângulos;
-- a malha ingênua cresce linear com a resolução e **ultrapassa o CDLOD por
-  volta de 1536² (~2,7 M (p95) a ~4,2 M (média) de triângulos)** — esse é o "ponto de virada";
+- a malha ingênua cresce linear com a resolução e **ultrapassa o CDLOD em cerca
+  de 4 M de triângulos (2,7 a 4,3 M, conforme o critério — média ou p95 — e a
+  execução)** — esse é o "ponto de virada";
 - o custo do *morphing* é desprezível (dentro do ruído de medição);
-- o ~1 ms fixo do CDLOD é overhead de CPU (percorrer o quadtree + ~200 draw
-  calls em Python) — numa GPU fraca / mobile o ponto de virada chega bem antes;
-- RAM (~110→255 MB) e VRAM (~620→805 MB) crescem com a **resolução do DEM**,
-  não com o modo de LOD (as 3 condições compartilham a mesma cena de teste).
+- o ~1 ms fixo do CDLOD é overhead de CPU (percorrer o quadtree + 100–184
+  *draw calls* em Python) — a hipótese é que numa GPU fraca / mobile o ponto de
+  virada chegue antes, mas isso **não foi medido** (falta hardware);
+- nesta varredura a RAM e a VRAM medidas (com as 3 condições na mesma cena de
+  teste) refletem a **resolução do DEM**, não o modo de LOD; a diferença entre
+  os modos aparece na medição isolada abaixo.
 
 #### Extensões: frustum culling e memória isolada por modo
 
@@ -129,7 +139,7 @@ alterados). RTX 3060, 3 execuções independentes.
   | aérea | 100 → 67 | ≈ 0% (dentro do ruído) |
 
   Média geral: 1,04 → 0,81 ms (−22%). **O ponto de virada, ao se comparar com a
-  malha sem LOD, cai de ~4,1 M para ~2,4 M de triângulos.** O culling é medido
+  malha sem LOD, cai de ~4,0 M para ~2,3 M de triângulos.** O culling é medido
   como condição *a mais*; a malha sem LOD não tem culling.
 - **Memória isolada** (`--memoria`): cada modo em um processo novo, só com a malha
   que usa. A 2048², o CDLOD aloca **19 MB** na GPU contra **153 MB** da malha
@@ -146,6 +156,8 @@ alterados). RTX 3060, 3 execuções independentes.
 | `Shift`          | mover mais rápido                            |
 | Mouse            | olhar ao redor                               |
 | `R`              | volta pro ponto de partida (se você se perder) |
+| `Tab`            | solta / prende o mouse (solto: dá para usar o outro monitor) |
+| `F11`            | tela cheia ↔ janela (no monitor onde a janela está) |
 | `,` / `.`        | baixar / subir o nível do mar (contínuo)     |
 | `1` `2` `3` `4`  | cenários de nível do mar (0 / +0,5 / +1 / +2 m) — os científicos |
 | `5` `6` `7`      | cenários extremos p/ demonstração (+5 / +10 / +20 m) |
@@ -174,6 +186,23 @@ V-Sync, fica travado em ~60 e não mostra a diferença). Uma **bússola**
 **minimapa** com a posição da câmera (canto inferior-direito, alterna com
 a foto real via `P`) ajuda a não se perder no terreno.
 
+## Versões do código (branches)
+
+| Branch | Conteúdo |
+|---|---|
+| `feat/frustum-culling-memoria-isolada` | código **original**, com frustum culling, memória isolada por modo, testes e os dados do artigo |
+| `refactor/codigo-simplificado` | o mesmo código **simplificado para leitura** (nada muda na funcionalidade, exceto as teclas `Tab` e `F11`) |
+
+Para alternar: `git switch <branch>`. Os 38 testes passam na versão original;
+rode `python -m unittest discover -s tests -v` também na simplificada antes de usá-la.
+
+## Artigo
+
+O artigo final fica em `docs/artigo_final/` (ABNT, duas colunas, template IEEE do
+Overleaf, até 8 páginas). A prévia em PDF foi gerada fora do Overleaf; **a versão
+oficial deve ser compilada no Overleaf** a partir do `.zip`. Para trocar o PDF do
+botão, substitua `artigo_final_v3_previa.pdf` pelo PDF compilado, com o mesmo nome.
+
 ## Roteiro do projeto
 
 | Fase | Conteúdo | Status |
@@ -181,7 +210,7 @@ a foto real via `P`) ajuda a não se perder no terreno.
 | 1 | Fundamentação e revisão bibliográfica | referências levantadas |
 | 2 | Arquitetura da engine + estruturas de dados base | **concluída** (`exemplos/` + `src/`) |
 | 3 | Algoritmo core | **concluída** — ondas de Gerstner + nível do mar ✅ · DEM real ✅ · CDLOD (quadtree + seleção + morphing) ✅ |
-| 4 | Avaliação experimental + artigo IEEE | **em andamento** — harness de benchmark + gráficos ✅ · perfilamento de RAM/VRAM/GPU ✅ · rodar em GPU mais fraca e artigo a escrever |
+| 4 | Avaliação experimental + artigo | **concluída, exceto um item** — benchmark + gráficos ✅ · RAM/VRAM isolada por modo ✅ · frustum culling ✅ · artigo ✅ (falta só compilar no Overleaf e conferir o limite de 8 páginas) · **trabalho futuro:** repetir o benchmark em GPU integrada / celular |
 
 ## Referências
 
@@ -196,14 +225,16 @@ a foto real via `P`) ajuda a não se perder no terreno.
 3. Clasen, M.; Hege, H.-C. (2006). *Terrain Rendering using Spherical Clipmaps.*
 4. Strugar, F. (2009). *Continuous Distance-Dependent Level of Detail for Rendering Heightmaps* (CDLOD).
 5. Fournier, A.; Reeves, W. T. (1986). *A Simple Model of Ocean Waves.*
-6. DiPaola, S.; Bhardwaj, N.; Sam, A. (2023). Geovisualização de subida do nível do mar.
+6. DiPaola, F.; Bhardwaj, A.; Sam, L. (2023). *Generating an interactive online map of future sea level rise along the North Shore of Vancouver* (arXiv:2304.07469).
 7. Brown, I.; Jude, S. et al. (2006). *Dynamic Simulation and Visualisation of Coastal Erosion.*
 
-Todas as referências acima foram validadas (título/autoria/ano conferidos
-contra a fonte original) na versão final do artigo — ver `docs/artigo_v4.tex`
-e o item 8 de `CLAUDE.md` para o histórico das 2 correções encontradas
+Título, autoria e ano das referências foram conferidos contra a fonte original
+— ver o item 8 de `CLAUDE.md` para o histórico das 2 correções encontradas
 (título/ano de Strugar; título de Welch, que na especificação oficial do
 eixo aparece erroneamente como "GPU Clipmaps and Ocean Simulation").
+**Ainda não confirmados:** o intervalo de páginas de Strugar e de Tanner et al.
+(omitido do artigo por isso) e o tipo/ano do trabalho de Welch (o artigo o cita
+como página web, sem data).
 
 **Dados e mídia**
 
