@@ -23,7 +23,8 @@ Controles
   5 6 7            cenários extremos p/ demonstração (+5 / +10 / +20 m)
   L                liga/desliga o LOD (CDLOD  x  malha ingênua)
   M                liga/desliga o morphing (com OFF, aparecem as cracks)
-  K                debug: pinta cada bloco do quadtree por profundidade
+  C                liga/desliga o frustum culling (não desenha o que está fora da tela)
+  K               debug: pinta cada bloco do quadtree por profundidade
   Z                alterna wireframe (ver a malha de triângulos)
   H                legenda de comandos: nenhuma -> básica -> completa -> nenhuma
   P                alterna o canto inferior-direito: minimapa <-> foto real
@@ -96,6 +97,7 @@ COMANDOS_BASICOS = [
 COMANDOS_AVANCADOS = COMANDOS_BASICOS + [
     ("L", "LOD/CDLOD: desenha so o detalhe visivel dali"),
     ("M", "suavizacao (morphing): remove frestas entre blocos"),
+    ("C", "culling: nao desenha blocos fora da tela"),
     ("K", "debug: colore os blocos do LOD"),
     ("Z", "wireframe: ve a malha de triangulos"),
 ]
@@ -187,6 +189,9 @@ def main() -> None:
         "lod_ligado": True, "l_antes": False,
         "debug_lod": False, "k_antes": False,
         "morph": True, "m_antes": False,
+        # Culling vem DESLIGADO: a imagem é idêntica nos dois casos, mas assim o
+        # comportamento descrito no artigo (tecla L) não muda. Ligue com C.
+        "culling": False, "c_antes": False,
         "nivel_ajuda": 1, "h_antes": False,      # 0=oculta 1=basica 2=completa
         "mostrar_foto": False, "p_antes": False,
         "mostrar_boasvindas": True, "i_antes": False,
@@ -280,6 +285,7 @@ def main() -> None:
         alterna("lod_ligado", "l_antes", glfw.KEY_L, "LOD:")
         alterna("debug_lod", "k_antes", glfw.KEY_K)
         alterna("morph", "m_antes", glfw.KEY_M, "morphing:")
+        alterna("culling", "c_antes", glfw.KEY_C, "frustum culling:")
         alterna("mostrar_foto", "p_antes", glfw.KEY_P)
         alterna("mostrar_boasvindas", "i_antes", glfw.KEY_I)
         ctx.wireframe = estado["wireframe"]
@@ -302,7 +308,7 @@ def main() -> None:
             view, proj, cam.position,
             nivel_mar=estado["nivel_mar"], tempo=tempo,
             lod_ligado=estado["lod_ligado"], morph=estado["morph"],
-            debug_lod=estado["debug_lod"],
+            debug_lod=estado["debug_lod"], frustum_culling=estado["culling"],
         )
         ctx.finish()
         tempo_render_ms = (time.perf_counter() - t_render0) * 1000.0
@@ -311,6 +317,7 @@ def main() -> None:
         hud.atualizar_status(
             estado["nivel_mar"] / cena.unidades_por_metro,
             estado["lod_ligado"], estado["morph"], tempo_render_ms,
+            culling_ligado=estado["culling"],
         )
         hud.atualizar_bussola(bearing)
         hud.atualizar_minimapa(cam.position.x, cam.position.z, bearing)
