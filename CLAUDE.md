@@ -67,14 +67,16 @@ ComputacaoGrafica\
 │   ├── ArtigoCompGrafica_ElevacaoCosteira.pdf  (artigo científico FINAL, IEEE, 9 páginas)
 │   ├── artigo_v4.tex               (fonte LaTeX do artigo final)
 │   └── especificacao_eixo6.pdf     (especificação oficial do professor)
-├── bench\                        (resultados.csv + gráficos do benchmark)
+├── bench\                        (resultados.csv + gráficos do benchmark — DADOS DO ARTIGO, não sobrescrever;
+│                                 medições novas ficam em bench\v2\: memoria.csv, run1..run3)
+├── tests\                        (unittest: culling, memória isolada, benchmark — ver "Testes" abaixo)
 ├── exemplos\
 │   ├── janela.py                  (concluído — fundamentos: janela + contexto OpenGL)
 │   └── triangulo.py               (concluído — fundamentos: VBO/VAO/shaders)
 └── src\
     ├── dem.py                     (DEM real da Baixada Santista)
     ├── heightmap.py               (terreno procedural + grade unitária do CDLOD)
-    ├── lod.py                     (quadtree + seleção de blocos por distância)
+    ├── lod.py                     (quadtree + seleção de blocos por distância + frustum culling vetorizado)
     ├── water.py                   (geometria do plano de água)
     ├── shaders\terrain.*          (heightmap por bloco, morphing, cor, faixa submersa)
     ├── shaders\water.*            (ondas de Gerstner, Fresnel, Blinn-Phong)
@@ -133,7 +135,28 @@ na raiz — foram renomeados/reorganizados para `exemplos/` e `src/`.
    Migdal & Jones [1998, "The Clipmap"] E Clasen & Hege [2006, "spherical
    clipmaps"] como referências distintas e corretas — mais rigoroso do que
    uma correção anterior deste arquivo, que tinha fundido as duas).
-10. ⬜ Ideal: rodar o benchmark também numa GPU mais fraca / mobile.
+10. ⬜ Ideal: rodar o benchmark também numa GPU mais fraca / mobile. **Bloqueado por
+    hardware:** esta máquina (i5-10400F, sem vídeo integrado) só tem a RTX 3060; precisa de
+    um notebook com GPU integrada de um colega. Celular não roda (Python + OpenGL 3.3 core).
+11. ✅ Frustum culling + memória isolada por modo (branch `feat/frustum-culling-memoria-isolada`,
+    escrito com testes antes). Resultados em `bench/v2/` (README, seção "Extensões"):
+    culling −22% de tempo de quadro em média (−33%/−38% nas câmeras rasante/encosta, ≈0% na
+    aérea) e ponto de virada 4,1 M → 2,4 M de triângulos; memória a 2048²: 19 MB (CDLOD) × 153 MB
+    (malha completa). **O artigo ainda não reflete isso** (limitações "frustum culling" e
+    "memória não isolada" seguem declaradas lá). Cuidado: `bench.py` SEM `--saida` sobrescreve
+    `bench/resultados.csv`, que sustenta os números do artigo.
+    **Réplica das 3 execuções novas:** o ponto de virada pela MÉDIA reproduz (4,1 M × 4,2 M do
+    artigo), mas o pelo p95 NÃO: o artigo diz ~2,7 M, as novas dão ~4,3 M (a cauda do artigo era
+    mais ruidosa: p95 da malha completa a 2048² = 2,75 ms lá × 1,98 ms agora). Reforça a
+    limitação nº 6 do artigo (série única, sem intervalo de confiança).
+
+## Testes
+
+`python -m unittest discover -s tests -v` (só biblioteca padrão — não há pytest). Parte deles
+cria contexto OpenGL sem janela; sem GPU eles são pulados. O mais importante é
+`test_imagem_identica_*`: o culling NÃO pode mudar a imagem. Lição registrada: `np.array(glm.mat4)`
+já vem como `[linha][coluna]` (não transpor) — um erro nisso passou despercebido num auxiliar de
+teste até um teste de mutação (bug injetado de propósito) mostrar que ele estava fraco.
 
 ## Parâmetros principais (valores REAIS do código — ver `docs/metodologia_atual.md` para a lista completa)
 
