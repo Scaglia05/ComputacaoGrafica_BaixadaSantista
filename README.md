@@ -1,8 +1,8 @@
 # Visualização de Elevação Costeira — Computação Gráfica
 
-[![Abrir o artigo (PDF)](https://img.shields.io/badge/%F0%9F%93%84%20Abrir%20o%20artigo-PDF-b31b1b?style=for-the-badge)](docs/artigo_final/artigo_final_v3_previa.pdf)
+[![Abrir o artigo (PDF)](https://img.shields.io/badge/%F0%9F%93%84%20Abrir%20o%20artigo-PDF-b31b1b?style=for-the-badge)](docs/artigo_final/artigo_final_v4_previa.pdf)
 
-> 📄 Se o botão acima não aparecer, [clique aqui para abrir o artigo (PDF)](docs/artigo_final/artigo_final_v3_previa.pdf).
+> 📄 Se o botão acima não aparecer, [clique aqui para abrir o artigo (PDF)](docs/artigo_final/artigo_final_v4_previa.pdf).
 
 Visualizador 3D interativo do relevo real da **Baixada Santista (Santos/SP)**
 com uma superfície de água animada cuja altura o usuário ajusta em tempo real
@@ -51,9 +51,9 @@ ComputacaoGrafica/
 │   ├── COMPLEMENTO_TECNICO.md # companheiro do artigo: glossário + fórmulas + por que cada lib
 │   ├── resumo_projeto.pdf    # resumo de 3 páginas
 │   ├── artigo_final/         # ARTIGO FINAL (ABNT em duas colunas, template IEEE do Overleaf, até 8 páginas)
-│   │   ├── artigo_final_v3_abnt.tex       # fonte LaTeX (versão atual)
-│   │   ├── artigo_final_v3_overleaf.zip   # pacote pronto para subir no Overleaf (.tex + figuras)
-│   │   └── artigo_final_v3_previa.pdf     # prévia em PDF (botão no topo deste README)
+│   │   ├── artigo_final_v4_abnt.tex       # fonte LaTeX (versão atual)
+│   │   ├── artigo_final_v4_overleaf.zip   # pacote pronto para subir no Overleaf (.tex + figuras)
+│   │   └── artigo_final_v4_previa.pdf     # prévia em PDF (botão no topo deste README)
 │   ├── ArtigoCompGrafica_ElevacaoCosteira.pdf  # versão anterior do artigo (IEEE) — histórico
 │   ├── artigo_v4.tex         # fonte LaTeX da versão anterior — histórico
 │   └── figuras/              # capturas do sistema e gráfico de custo × carga usados no artigo
@@ -211,7 +211,7 @@ A simplificação não muda a funcionalidade. Para ver a versão original:
 O artigo final fica em `docs/artigo_final/` (ABNT, duas colunas, template IEEE do
 Overleaf, até 8 páginas). A prévia em PDF foi gerada fora do Overleaf; **a versão
 oficial deve ser compilada no Overleaf** a partir do `.zip`. Para trocar o PDF do
-botão, substitua `artigo_final_v3_previa.pdf` pelo PDF compilado, com o mesmo nome.
+botão, substitua `artigo_final_v4_previa.pdf` pelo PDF compilado, com o mesmo nome.
 
 ## Roteiro do projeto
 
@@ -243,8 +243,8 @@ Título, autoria e ano das referências foram conferidos contra a fonte original
 (título/ano de Strugar; título de Welch, que na especificação oficial do
 eixo aparece erroneamente como "GPU Clipmaps and Ocean Simulation").
 **Ainda não confirmados:** o intervalo de páginas de Strugar e de Tanner et al.
-(omitido do artigo por isso) e o tipo/ano do trabalho de Welch (o artigo o cita
-como página web, sem data).
+(omitido do artigo por isso). O trabalho de Welch foi confirmado na página do
+autor como projeto final de B.Sc. em Ciência da Computação, de 2019.
 
 **Dados e mídia**
 

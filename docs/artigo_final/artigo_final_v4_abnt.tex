@@ -106,7 +106,7 @@ Ocean simulation. Sea level rise.
 \label{sec:intro}
 
 O aumento do nível médio dos oceanos, associado às mudanças climáticas de
-origem antrópica, figura entre os fenômenos ambientais de maior impacto
+origem antrópica (IPCC, 2021), figura entre os fenômenos ambientais de maior impacto
 sobre as regiões costeiras. Esse processo intensifica a erosão das linhas de costa e amplia a vulnerabilidade das áreas urbanas litorâneas a inundações, o que torna a comunicação visual desse risco central para o planejamento urbano e ambiental e para a conscientização pública.
 
 Segundo Brown et al. (2006), um dos principais entraves à comunicação do
@@ -138,20 +138,18 @@ cenários de subida do nível do mar sobre um Modelo Digital de Elevação
 (DEM) real e determinar experimentalmente a partir de qual carga geométrica
 o LOD adaptativo se torna necessário. Os objetivos específicos são: a)
 implementar o terreno com CDLOD sobre o DEM; b) simular a superfície
-oceânica com altura de base ajustável; e c) medir o tempo de quadro e o
-consumo de memória com e sem LOD. A hipótese é que, acima de certa carga geométrica, a malha completa deixa de ser interativa, enquanto o CDLOD mantém custo aproximadamente constante.
+oceânica com altura de base ajustável; c) medir o tempo de quadro e o
+consumo de memória com e sem LOD; e d) avaliar o descarte de blocos fora do campo de visão. A hipótese é que, acima de certa carga geométrica, a malha completa deixa de ser interativa, enquanto o CDLOD mantém custo aproximadamente constante.
 
 Diferentemente dos sistemas baseados em Sistemas de Informação Geográfica
 (SIG), que representam a subida do mar por camadas estáticas sobre um mapa
 bidimensional, propõe-se uma cena tridimensional navegável, na qual a altura
 da água é ajustada em tempo real. A ferramenta destina-se ao público leigo e
 a gestores ambientais e foi desenvolvida em Python, com ModernGL (OpenGL),
-GLFW e PyGLM. Este artigo está organizado em quatro seções: fundamentação e
+GLFW e PyGLM. O recorte local da Baixada Santista (Subseção~\ref{sub:aquisicao}) permite simplificar o terreno de esférico para plano, ao contrário da renderização de um planeta inteiro (CLASEN; HEGE, 2006). Este artigo está organizado em quatro seções: fundamentação e
 trabalhos relacionados (Seção~\ref{sec:fund}), metodologia
 (Seção~\ref{sec:metod}), resultados (Seção~\ref{sec:resultados}) e
 conclusão (Seção~\ref{sec:conclusao}).
-
-O recorte local da Baixada Santista (Subseção~\ref{sub:aquisicao}) permite simplificar o terreno de esférico para plano, ao contrário da renderização de um planeta inteiro (CLASEN; HEGE, 2006).
 
 \section{Fundamentação Teórica e Trabalhos Relacionados}
 \label{sec:fund}
@@ -207,7 +205,7 @@ ondas para síntese de imagens, baseado no modelo de Gerstner. Nele, cada
 ponto da superfície da água descreve uma trajetória circular ou elíptica, o
 que produz cristas estreitas e vales largos, como em ondas reais. Somando
 várias ondas de tamanhos diferentes, obtém-se uma superfície de aspecto
-natural, sem exigir as transformadas de Fourier dos modelos espectrais. Welch (s.d.)
+natural, sem exigir as transformadas de Fourier dos modelos espectrais. Welch (2019)
 implementa uma simulação de oceano em tempo real com ondas de Gerstner
 calculadas em \emph{shaders} GLSL sobre uma geometria estática em
 \emph{clipmap}: a GPU desloca os vértices e calcula as normais a cada quadro.
@@ -241,7 +239,7 @@ observador. Como o recorte de interesse é local e plano, adota-se a
 \emph{quadtree} do CDLOD em lugar da parametrização esférica do
 \emph{clipmap}. Da segunda frente, adota-se o modelo de Gerstner, na
 formulação de Fournier e Reeves (1986), cuja viabilidade em tempo real na GPU é demonstrada por Welch
-(s.d.), com uma diferença: a altura média
+(2019), com uma diferença: a altura média
 da água é um parâmetro ajustável em tempo real, usado para representar
 diferentes cenários de subida do mar. A terceira frente fornece a motivação
 e a escolha do cenário. A diferença está em oferecer uma cena
@@ -259,7 +257,7 @@ percepção de risco por parte do observador.
 \midrule
 Clasen e Hege (2006) & Clipmap esférico & Não & Planeta \\
 Strugar (2009) & CDLOD (quadtree) & Não & Terreno \\
-Welch (s.d.) & Clipmap & Sim & Oceano \\
+Welch (2019) & Clipmap & Sim & Oceano \\
 DiPaola, Bhardwaj e Sam (2023) & N/A (SIG) & Não & Costa real \\
 \textbf{Proposta} & CDLOD adaptado & Sim & Costa (erosão) \\
 \bottomrule
@@ -801,20 +799,16 @@ Quanto à memória, a medição com cada modo em um processo próprio mostra o q
 \section{Conclusão e Trabalhos Futuros}
 \label{sec:conclusao}
 
-Este artigo apresentou um sistema interativo que exibe em três dimensões o
-relevo real da Baixada Santista e uma superfície de água animada, cuja
-altura pode ser elevada em 0, $+0{,}5$, $+1$ e $+2$ metros, permitindo
-observar quais áreas ficariam submersas em cada cenário de subida do mar.
+Este artigo apresentou um visualizador tridimensional do relevo real da
+Baixada Santista, com água animada e nível do mar ajustável de 0 a $+2$ metros.
 
 O principal resultado vem do teste de desempenho. Com o CDLOD, o tempo para
 desenhar um quadro da cena completa (terreno e água) ficou próximo de 1 ms
-em todas as resoluções de terreno testadas. Sem LOD, esse tempo cresce
-junto com o tamanho da malha. As duas curvas se cruzam em cerca de 4 milhões de triângulos (2,7 a 4,3 milhões, conforme o critério e a execução): abaixo desse valor, desenhar a malha completa é mais rápido; acima dele, o CDLOD passa a ser indispensável para manter a interatividade. O descarte por campo de visão reduziu o tempo de quadro em 22\% e o ponto de virada para cerca de 2,3 milhões, e o CDLOD usou cerca de oito vezes menos memória de malha na resolução 2048. O custo do \emph{geomorphing} mostrou-se desprezível. A eficácia do CDLOD já é conhecida na literatura (STRUGAR,
+em todas as resoluções de terreno testadas. Sem LOD, esse tempo cresce com a malha. As duas curvas se cruzam em cerca de 4 milhões de triângulos (2,7 a 4,3 milhões, conforme o critério e a execução): abaixo desse valor, desenhar a malha completa é mais rápido; acima dele, o CDLOD passa a ser indispensável para manter a interatividade. O descarte por campo de visão reduziu o tempo de quadro em 22\% e o ponto de virada para cerca de 2,3 milhões, e o CDLOD usou cerca de oito vezes menos memória de malha na resolução 2048. O custo do \emph{geomorphing} mostrou-se desprezível. A eficácia do CDLOD já é conhecida na literatura (STRUGAR,
 2009); o que este trabalho acrescenta é a medição desse ponto de virada em
-um cenário aplicado de inundação costeira. Assim, o objetivo proposto foi
-atingido e a hipótese inicial, de que o nível de detalhe adaptativo é o
-mecanismo que viabiliza a visualização tridimensional de inundação costeira
-em tempo real, foi confirmada.
+um cenário aplicado de inundação costeira. Assim, a hipótese inicial, de que o nível de detalhe adaptativo
+viabiliza a visualização tridimensional de inundação costeira em tempo real,
+foi confirmada.
 
 Algumas limitações devem ser consideradas. Primeiro, o CDLOD implementado é simplificado: as faixas do \emph{geomorphing} não seguem exatamente as fórmulas originais (STRUGAR, 2009) e o descarte usa caixas conservadoras, sem oclusão. Segundo, o teste foi feito em uma única GPU de computador de mesa (RTX 3060); que o ponto de virada ocorra mais cedo em celulares, público-alvo final, é uma hipótese razoável, mas não medida, por falta de hardware com GPU integrada. Terceiro, o relevo foi exagerado verticalmente em $6\times$ (Equação~\eqref{eq:escala}) e a água não interage com o terreno (sem espuma nem refração). Quarto, a exatidão vertical dos dados de origem não foi validada: se for da ordem dos cenários (+0,5 a +2 m), as áreas alagadas devem ser lidas como demonstração do método, e não como previsão. Quinto, a análise se limita à média e ao percentil 95 de poucas execuções, sem intervalos de confiança, e o ponto de virada foi interpolado linearmente entre duas resoluções; o p95 variou de 2,7 a 4,3 milhões de triângulos entre execuções, e os valores são, portanto, estimativas.
 
@@ -843,6 +837,10 @@ insights on enabling geovisualisation for coastal communities. \textbf{arXiv},
 FOURNIER, A.; REEVES, W. T. A simple model of ocean waves. \textbf{ACM
 SIGGRAPH Computer Graphics}, v. 20, n. 4, p. 75-84, 1986.
 
+IPCC -- INTERGOVERNMENTAL PANEL ON CLIMATE CHANGE. \textbf{Climate change 2021}: the
+physical science basis. Contribution of Working Group I to the Sixth Assessment
+Report. Cambridge: Cambridge University Press, 2021. DOI: 10.1017/9781009157896.
+
 STRUGAR, F. Continuous distance-dependent level of detail for rendering
 heightmaps. \textbf{Journal of Graphics, GPU, and Game Tools}, v. 14, n. 4,
 2009. DOI: 10.1080/2151237X.2009.10129287.
@@ -851,9 +849,9 @@ TANNER, C. C.; MIGDAL, C. J.; JONES, M. T. The clipmap: a virtual mipmap.
 In: ANNUAL CONFERENCE ON COMPUTER GRAPHICS AND INTERACTIVE TECHNIQUES,
 1998, [S. l.]. \textbf{Proceedings} [...]. [S. l.]: ACM, 1998.
 
-WELCH, R. \textbf{Real-time ocean simulation}. [S. l.], [s. d.].
-Disponível em: \url{https://ryanwelch.co.uk/project/ocean-simulation/}.
-Acesso em: 11 out. 2026.
+WELCH, R. \textbf{Real-time ocean simulation}. 2019. Trabalho de Conclusão de
+Curso (Bacharelado em Ciência da Computação) -- [S. l.], 2019. Disponível em:
+\url{https://ryanwelch.co.uk/project/ocean-simulation/}. Acesso em: 31 out. 2026.
 \endgroup
 
 \end{document}
