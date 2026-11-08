@@ -3,7 +3,7 @@
  lod.py  —  Quadtree do terreno + seleção de nível de detalhe (CDLOD, parte 2a)
 =============================================================================
 
-Ideia do CDLOD (Strugar, 2010)
+Ideia do CDLOD (Strugar, 2009)
 ------------------------------
 O terreno é dividido recursivamente em 4 quadrantes, formando um QUADTREE:
 

@@ -55,7 +55,7 @@ o experimento que mede quando a simplificação (LOD) deixa de ser opcional.
 | **OpenGL core profile 3.3 / GLSL 330** | A "versão" da API gráfica usada — moderna (sem funções obsoletas), suficiente para tudo que o projeto precisa. |
 | **Rasterização** | Etapa **automática** da GPU que transforma um triângulo (3 pontos na tela) nos pixels que ele cobre, interpolando os valores dos 3 vértices ao longo do caminho. |
 | **Framebuffer / FBO** | O "quadro" onde a GPU desenha. Pode ser a tela (janela) ou um alvo **fora da tela** (usado no benchmark e para gerar o minimapa). |
-| **Draw call** | Um comando "desenhe esta malha agora". Cada um tem um custo fixo de organização no lado da CPU — é por isso que o CDLOD, com ~200 *draw calls* por quadro, tem um piso de custo que a malha única (1 *draw call*) não tem. |
+| **Draw call** | Um comando "desenhe esta malha agora". Cada um tem um custo fixo de organização no lado da CPU — é por isso que o CDLOD, com ~100 a 184 *draw calls* por quadro, tem um piso de custo que a malha única (1 *draw call*) não tem. |
 | **V-Sync** | Trava a troca de quadros no ritmo do monitor (~60 Hz), evitando *tearing* (corte visual). Também **esconde** ganhos de desempenho menores que 1/60 s — por isso medimos o tempo de render manualmente, em vez de confiar só no FPS da tela. |
 | **FOV / near / far** | Campo de visão vertical (graus) e os planos de recorte próximo/distante da câmera — juntos definem o **frustum** (o "cone" de visão que vira imagem). |
 | ***Bounding box*** | O menor retângulo/caixa que contém uma forma — usada tanto para o recorte geográfico (latitude/longitude) quanto para cada bloco do quadtree. |
@@ -65,7 +65,7 @@ o experimento que mede quando a simplificação (LOD) deixa de ser opcional.
 | Termo | Significado |
 |---|---|
 | **LOD** (*Level of Detail*, nível de detalhe) | Estratégia geral de desenhar com **menos geometria** o que está longe da câmera (imperceptível) e mais perto do observador. |
-| **CDLOD** (*Continuous Distance-Dependent LOD*) | O algoritmo específico de Strugar (2010): organiza o terreno numa **quadtree** e escolhe o nível de detalhe de cada bloco por uma função contínua da distância. |
+| **CDLOD** (*Continuous Distance-Dependent LOD*) | O algoritmo específico de Strugar (2009): organiza o terreno numa **quadtree** e escolhe o nível de detalhe de cada bloco por uma função contínua da distância. |
 | **Quadtree** | Estrutura em árvore em que cada nó representa um quadrado, e se subdivide em **4 filhos** (quadrantes) até uma profundidade máxima. Aqui: profundidade `L = 5`. |
 | **Nó raiz / nó folha** | O nó raiz é o quadrado que cobre o terreno inteiro; um nó folha é o último nível (o mais subdividido, sem filhos). |
 | **Geomorphing (morphing)** | Técnica de deslizar suavemente os vértices "ímpares" de uma grade até a posição dos "pares" conforme a distância cresce — faz a borda de um bloco detalhado **coincidir** com a de um bloco grosseiro vizinho. |
@@ -197,7 +197,7 @@ quadtree, amostrando a textura de altura no lugar certo — é o
    se d < τ × 2,2 :  desce para os 4 filhos (mais detalhe)
    senão          :  desenha este nó (não desce mais)
    ```
-   O resultado típico: ~200–230 blocos ativos, contra os 1024 blocos-folha
+   O resultado típico: ~100–184 blocos ativos (52–73 com o frustum culling), contra os 1024 blocos-folha
    que existiriam se a árvore inteira fosse forçada à profundidade máxima.
 3. **Morphing**: para cada bloco desenhado, calcula-se uma **faixa de
    transição** (`u_morph_start` a `u_morph_end`), baseada no próprio `τ` do
@@ -309,9 +309,7 @@ estimativa), e uma amostra de RAM/VRAM/uso de GPU.
 
 **Já identificadas no artigo, ainda pendentes:**
 
-1. *Frustum culling* — não desenhar blocos do quadtree que estão fora do
-   campo de visão da câmera (hoje, um bloco "atrás" de você ainda é
-   desenhado se estiver perto o bastante).
+1. ✅ *Frustum culling* — **feito** (tecla `C`; AABB por nó + 6 planos, em NumPy). Falta oclusão (blocos escondidos atrás de montanhas).
 2. Rodar o mesmo *benchmark* numa GPU mais fraca / dispositivo móvel, para
    validar experimentalmente (e não só por extrapolação) que o ponto de
    virada chega antes nesse hardware.
@@ -330,5 +328,4 @@ estimativa), e uma amostra de RAM/VRAM/uso de GPU.
 
 6. Relatório da Etapa 1 (revisão bibliográfica).
 7. Confirmar com o professor as referências complementares.
-8. Corrigir no artigo: o número de triângulos citado para a resolução 2048
-   (Seção III-F) e o título da referência [5] (ver `CLAUDE.md`, item 8).
+8. ✅ Correções do artigo (triângulos a 2048 e título da referência de Welch) — **feitas** na v4.

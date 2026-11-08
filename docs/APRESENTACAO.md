@@ -48,9 +48,9 @@ regiões mais estudadas do Brasil quanto a subida do mar e subsidência.
 
 | # | Artigo | O que herdamos |
 |---|--------|----------------|
-| 1 (obrigatório) | **Tanner, Migdal & Jones** — *Terrain Rendering using Spherical Clipmaps* (conforme especificação oficial do eixo) | Conceito de LOD organizado em "anéis" de detalhe em torno do observador. Adaptamos de esfera → terreno plano, e de clipmap → **quadtree** (via CDLOD, Strugar 2010). |
-| 2 (obrigatório) | **R. Welch** — *GPU Clipmaps and Ocean Simulation* | Conceito de superfície de água dinâmica gerada em tempo real no shader, em vez de malha animada. |
-| 3 (complementar) | **Strugar (2010)** — *Continuous Distance-Dependent LOD (CDLOD)* | O algoritmo de LOD que efetivamente implementamos: quadtree + seleção por distância + **morphing** de vértices entre níveis. |
+| 1 (obrigatório) | **Tanner, Migdal & Jones (1998)** — *The Clipmap: A Virtual Mipmap* (a especificação oficial atribui a eles o título "Terrain Rendering using Spherical Clipmaps", que na verdade é de **Clasen & Hege, 2006**) | Conceito de LOD organizado em "anéis" de detalhe em torno do observador. Adaptamos de esfera → terreno plano, e de clipmap → **quadtree** (via CDLOD, Strugar 2009). |
+| 2 (obrigatório) | **R. Welch (2019)** — *Real-time ocean simulation* (TCC de B.Sc.; a especificação usa o título "GPU Clipmaps and Ocean Simulation", sem fonte localizável) | Conceito de superfície de água dinâmica gerada em tempo real no shader, em vez de malha animada. |
+| 3 (complementar) | **Strugar (2009)** — *Continuous Distance-Dependent Level of Detail for Rendering Heightmaps* (CDLOD) | O algoritmo de LOD que efetivamente implementamos: quadtree + seleção por distância + **morphing** de vértices entre níveis. |
 | 4 (complementar) | **Fournier & Reeves (1986)** — *A Simple Model of Ocean Waves* | A matemática das **ondas de Gerstner** (a partícula descreve um círculo; crista afiada, vale largo), já pensada para zona costeira. |
 | 5–6 (complementares) | Estudo de geovisualização de subida do mar (Vancouver, arXiv); Brown, Jude et al. (2006) sobre erosão costeira via DEM | Embasamento científico da aplicação (visualizar inundação sobre DEM). |
 
@@ -75,7 +75,7 @@ não traria benefício nenhum — só complexidade sem propósito.
 
 Por isso adaptamos o **princípio** do clipmap (detalhe decrescente com a
 distância ao observador, por anéis/níveis) usando **CDLOD** (Strugar,
-2010): a evolução direta e bem documentada do mesmo conceito, formulada
+2009): a evolução direta e bem documentada do mesmo conceito, formulada
 para terrenos planos e limitados via quadtree, e que resolve de quebra
 o problema clássico de emenda entre níveis (*cracks*) com *morphing* de
 vértices — o que o clipmap original não endereça. Medimos esse custo
@@ -196,8 +196,6 @@ mudança recalcula os vetores `front`, `right`, `up`.
   cada bloco e "estica" esta grade para o lugar certo no mundo.
 - `grid_indices(resolution)` — os índices que ligam os vértices de uma
   grade N×N em triângulos (2 por célula). Compartilhado por terreno e água.
-- `build_mesh(...)` — versão "tudo em vértices" (usada só nos testes; o
-  caminho oficial é textura + grade unitária).
 
 **Conceito:** ruído procedural, malha indexada, *fBm*.
 
@@ -275,7 +273,7 @@ Para cada bloco selecionado, recebe `u_node_offset` (canto) e
 ### `water.py` (54 linhas) + `shaders/water.*`
 - `build_water_plane(resolution=256, world_size)` — só uma **grade plana**
   em `y = 0`, maior que o terreno (1,6×) para alcançar o horizonte.
-- `water.vert` (70 linhas) — **ondas de Gerstner**: soma de 4 ondas, cada
+- `water.vert` (70 linhas) — **ondas de Gerstner**: soma de 6 ondas, cada
   uma com direção, amplitude, comprimento (λ), velocidade e *steepness* Q.
   Cada onda move o vértice na horizontal (na direção de propagação) **e**
   na vertical → crista afiada, vale largo (visual de mar; um seno puro só
@@ -333,7 +331,7 @@ com 30 frames de aquecimento + 150 medidos. Salva `bench/resultados.csv` e
 ```
 1. main.py lê input → atualiza Camera
 2. Camera → matrizes view e projection (PyGLM)
-3. lod.select() percorre o quadtree → ~200 blocos a desenhar
+3. lod.select() percorre o quadtree → ~100 a 184 blocos a desenhar (52 a 73 com o frustum culling ligado, tecla `C`)
 4. para cada bloco:
      vertex shader: grade unitária → mundo, lê altura da textura,
                     faz morphing, calcula normal
@@ -350,11 +348,11 @@ com 30 frames de aquecimento + 150 medidos. Salva `bench/resultados.csv` e
 | Aspecto | Herdado dos artigos | Nosso |
 |---|---|---|
 | LOD de terreno | Ideia de anéis de detalhe (Tanner, Migdal & Jones — clipmap esférico); algoritmo CDLOD (Strugar) | Implementação simplificada e didática em Python; **quadtree + seleção por distância + morphing**; chave liga/desliga para comparar |
-| Água | Superfície dinâmica no shader (Welch); ondas de Gerstner (Fournier&Reeves) | 4 ondas somadas, normal analítica, Fresnel + Blinn-Phong, **nível de base como parâmetro interativo** |
+| Água | Superfície dinâmica no shader (Welch); ondas de Gerstner (Fournier&Reeves) | 6 ondas somadas, normal analítica, Fresnel + Blinn-Phong, **nível de base como parâmetro interativo** |
 | Dados | — | **DEM real da Baixada Santista** (SRTM + batimetria GEBCO), com despike e reamostragem |
 | Aplicação | Embasamento (estudos de erosão / subida do mar sobre DEM) | **Realce da faixa submersa** reagindo ao nível do mar; **cenários em metros reais** (0 / +0,5 / +1 / +2 m) |
 | Combinação | Cada artigo trata terreno **ou** água | **Acoplamento** terreno + água + parâmetro de inundação, com propósito analítico |
-| Avaliação | Os artigos **apresentam** o algoritmo | **Experimento controlado** que mediu o *trade-off* e achou o **ponto de virada** (~2,7 M (p95) a ~4,2 M (média) de triângulos numa RTX 3060) |
+| Avaliação | Os artigos **apresentam** o algoritmo | **Experimento controlado** que mediu o *trade-off* e achou o **ponto de virada** (~4 M de triângulos numa RTX 3060 (2,7 a 4,3 M conforme o critério e a execução; ~2,3 M com culling)) |
 
 **Frase-resumo para a apresentação:** *"Pegamos o LOD de terreno de um
 artigo e a água dinâmica de outro, implementamos os dois em cima de um DEM
@@ -371,17 +369,18 @@ Rodando `bench.py` numa **RTX 3060**:
 - O **CDLOD** mantém o tempo de frame quase **constante** (~1 ms) em
   qualquer resolução do heightmap, porque desenha sempre ~0,4 M triângulos.
 - A **malha ingênua** (sem LOD) cresce linearmente com a resolução e
-  **ultrapassa o CDLOD entre 1024² e 1536² (~2,7 M (p95) a ~4,2 M (média) de triângulos)** — o *ponto
+  **ultrapassa o CDLOD em torno de 4 M de triângulos (2,7 a 4,3 M conforme o critério e a execução)** — o *ponto
   de virada*.
 - O custo do **morphing** é desprezível (dentro do ruído de medição).
 - O ~1 ms fixo do CDLOD é **overhead de CPU** (percorrer o quadtree em
-  Python + ~200 draw calls). Numa GPU fraca ou **mobile** (o eixo do
+  Python + ~100 a 184 draw calls). Numa GPU fraca ou **mobile** (o eixo do
   projeto), o ponto de virada chega **muito antes** — é o argumento a favor
   do LOD.
-- **Recursos:** RAM do processo (~110→255 MB) e VRAM (~620→805 MB) crescem
-  com a **resolução do DEM**, não com o modo de LOD — as três condições
-  são medidas na mesma cena de teste, então isso mostra o custo do dado de
-  entrada, não uma comparação de memória "com LOD × sem LOD".
+- **Frustum culling:** reduz o tempo de quadro em ~22% em média (−33% a −38%
+  nas câmeras rasante e encosta, ≈0% na aérea) e leva o ponto de virada a
+  ~2,3 M de triângulos. A imagem é idêntica com e sem culling (testado).
+- **Memória (cada modo em processo isolado):** a 2048², a malha do CDLOD ocupa
+  19 MB contra 153 MB da malha completa; pico de RAM de 191 contra 595 MB.
 
 Gráficos em `bench/`: `fps_vs_resolucao.png`, `tempo_por_camera.png`,
 `triangulos_vs_tempo.png`, `custo_do_morph.png`.
@@ -390,9 +389,9 @@ Gráficos em `bench/`: `fps_vs_resolucao.png`, `tempo_por_camera.png`,
 
 ## 9. Limitações (dizer antes que a banca pergunte)
 
-1. **CDLOD simplificado**: sem *frustum culling* (blocos atrás da câmera
-   ainda são desenhados); as faixas de morph não seguem exatamente as
-   fórmulas do Strugar.
+1. **CDLOD simplificado**: o *frustum culling* usa caixas conservadoras, sem
+   oclusão, e vem desligado por padrão (tecla `C`); as faixas de morph não
+   seguem exatamente as fórmulas do Strugar.
 2. **Benchmark em 1 GPU desktop**: sem número de dispositivo móvel, embora
    o eixo seja "Sistemas Mobile". Discutimos por que o resultado se
    traduz (o overhead é constante, a geometria evitada escala).

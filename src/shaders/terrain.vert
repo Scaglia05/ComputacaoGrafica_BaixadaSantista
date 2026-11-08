@@ -9,7 +9,7 @@
 // uma textura (u_heightmap).
 //
 // O MORPHING resolve as "cracks" e o "popping" entre blocos de níveis
-// diferentes (Strugar, 2010):
+// diferentes (Strugar, 2009):
 //   - perto do limite externo do alcance deste bloco, cada vértice "ímpar"
 //     da grade desliza suavemente até a posição do vértice "par" vizinho;
 //   - com isso a borda do bloco fino passa a ter o MESMO espaçamento da borda
