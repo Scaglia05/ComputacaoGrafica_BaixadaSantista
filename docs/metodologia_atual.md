@@ -86,7 +86,7 @@ ir além disso na demonstração).
 - **Variáveis:** `{sem LOD, CDLOD, CDLOD sem morphing}` × resolução do heightmap `{256, 512, 1024, 1536, 2048}` × 4 posições de câmera.
 - **GPU de teste:** NVIDIA RTX 3060.
 - **Métricas coletadas por combinação:** tempo de frame (média/p50/p95, ms) e FPS; **RAM do processo** (RSS, via `psutil`); **VRAM usada e utilização de GPU** (via `nvidia-smi`, quando disponível — placas não-NVIDIA ficam sem esses dois campos, sem quebrar o benchmark).
-- **Resultado (desempenho):** com CDLOD, tempo de frame ~constante (~1 ms) em qualquer resolução (~0,4 M triângulos sempre desenhados). Sem LOD, o tempo cresce linearmente com a resolução. As curvas se cruzam por volta de **5 milhões de triângulos** — o "ponto de virada" a partir do qual o CDLOD compensa nessa GPU (em GPU mais fraca / mobile, esse ponto chega antes). Custo do morphing: dentro do ruído de medição (~gratuito).
+- **Resultado (desempenho):** com CDLOD, tempo de frame ~constante (~1 ms) em qualquer resolução (~0,4 M triângulos sempre desenhados). Sem LOD, o tempo cresce linearmente com a resolução. As curvas se cruzam por volta de **5 milhões de triângulos** — o "ponto de virada" a partir do qual o CDLOD compensa nessa GPU (em outra GPU esse ponto pode ser diferente). Custo do morphing: dentro do ruído de medição (~gratuito).
 - **Resultado (recursos):** RAM do processo cresce de ~110 MB (heightmap 256²) a ~255 MB (2048²) — reflete o tamanho da textura de altura e dos buffers de vértice/índice, não o modo de LOD. VRAM cresce de ~740 MB a ~910 MB pelo mesmo motivo. **Importante:** neste benchmark as 3 condições compartilham a mesma cena (o VAO do CDLOD e o da malha ingênua ficam residentes juntos), então RAM/VRAM não isolam o ganho de memória do LOD — só mostram o crescimento com a resolução do DEM. Isolar isso exigiria montar cenas separadas por condição (melhoria futura).
 - **Saídas:** `bench/resultados.csv` + 5 gráficos (`bench/*.png`, incluindo `recursos_vs_resolucao.png`).
 
@@ -129,5 +129,4 @@ ComputacaoGrafica/
 - Confirmar com o professor se as referências complementares (Strugar,
   Fournier & Reeves, Brown et al., estudo de Vancouver) podem ser citadas
   junto às duas obrigatórias do eixo (Tanner/Migdal/Jones, Welch).
-- Ideal: rodar o benchmark também numa GPU mais fraca / dispositivo móvel,
-  já que o eixo do trabalho é "Sistemas Mobile".
+- Ideal: rodar o benchmark também em outras GPUs (inclusive integradas).

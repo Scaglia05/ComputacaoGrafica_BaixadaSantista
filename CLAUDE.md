@@ -140,9 +140,9 @@ na raiz — foram renomeados/reorganizados para `exemplos/` e `src/`.
    Migdal & Jones [1998, "The Clipmap"] E Clasen & Hege [2006, "spherical
    clipmaps"] como referências distintas e corretas — mais rigoroso do que
    uma correção anterior deste arquivo, que tinha fundido as duas).
-10. ⬜ (trabalho futuro, declarado no artigo) Rodar o benchmark também numa GPU mais fraca / mobile. **Bloqueado por
+10. ⬜ (trabalho futuro, declarado no artigo) Rodar o benchmark também em outras GPUs (inclusive integradas). **Bloqueado por
     hardware:** esta máquina (i5-10400F, sem vídeo integrado) só tem a RTX 3060; precisa de
-    um notebook com GPU integrada de um colega. Celular não roda (Python + OpenGL 3.3 core).
+    um notebook com GPU integrada de um colega.
 11. ✅ Frustum culling + memória isolada por modo (branch `feat/frustum-culling-memoria-isolada`,
     escrito com testes antes). Resultados em `bench/v3/` (código atual; README, seção "Extensões"):
     culling −22% de tempo de quadro em média (−37% nas câmeras rasante/encosta, ≈0% na
@@ -197,7 +197,7 @@ teste até um teste de mutação (bug injetado de propósito) mostrar que ele es
 Avançados em Computação Gráfica e Visualização Científica") que define os 7
 Eixos de Pesquisa, as 4 etapas do projeto (semanas 1-16) e a estrutura
 obrigatória do artigo final (seções, 4-8 páginas conforme o PDF; o grupo informou que o
-limite real é de até 10 páginas; IEEE Conference Template via Overleaf). O Eixo 6 ("Topografia e Sistemas Mobile", o nosso) lista como
+limite real é de até 10 páginas; IEEE Conference Template via Overleaf). O Eixo 6 (Topografia, o nosso) lista como
 referências obrigatórias *"Terrain Rendering using Spherical Clipmaps"*
 (C. C. Tanner, C. J. Migdal, M. T. Jones) e *"GPU Clipmaps and Ocean
 Simulation"* (R. Welch) — ver a nota abaixo sobre os erros de atribuição

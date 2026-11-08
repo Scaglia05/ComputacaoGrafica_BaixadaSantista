@@ -72,7 +72,7 @@ tempo real, o que permite visualizar cenários de subida do mar de 0, +0,5,
 +1 e +2 metros. Um teste de desempenho automatizado, sem janela gráfica,
 executado em uma unidade de processamento gráfico (GPU) NVIDIA RTX 3060,
 comparou a renderização com e sem nível de detalhe em cinco resoluções de
-terreno. Em três execuções, os resultados indicam um ponto de virada próximo de 5 milhões de triângulos (4,4 a 5,6 milhões, conforme o critério e a execução), a partir do qual o CDLOD passa a ser mais rápido do que a malha completa. O descarte de blocos fora do campo de visão reduziu o tempo de quadro em 22\% e o ponto de virada para cerca de 3 milhões, e o CDLOD usou cerca de oito vezes menos memória de malha. Nessa GPU, porém, a malha completa permaneceu interativa em todas as resoluções (cerca de 2 ms por quadro com 8,5 milhões de triângulos). Conclui-se que o nível de detalhe adaptativo reduz o custo de tempo e de memória da visualização de inundação costeira; sua necessidade em dispositivos mais fracos permanece como hipótese não testada.
+terreno. Em três execuções, os resultados indicam um ponto de virada próximo de 5 milhões de triângulos (4,4 a 5,6 milhões, conforme o critério e a execução), a partir do qual o CDLOD passa a ser mais rápido do que a malha completa. O descarte de blocos fora do campo de visão reduziu o tempo de quadro em 22\% e o ponto de virada para cerca de 3 milhões, e o CDLOD usou cerca de oito vezes menos memória de malha. Nessa GPU, porém, a malha completa permaneceu interativa em todas as resoluções (cerca de 2 ms por quadro com 8,5 milhões de triângulos). Conclui-se que o nível de detalhe adaptativo reduz o custo de tempo e de memória da visualização de inundação costeira.
 
 Palavras-chave: Visualização científica. Nível de detalhe. Renderização de
 terreno. Simulação de oceano. Subida do nível do mar.
@@ -92,7 +92,7 @@ six Gerstner waves, with a base height adjustable in real time, which
 allows sea level rise scenarios of 0, +0.5, +1 and +2 meters to be
 visualized. An automated windowless benchmark, run on an NVIDIA RTX 3060
 graphics processing unit (GPU), compared rendering with and without level
-of detail at five terrain resolutions. Over three runs, the results indicate a tipping point near 5 million triangles (4.4 to 5.6 million, depending on the criterion and the run), beyond which CDLOD becomes faster than the full mesh. Frustum culling cut frame time by 22\% and moved the tipping point to about 3 million, and CDLOD used about eight times less mesh memory. On this GPU, however, the full mesh remained interactive at every resolution (about 2 ms per frame at 8.5 million triangles). It is concluded that adaptive level of detail lowers the time and memory cost of coastal flooding visualization; whether it is necessary on weaker devices remains an untested hypothesis.
+of detail at five terrain resolutions. Over three runs, the results indicate a tipping point near 5 million triangles (4.4 to 5.6 million, depending on the criterion and the run), beyond which CDLOD becomes faster than the full mesh. Frustum culling cut frame time by 22\% and moved the tipping point to about 3 million, and CDLOD used about eight times less mesh memory. On this GPU, however, the full mesh remained interactive at every resolution (about 2 ms per frame at 8.5 million triangles). It is concluded that adaptive level of detail lowers the time and memory cost of coastal flooding visualization.
 
 Keywords: Scientific visualization. Level of detail. Terrain rendering.
 Ocean simulation. Sea level rise.
@@ -124,10 +124,7 @@ não é se a técnica CDLOD (\emph{Continuous Distance-Dependent Level of
 Detail}) funciona, o que já foi estabelecido por Strugar (2009),
 mas a partir de que carga geométrica, em um cenário real de visualização
 de inundação costeira, o CDLOD passa a ser mais eficiente, em tempo e em
-memória, do que desenhar a malha completa. A questão é relevante porque,
-em dispositivos móveis, cuja capacidade gráfica é inferior à de uma unidade
-de processamento gráfico (GPU) de computador de mesa, esse ponto pode
-ocorrer mais cedo; essa extrapolação, porém, não foi medida neste trabalho.
+memória, do que desenhar a malha completa.
 
 O objetivo geral é construir uma ferramenta interativa de visualização de
 cenários de subida do nível do mar sobre um Modelo Digital de Elevação
@@ -803,11 +800,11 @@ Santista, com água animada e nível do mar de 0 a $+2$ m.
 O principal resultado vem do teste de desempenho. Com o CDLOD, o tempo para
 desenhar um quadro da cena completa (terreno e água) ficou próximo de 1 ms
 em todas as resoluções de terreno testadas. Sem LOD, esse tempo cresce com a malha. As duas curvas se cruzam em cerca de 5 milhões de triângulos (4,4 a 5,6 milhões, conforme o critério e a execução): abaixo desse valor, desenhar a malha completa é mais rápido; acima dele, o CDLOD é mais rápido. O descarte reduziu o tempo de quadro em 22\% e o ponto de virada para cerca de 3 milhões, e o CDLOD usou cerca de oito vezes menos memória de malha a 2048. A eficácia do CDLOD já é conhecida (STRUGAR,
-2009); este trabalho acrescenta a medição do ponto de virada em um cenário de inundação costeira. A hipótese foi confirmada quanto à eficiência (tempo e memória), mas não quanto à perda de interatividade: nesta GPU, a malha completa permaneceu interativa em todas as resoluções, e esse efeito só poderia ocorrer em hardware menos capaz, o que não foi testado.
+2009); este trabalho acrescenta a medição do ponto de virada em um cenário de inundação costeira. A hipótese foi confirmada quanto à eficiência (tempo e memória), mas não quanto à perda de interatividade: nesta GPU, a malha completa permaneceu interativa em todas as resoluções, e esse efeito não foi investigado em outras GPUs.
 
-Algumas limitações devem ser consideradas. Primeiro, o CDLOD implementado é simplificado: as faixas do \emph{geomorphing} não seguem exatamente as fórmulas originais (STRUGAR, 2009) e o descarte usa caixas conservadoras, sem oclusão. Segundo, o teste usou uma única GPU de mesa (RTX 3060); o efeito em celulares é hipótese não medida. Terceiro, o relevo tem exagero vertical de $6\times$ (Equação~\eqref{eq:escala}) e a água não interage com o terreno. Quarto, a exatidão vertical dos dados não foi validada; se for da ordem dos cenários (+0,5 a +2 m), as áreas alagadas são demonstração, e não previsão. Quinto, a análise se limita à média e ao p95 de três execuções, sem intervalos de confiança, e o ponto de virada foi interpolado linearmente entre duas resoluções; o ponto de virada variou de 4,4 a 5,6 milhões de triângulos entre execuções e, em uma série anterior (versão \texttt{3f30ace}, outra sessão), foi de 3,4 a 4,3 milhões; os valores são, portanto, estimativas. Sexto, o custo de cerca de 1 ms do CDLOD é provavelmente limitado pela CPU. Sétimo, a caixa geográfica (cerca de 44 $\times$ 56 km) é mapeada em um terreno quadrado, o que distorce a escala horizontal em cerca de 20\%.
+Algumas limitações devem ser consideradas. Primeiro, o CDLOD implementado é simplificado: as faixas do \emph{geomorphing} não seguem exatamente as fórmulas originais (STRUGAR, 2009) e o descarte usa caixas conservadoras, sem oclusão. Segundo, o teste usou uma única GPU (RTX 3060 de computador de mesa); em outras GPUs o ponto de virada pode ser diferente. Terceiro, o relevo tem exagero vertical de $6\times$ (Equação~\eqref{eq:escala}) e a água não interage com o terreno. Quarto, a exatidão vertical dos dados não foi validada; se for da ordem dos cenários (+0,5 a +2 m), as áreas alagadas são demonstração, e não previsão. Quinto, a análise se limita à média e ao p95 de três execuções, sem intervalos de confiança, e o ponto de virada foi interpolado linearmente entre duas resoluções; o ponto de virada variou de 4,4 a 5,6 milhões de triângulos entre execuções e, em uma série anterior (versão \texttt{3f30ace}, outra sessão), foi de 3,4 a 4,3 milhões; os valores são, portanto, estimativas. Sexto, o custo de cerca de 1 ms do CDLOD é provavelmente limitado pela CPU. Sétimo, a caixa geográfica (cerca de 44 $\times$ 56 km) é mapeada em um terreno quadrado, o que distorce a escala horizontal em cerca de 20\%.
 
-Como trabalhos futuros, propõem-se: a) repetir o teste em GPU integrada ou em um celular; b) acrescentar espuma e arrebentação; c) avaliar a ferramenta com especialistas costeiros; d) validar a exatidão vertical do DEM; e e) testar mais resoluções entre 1024 e 1536 e mais execuções, para obter intervalos de confiança.
+Como trabalhos futuros, propõem-se: a) repetir o teste em outras GPUs, inclusive integradas; b) acrescentar espuma e arrebentação; c) avaliar a ferramenta com especialistas costeiros; d) validar a exatidão vertical do DEM; e e) testar mais resoluções entre 1024 e 1536 e mais execuções, para obter intervalos de confiança.
 
 \section*{Referências}
 \begingroup
