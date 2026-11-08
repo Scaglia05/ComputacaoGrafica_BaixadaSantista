@@ -285,6 +285,8 @@ As séries `bench/` e `bench/v2/` são históricas. O ponto de virada variou ent
 │   ├── APRESENTACAO.md            # guia de ponta a ponta
 │   ├── DESENVOLVIMENTO.md         # relato do desenvolvimento por fase
 │   ├── COMPLEMENTO_TECNICO.md     # glossário, fórmulas e justificativas
+│   ├── GUIA_CONCEITUAL.md         # guia conceitual do projeto
+│   ├── GUIA_DO_CODIGO.md          # guia do código
 │   ├── AVALIACAO_*.md             # avaliações internas (histórico)
 │   ├── resumo_projeto.pdf         # resumo de 3 páginas
 │   ├── artigo_final/              # versões do artigo; a atual é a v5

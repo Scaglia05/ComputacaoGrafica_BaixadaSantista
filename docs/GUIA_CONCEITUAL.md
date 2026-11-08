@@ -173,7 +173,7 @@ num cenário ambiental real, com **nível do mar ajustável**, e **medimos** qua
   LOD passa a ser mais rápido que desenhar tudo. Com culling cai para ~2,3 M.
 - **Frustum culling:** reduz **22%** do tempo de quadro em média, sem mudar a imagem.
 - **Memória:** a 2048², o LOD usa **19 MB** contra **153 MB** da malha completa.
-- Testado em **uma** placa (RTX 3060). Em GPU fraca ou celular: **não medido** (trabalho futuro).
+- Testado em **uma** placa (RTX 3060). Em outras GPUs: **não medido** (trabalho futuro).
 
 ---
 
