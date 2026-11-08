@@ -106,8 +106,9 @@ python src/main.py              # cena completa: terreno + LOD + água
 python src/bench.py             # benchmark (--rapido para subconjunto)
 python src/bench.py --saida bench/v2             # idem, em outra pasta (sem sobrescrever os dados do artigo)
 python src/bench.py --memoria --saida bench/v2   # RAM/VRAM de cada modo, cada um em processo separado
-python -m unittest discover -s tests -v          # testes automatizados (parte deles precisa de GPU)
+python -m unittest discover -s tests -v          # testes automatizados (ative a .venv antes; parte precisa de GPU)
 python src/area_alagada.py      # área emersa alagada em cada cenário de nível do mar
+python src/resumo_bench.py bench/v2/run1 bench/v2/run2 bench/v2/run3   # média ± desvio e ponto de virada dos CSVs
 ```
 
 ### Benchmark (Etapa 4)

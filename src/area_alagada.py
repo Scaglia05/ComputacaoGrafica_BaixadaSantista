@@ -25,6 +25,27 @@ EXAGERO = 6.0  # o mesmo de dem.carregar_heightmap
 NIVEIS_M = (0.5, 1.0, 2.0, 10.0)
 
 
+def calcular_areas(elev_m: np.ndarray, area_celula_km2: float, niveis=NIVEIS_M) -> dict:
+    """Área alagada por nível, a partir de um DEM em metros (função pura, testável).
+
+    Devolve {"emersa": km², "zeros": km², nivel: (km², % da emersa, km² sem células a 0 m)}.
+    Separar o cálculo do print permite testá-lo com matrizes pequenas, sem baixar tiles.
+    """
+    emersa = elev_m >= 0.0
+    zeros = emersa & (elev_m < 1e-3)    # plateau em ~0 m (< 1 mm, absorve erro de arredondamento)
+    total = emersa.sum()
+    resultado = {"emersa": total * area_celula_km2, "zeros": zeros.sum() * area_celula_km2}
+    for nivel in niveis:
+        alagada = emersa & (elev_m < nivel)
+        pct = 100.0 * alagada.sum() / total if total else 0.0
+        resultado[nivel] = (
+            alagada.sum() * area_celula_km2,
+            pct,
+            (alagada & ~zeros).sum() * area_celula_km2,
+        )
+    return resultado
+
+
 def main() -> None:
     alturas, unidades_por_metro = dem.carregar_heightmap(
         resolution=RESOLUCAO, world_size=TAMANHO_MUNDO, exagero_vertical=EXAGERO
@@ -33,17 +54,13 @@ def main() -> None:
     extensao_m = TAMANHO_MUNDO * EXAGERO / unidades_por_metro
     area_celula_km2 = (extensao_m / RESOLUCAO) ** 2 / 1e6
 
-    emersa = elev_m >= 0.0
-    zeros = (elev_m >= 0.0) & (elev_m < 1e-3)    # plateau em ~0 m (< 1 mm, absorve erro de arredondamento)
+    r = calcular_areas(elev_m, area_celula_km2)
     print(f"célula: {extensao_m / RESOLUCAO:.1f} m | {area_celula_km2:.5f} km²")
-    print(f"área emersa (elev >= 0 m): {emersa.sum() * area_celula_km2:.0f} km²")
-    print(f"células com elev ~ 0 m (< 1 mm): {zeros.sum() * area_celula_km2:.1f} km²\n")
+    print(f"área emersa (elev >= 0 m): {r['emersa']:.0f} km²")
+    print(f"células com elev ~ 0 m (< 1 mm): {r['zeros']:.1f} km²\n")
     print("nível   alagada(km²)  % da emersa  sem células a 0 m(km²)")
     for nivel in NIVEIS_M:
-        alagada = emersa & (elev_m < nivel)
-        km2 = alagada.sum() * area_celula_km2
-        sem_zeros = (alagada & ~zeros).sum() * area_celula_km2
-        pct = 100.0 * alagada.sum() / emersa.sum()
+        km2, pct, sem_zeros = r[nivel]
         print(f"+{nivel:>4.1f} m  {km2:11.1f}  {pct:10.1f}%  {sem_zeros:20.1f}")
 
 
