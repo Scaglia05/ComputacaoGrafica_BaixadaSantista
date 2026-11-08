@@ -98,7 +98,7 @@ def _mosaico_metros(bbox, z: int) -> np.ndarray:
     return elev[topo:base, esq:dir_]
 
 
-def _remover_spikes(elev: np.ndarray, limiar_m: float = 80.0) -> np.ndarray:
+def _remover_spikes(elev: np.ndarray, limiar_m: float = 60.0) -> np.ndarray:
     """Troca texels isolados muito diferentes da vizinhança pela mediana 3x3.
 
     Dados de radar (SRTM e derivados) têm "spikes": pixels absurdos, comuns

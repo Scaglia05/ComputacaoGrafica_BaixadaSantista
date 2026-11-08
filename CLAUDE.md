@@ -98,7 +98,7 @@ na raiz — foram renomeados/reorganizados para `exemplos/` e `src/`.
 2. ✅ CDLOD: quadtree, seleção por distância, morphing anti-*crack*.
 3. ✅ Água: 6 ondas de Gerstner, Fresnel, Blinn-Phong, nível ajustável.
 4. ✅ Avaliação de desempenho: benchmark headless achou o "ponto de virada"
-   (~2,7 M (p95) a ~4,2 M (média) de triângulos numa RTX 3060) + perfilamento de RAM/VRAM/GPU (`psutil` +
+   (~5 M de triângulos, faixa 4,4–5,6 M conforme critério/execução, numa RTX 3060; com culling ~3 M) + perfilamento de RAM/VRAM/GPU (`psutil` +
    `nvidia-smi`) — ver `docs/metodologia_atual.md` §8.
 5. ✅ UX para leigos (`src/hud.py` + `src/main.py`): tela de boas-vindas
    (`I`), legenda em 2 níveis (`H`: nenhuma→básica→completa), painel de
@@ -144,16 +144,16 @@ na raiz — foram renomeados/reorganizados para `exemplos/` e `src/`.
     hardware:** esta máquina (i5-10400F, sem vídeo integrado) só tem a RTX 3060; precisa de
     um notebook com GPU integrada de um colega. Celular não roda (Python + OpenGL 3.3 core).
 11. ✅ Frustum culling + memória isolada por modo (branch `feat/frustum-culling-memoria-isolada`,
-    escrito com testes antes). Resultados em `bench/v2/` (README, seção "Extensões"):
-    culling −22% de tempo de quadro em média (−33%/−38% nas câmeras rasante/encosta, ≈0% na
-    aérea) e ponto de virada ~4,0 M → ~2,3 M de triângulos; memória a 2048²: 19 MB (CDLOD) × 153 MB
+    escrito com testes antes). Resultados em `bench/v3/` (código atual; README, seção "Extensões"):
+    culling −22% de tempo de quadro em média (−37% nas câmeras rasante/encosta, ≈0% na
+    aérea) e ponto de virada ~5 M → ~3 M de triângulos; memória a 2048²: 19 MB (CDLOD) × 153 MB
     (malha completa). **O artigo (v2 em diante) já reflete isso.** O código original com culling (antes da simplificação) é o commit `3f30ace`; a `main` tem a versão
     simplificada para leitura, com as teclas Tab e F11 (PRs #3 e #4 mesclados). Cuidado: `bench.py` SEM `--saida` sobrescreve
     `bench/resultados.csv`, que sustenta os números do artigo.
-    **Réplica das 3 execuções novas:** o ponto de virada pela MÉDIA reproduz (4,1 M × 4,2 M do
-    artigo), mas o pelo p95 NÃO: o artigo diz ~2,7 M, as novas dão ~4,3 M (a cauda do artigo era
-    mais ruidosa: p95 da malha completa a 2048² = 2,75 ms lá × 1,98 ms agora). Reforça a
-    limitação nº 6 do artigo (série única, sem intervalo de confiança).
+    **Séries:** `bench/` (execução original) e `bench/v2/` (3 execuções, versão `3f30ace`) são histórico;
+    o artigo v5 usa `bench/v3/` (3 execuções + memória, código atual, projeção única em `camera.py`).
+    O ponto de virada variou entre sessões (v2: 3,4–4,3 M; v3: 4,4–5,6 M), o que o artigo declara
+    como limitação (sem intervalos de confiança).
 
 ## Testes
 

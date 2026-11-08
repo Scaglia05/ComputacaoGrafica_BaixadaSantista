@@ -369,7 +369,7 @@ Rodando `bench.py` numa **RTX 3060**:
 - O **CDLOD** mantém o tempo de frame quase **constante** (~1 ms) em
   qualquer resolução do heightmap, porque desenha sempre ~0,4 M triângulos.
 - A **malha ingênua** (sem LOD) cresce linearmente com a resolução e
-  **ultrapassa o CDLOD em torno de 4 M de triângulos (2,7 a 4,3 M conforme o critério e a execução)** — o *ponto
+  **ultrapassa o CDLOD entre 1024² e 2048² (~5 M de triângulos; faixa 4,4–5,6 M)** — o *ponto
   de virada*.
 - O custo do **morphing** é desprezível (dentro do ruído de medição).
 - O ~1 ms fixo do CDLOD é **overhead de CPU** (percorrer o quadtree em

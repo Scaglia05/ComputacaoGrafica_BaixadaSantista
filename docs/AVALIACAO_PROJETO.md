@@ -1,3 +1,5 @@
+> **Histórico:** avaliação feita antes das correções finais; os números e problemas aqui citados foram superados. Ver `docs/AVALIACAO_CODIGO_ARTIGO.md` (seção 6).
+
 # Avaliação do projeto — estrutura e métricas
 
 Data: 2026-11-07 · Base: branch `main` (commit `314475b`), código, `bench/` e testes executados nesta avaliação.

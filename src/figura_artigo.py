@@ -4,7 +4,7 @@
 =============================================================================
 
 Desenha o tempo de quadro (média e p95) em função dos triângulos da malha
-completa, usando a MÉDIA das execuções de bench/v2 e barras de ± 1 desvio
+completa, usando a MÉDIA das execuções de bench/v3 e barras de ± 1 desvio
 entre execuções. Inclui a curva do CDLOD com culling e marca os pontos de
 virada. Só LÊ os CSVs; escreve apenas a imagem de saída.
 
@@ -24,7 +24,7 @@ plt.rcParams.update({"font.size": 8})
 
 from resumo_bench import media_por_execucao, ponto_de_virada, triangulos_sem_lod
 
-PASTAS = [Path("bench/v2") / f"run{i}" for i in (1, 2, 3)]
+PASTAS = [Path("bench/v3") / f"run{i}" for i in (1, 2, 3)]
 CURVAS = [  # (condicao, rótulo, cor, marcador)
     ("sem_lod", "Malha completa", "#b5413b", "o"),
     ("cdlod", "CDLOD", "#2b6a9e", "s"),

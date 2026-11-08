@@ -48,11 +48,14 @@ void main() {
         float w   = 2.0 * PI / LAMBDA[i];       // frequência espacial
         float phi = SPEED[i] * w;               // velocidade de fase (rad/s)
         float wa  = w * AMP[i];
-        // Q normalizado por (w*A*num_ondas) para as cristas não se "cruzarem"
-        // e formarem laços (limite clássico das ondas de Gerstner).
+        // STEEP é a nitidez BRUTA s_i (0..1). O Q efetivo da equação de Gerstner é
+        //   Q_i = s_i / (w_i * A_i * N_ONDAS),
+        // o que garante sum(Q_i*w_i*A_i) = media(s_i) < 1: as cristas não se
+        // "cruzam" nem formam laços (limite clássico de Gerstner). Q_i vale
+        // ~1,01 / 0,78 / 0,69 / 0,56 / 0,46 / 0,42 para as 6 ondas.
         float Q   = STEEP[i] / (wa * float(N_ONDAS));
 
-        float theta = w * dot(DIR[i], xz) + phi * u_time;
+        float theta = w * dot(DIR[i], xz) - phi * u_time;   // k·x - ωt: a onda avança no sentido de DIR
         float c = cos(theta);
         float s = sin(theta);
 

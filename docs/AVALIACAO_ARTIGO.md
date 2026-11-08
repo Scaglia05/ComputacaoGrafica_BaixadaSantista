@@ -1,3 +1,5 @@
+> **Histórico:** avaliação feita antes das correções finais; os números e problemas aqui citados foram superados. Ver `docs/AVALIACAO_CODIGO_ARTIGO.md` (seção 6).
+
 # Reavaliação das métricas a partir do artigo (v4, prévia em PDF)
 
 Data: 2026-11-07. Base: `artigo_final_v4_previa.pdf` (8 páginas) conferido contra os CSVs de `bench/` e `bench/v2/` (3 execuções). Esta avaliação complementa `AVALIACAO_PROJETO.md`.

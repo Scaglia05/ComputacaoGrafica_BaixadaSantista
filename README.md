@@ -60,7 +60,7 @@ ComputacaoGrafica/
 ├── exemplos/                 # estudos isolados (fundamentos do pipeline)
 │   ├── janela.py             # janela + contexto OpenGL + render loop
 │   └── triangulo.py          # VBO, shaders, VAO, rasterização/interpolação
-├── bench/                   # saídas do benchmark (CSV + gráficos); bench/v2/ = medições novas
+├── bench/                   # saídas do benchmark (CSV + gráficos); bench/v2/ e bench/v3/ = medições novas (v3 = código atual, usada no artigo v5)
 ├── tests/                   # testes automatizados (unittest): culling, memória isolada, benchmark
 └── src/                      # a engine
     ├── dem.py                # baixa o DEM real da Baixada Santista (tiles AWS terrarium)
@@ -104,11 +104,11 @@ python src/dem.py               # baixa/prepara o DEM da Baixada Santista
 python src/lod.py               # testa a seleção de blocos do quadtree
 python src/main.py              # cena completa: terreno + LOD + água
 python src/bench.py             # benchmark (--rapido para subconjunto)
-python src/bench.py --saida bench/v2             # idem, em outra pasta (sem sobrescrever os dados do artigo)
-python src/bench.py --memoria --saida bench/v2   # RAM/VRAM de cada modo, cada um em processo separado
+python src/bench.py --saida bench/v3             # idem, em outra pasta (sem sobrescrever os dados do artigo)
+python src/bench.py --memoria --saida bench/v3   # RAM/VRAM de cada modo, cada um em processo separado
 python -m unittest discover -s tests -v          # testes automatizados (ative a .venv antes; parte precisa de GPU)
 python src/area_alagada.py      # área emersa alagada em cada cenário de nível do mar
-python src/resumo_bench.py bench/v2/run1 bench/v2/run2 bench/v2/run3   # média ± desvio e ponto de virada dos CSVs
+python src/resumo_bench.py bench/v3/run1 bench/v3/run2 bench/v3/run3   # média ± desvio e ponto de virada dos CSVs
 ```
 
 ### Benchmark (Etapa 4)
@@ -134,8 +134,8 @@ Resultado numa RTX 3060:
 
 #### Extensões: frustum culling e memória isolada por modo
 
-Medidas novas, gravadas em `bench/v2/` (os dados do artigo em `bench/` não foram
-alterados). RTX 3060, 3 execuções independentes.
+Medidas novas, gravadas em `bench/v3/` com o código atual (as séries `bench/` e
+`bench/v2/`, da versão `3f30ace`, ficam como histórico). RTX 3060, 3 execuções independentes.
 
 - **Frustum culling** (`C` no app; condição `cdlod_frustum` no benchmark): poda os
   blocos da quadtree fora do campo de visão. A imagem é **idêntica pixel a pixel**
@@ -143,17 +143,17 @@ alterados). RTX 3060, 3 execuções independentes.
 
   | Câmera | Blocos | Tempo de quadro |
   |---|---|---|
-  | rasante | 178 → 57 | −33% |
-  | encosta | 184 → 52 | −38% |
-  | horizonte | 124 → 73 | −7% |
-  | aérea | 100 → 67 | ≈ 0% (dentro do ruído) |
+  | rasante | 178 → 57–58 | −37% |
+  | encosta | 184 → 52 | −37% |
+  | horizonte | 124 → 73–74 | −6% |
+  | aérea | 100 → 62–70 | ≈ 0% (dentro do ruído) |
 
-  Média geral: 1,04 → 0,81 ms (−22%). **O ponto de virada, ao se comparar com a
-  malha sem LOD, cai de ~4,0 M para ~2,3 M de triângulos.** O culling é medido
+  Média geral: 1,12 → 0,88 ms (−22%). **O ponto de virada, ao se comparar com a
+  malha sem LOD, cai de ~5 M (4,4–5,6 M) para ~3 M (2,0–3,5 M) de triângulos.** O culling é medido
   como condição *a mais*; a malha sem LOD não tem culling.
 - **Memória isolada** (`--memoria`): cada modo em um processo novo, só com a malha
   que usa. A 2048², o CDLOD aloca **19 MB** na GPU contra **153 MB** da malha
-  completa (−88%), e o pico de RAM é 191 MB contra 595 MB. Morphing e culling não
+  completa (−88%), e o pico de RAM é 183 MB contra 593 MB. Morphing e culling não
   mudam a memória. A economia vem só da malha (vértices + índices): a textura de
   altura (16,8 MB a 2048²) fica inteira na GPU em todos os modos.
 

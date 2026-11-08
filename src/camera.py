@@ -33,6 +33,13 @@ import math
 
 import glm
 
+# Planos de recorte e FOV da projeção. FONTE ÚNICA: o app (main.py), o benchmark
+# (bench.py) e os testes usam estes mesmos valores, para que o que se mede seja
+# exatamente o que se vê (e o que o artigo, Tabela 2, informa).
+FOV_GRAUS = 60.0
+PLANO_PERTO = 0.1
+PLANO_LONGE = 2000.0
+
 
 class Camera:
     def __init__(
@@ -42,7 +49,7 @@ class Camera:
         pitch: float = -20.0,
         speed: float = 40.0,          # unidades de mundo por segundo
         sensitivity: float = 0.12,    # graus por pixel de mouse
-        fov: float = 60.0,            # campo de visão vertical, em graus
+        fov: float = FOV_GRAUS,            # campo de visão vertical, em graus
     ):
         self.position = glm.vec3(position)
         self.yaw = yaw
@@ -127,4 +134,4 @@ class Camera:
         return glm.lookAt(self.position, self.position + self.front, self.up)
 
     def get_projection_matrix(self, aspect: float) -> glm.mat4:
-        return glm.perspective(glm.radians(self.fov), aspect, 0.1, 2000.0)
+        return glm.perspective(glm.radians(self.fov), aspect, PLANO_PERTO, PLANO_LONGE)
