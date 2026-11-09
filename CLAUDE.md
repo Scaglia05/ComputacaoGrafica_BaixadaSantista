@@ -65,12 +65,12 @@ ComputacaoGrafica\
 │   │                                por que cada lib, como tudo é calculado, com fórmulas)
 │   ├── resumo_projeto.pdf          (resumo de 3 páginas)
 │   ├── artigo_final\               (ARTIGO FINAL: ABNT em duas colunas, template IEEE do Overleaf, até 8 págs;
-│   │                                artigo_final_v4_abnt.tex / _overleaf.zip / _previa.pdf)
+│   │                                artigo_final_v5_abnt.tex / _previa.pdf)
 │   ├── ArtigoCompGrafica_ElevacaoCosteira.pdf  (versão anterior do artigo, IEEE — histórico)
 │   ├── artigo_v4.tex               (fonte LaTeX da versão anterior — histórico)
 │   └── especificacao_eixo6.pdf     (especificação oficial do professor)
 ├── bench\                        (resultados.csv + gráficos do benchmark — DADOS DO ARTIGO, não sobrescrever;
-│                                 medições novas ficam em bench\v2\: memoria.csv, run1..run3)
+│                                 medições novas ficam em bench\v3\: memoria.csv, run1..run3; v2 é histórico)
 ├── tests\                        (unittest: culling, memória isolada, benchmark — ver "Testes" abaixo)
 ├── exemplos\
 │   ├── janela.py                  (concluído — fundamentos: janela + contexto OpenGL)
@@ -109,8 +109,8 @@ na raiz — foram renomeados/reorganizados para `exemplos/` e `src/`.
    alterna com a foto via `P`), e tecla `R` pra resetar a câmera
    (`Camera.resetar`/`Camera.bearing_graus` em `camera.py`).
 7. ⬜ Relatório da Etapa 1 (revisão bibliográfica) — não escrito.
-8. ✅ Artigo — **versão atual: `docs/artigo_final/artigo_final_v4_abnt.tex`** (ABNT em duas colunas no
-   template IEEE do Overleaf, decisão do grupo; já inclui culling, memória isolada, link do repositório e fonte do IPCC;
+8. ✅ Artigo — **versão atual: `docs/artigo_final/artigo_final_v5_abnt.tex`** (ABNT em duas colunas no
+   template IEEE do Overleaf, decisão do grupo; já inclui culling, memória isolada, link do repositório e fonte do IPCC; v5 espelha o código atual (bench/v3);
    páginas de Strugar e Tanner foram omitidas por não confirmadas; falta compilar no Overleaf e
    conferir o limite de 8 páginas). Histórico da versão anterior: PDF em
    `docs/ArtigoCompGrafica_ElevacaoCosteira.pdf`, fonte em `docs/artigo_v4.tex`
