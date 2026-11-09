@@ -342,7 +342,7 @@ Fonte da verdade para parâmetros: `docs/metodologia_atual.md` e o próprio cód
 ## 10. Limitações (para saber responder)
 
 1. CDLOD **simplificado**: faixas de morph não seguem exatamente as fórmulas de Strugar; culling sem oclusão.
-2. Benchmark em **uma GPU de desktop**; "mais cedo em celular" é hipótese, **não medida**.
+2. Benchmark em **uma GPU de desktop**.
 3. Água **não interage** com o terreno (sem espuma/refração).
 4. Exatidão vertical do DEM **não validada**; se for da ordem de +0,5 a +2 m, a área alagada é demonstração, não previsão.
 5. Poucas execuções, sem intervalo de confiança; o ponto de virada foi interpolado entre duas resoluções.
@@ -366,7 +366,7 @@ Fonte da verdade para parâmetros: `docs/metodologia_atual.md` e o próprio cód
 | Névoa e cor do céu | `terrain.frag` (120/260, `c_ceu`) |
 | Novo painel ou legenda | `hud.py` |
 | Novo teste ou medição | `bench.py`, `tests/` |
-| Rodar em GPU integrada / celular | `bench.py` (sem mudar código: só rodar) |
+| Rodar em outras GPUs (inclusive integradas) | `bench.py` (sem mudar código: só rodar) |
 
 ---
 

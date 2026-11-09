@@ -52,10 +52,11 @@ vec2 aplicar_morph(vec2 g, float k) {
 }
 
 void main() {
-    // 1) posição fina no mundo + altura, só para estimar a distância à câmera
+    // 1) distância à câmera NO PLANO HORIZONTAL (a mesma métrica do critério de
+    //    seleção em lod.py): assim um bloco escolhido por estar "perto" não chega
+    //    já todo morphado só porque a câmera está alta (vista aérea).
     vec2 xz_fino = u_node_offset + in_xz * u_node_scale;
-    float h_fino = amostrar_altura(xz_fino);
-    float dist = distance(u_camera_pos, vec3(xz_fino.x, h_fino, xz_fino.y));
+    float dist = distance(u_camera_pos.xz, xz_fino);
 
     // 2) fator de morph: 0 no miolo do alcance do bloco, 1 na borda externa
     float morph = 0.0;

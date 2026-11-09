@@ -32,8 +32,7 @@ daquele lugar — em vez de olhar uma tabela ou um mapa 2D estático.
 
 O obstáculo técnico que isso escondeu: um mapa de elevação real, bom o
 bastante pra parecer "de verdade", tem milhões de pontos. Desenhar tudo
-isso, 60 vezes por segundo, é caro demais — principalmente em celular (o
-público-alvo final declarado no artigo). A **aplicação** entregue resolve
+isso, 60 vezes por segundo, é caro demais. A **aplicação** entregue resolve
 os dois problemas ao mesmo tempo: ela é a ferramenta de visualização **e**
 o experimento que mede quando a simplificação (LOD) deixa de ser opcional.
 
@@ -310,9 +309,8 @@ estimativa), e uma amostra de RAM/VRAM/uso de GPU.
 **Já identificadas no artigo, ainda pendentes:**
 
 1. ✅ *Frustum culling* — **feito** (tecla `C`; AABB por nó + 6 planos, em NumPy). Falta oclusão (blocos escondidos atrás de montanhas).
-2. Rodar o mesmo *benchmark* numa GPU mais fraca / dispositivo móvel, para
-   validar experimentalmente (e não só por extrapolação) que o ponto de
-   virada chega antes nesse hardware.
+2. Rodar o mesmo *benchmark* em outras GPUs (inclusive integradas), para
+   verificar como o ponto de virada muda com o hardware.
 3. Água interagindo fisicamente com o terreno — espuma e arrebentação
    perto da costa; hoje a água é uma superfície independente.
 4. Validação da ferramenta com especialistas em gestão ambiental costeira.

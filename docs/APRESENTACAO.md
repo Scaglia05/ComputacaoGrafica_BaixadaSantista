@@ -20,7 +20,7 @@ Digital de Elevação (DEM) em uma cena 3D navegável.
 ### 1.2 O desafio de Computação Gráfica
 
 Um DEM de uma região costeira tem **milhões de pontos**. Renderizar tudo a
-cada quadro, a 60 fps, num notebook ou celular, não fecha. Duas técnicas
+cada quadro, a 60 fps, num notebook, não fecha. Duas técnicas
 resolvem isso e são o núcleo do projeto:
 
 1. **Nível de detalhe adaptativo (LOD)** — desenhar o terreno em alta
@@ -369,18 +369,17 @@ Rodando `bench.py` numa **RTX 3060**:
 - O **CDLOD** mantém o tempo de frame quase **constante** (~1 ms) em
   qualquer resolução do heightmap, porque desenha sempre ~0,4 M triângulos.
 - A **malha ingênua** (sem LOD) cresce linearmente com a resolução e
-  **ultrapassa o CDLOD em torno de 4 M de triângulos (2,7 a 4,3 M conforme o critério e a execução)** — o *ponto
+  **ultrapassa o CDLOD entre 1024² e 2048² (~5 M de triângulos; faixa 4,4–5,6 M)** — o *ponto
   de virada*.
 - O custo do **morphing** é desprezível (dentro do ruído de medição).
 - O ~1 ms fixo do CDLOD é **overhead de CPU** (percorrer o quadtree em
-  Python + ~100 a 184 draw calls). Numa GPU fraca ou **mobile** (o eixo do
-  projeto), o ponto de virada chega **muito antes** — é o argumento a favor
-  do LOD.
-- **Frustum culling:** reduz o tempo de quadro em ~22% em média (−33% a −38%
-  nas câmeras rasante e encosta, ≈0% na aérea) e leva o ponto de virada a
-  ~2,3 M de triângulos. A imagem é idêntica com e sem culling (testado).
+  Python + ~100 a 184 draw calls). Em outra GPU o ponto de virada pode ser
+  diferente (não foi medido).
+- **Frustum culling:** reduz o tempo de quadro em ~22% em média (−37% nas
+  câmeras rasante e encosta, ≈0% na aérea) e leva o ponto de virada a
+  ~3 M de triângulos. A imagem é idêntica com e sem culling (testado).
 - **Memória (cada modo em processo isolado):** a 2048², a malha do CDLOD ocupa
-  19 MB contra 153 MB da malha completa; pico de RAM de 191 contra 595 MB.
+  19 MB contra 153 MB da malha completa; pico de RAM de 183 contra 593 MB.
 
 Gráficos em `bench/`: `fps_vs_resolucao.png`, `tempo_por_camera.png`,
 `triangulos_vs_tempo.png`, `custo_do_morph.png`.
@@ -392,9 +391,9 @@ Gráficos em `bench/`: `fps_vs_resolucao.png`, `tempo_por_camera.png`,
 1. **CDLOD simplificado**: o *frustum culling* usa caixas conservadoras, sem
    oclusão, e vem desligado por padrão (tecla `C`); as faixas de morph não
    seguem exatamente as fórmulas do Strugar.
-2. **Benchmark em 1 GPU desktop**: sem número de dispositivo móvel, embora
-   o eixo seja "Sistemas Mobile". Discutimos por que o resultado se
-   traduz (o overhead é constante, a geometria evitada escala).
+2. **Benchmark em 1 GPU desktop**: sem número de outra GPU; o ponto de
+   virada pode mudar com o hardware (o overhead é constante, a geometria
+   evitada escala).
 3. **Exagero vertical de 6×**: necessário para a Serra do Mar aparecer;
    é prática padrão de geovisualização, mas precisa ser declarado.
 4. **Água não interage com o terreno**: sem espuma na linha de costa, sem

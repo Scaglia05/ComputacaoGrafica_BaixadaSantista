@@ -58,6 +58,7 @@ import glm
 import moderngl
 import psutil
 
+from camera import FOV_GRAUS, PLANO_LONGE, PLANO_PERTO
 from scene import Cena
 
 SAIDA_PADRAO = Path(__file__).resolve().parent.parent / "bench"
@@ -207,7 +208,7 @@ def medir_memoria(modo: str, resolucao: int) -> dict:
                 verboso=False, construir_lod=lod_on, construir_ingenuo=not lod_on)
     pos, alvo = cameras(cena.altura_ref, TAMANHO_MUNDO)["rasante"]
     view = glm.lookAt(pos, alvo, glm.vec3(0.0, 1.0, 0.0))
-    proj = glm.perspective(glm.radians(60.0), LARGURA / ALTURA, 0.05, 3000.0)
+    proj = glm.perspective(glm.radians(FOV_GRAUS), LARGURA / ALTURA, PLANO_PERTO, PLANO_LONGE)
 
     # Desenha alguns quadros para que tudo (buffers, texturas, shaders) esteja
     # de fato residente antes de medir.
@@ -370,7 +371,7 @@ def main() -> None:
     fbo.use()
     gpu = ctx.info["GL_RENDERER"]
     print("GPU:", gpu)
-    proj = glm.perspective(glm.radians(60.0), LARGURA / ALTURA, 0.05, 3000.0)
+    proj = glm.perspective(glm.radians(FOV_GRAUS), LARGURA / ALTURA, PLANO_PERTO, PLANO_LONGE)
 
     linhas: list[dict] = []
     for res in resolucoes:

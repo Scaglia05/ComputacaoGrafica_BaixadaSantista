@@ -94,8 +94,7 @@ de sintaxe.
    material de outro integrante do grupo, que tinha um plano com parâmetros
    diferentes — reconciliado e registrado no `CLAUDE.md`).
 
-*Pendente:* rodar o benchmark numa GPU mais fraca (o eixo é "Sistemas
-Mobile"); escrever o artigo IEEE com estes resultados.
+*Pendente:* rodar o benchmark em outra GPU; escrever o artigo IEEE com estes resultados.
 
 ---
 

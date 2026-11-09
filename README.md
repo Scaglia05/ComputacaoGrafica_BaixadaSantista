@@ -1,236 +1,349 @@
-# Visualização de Elevação Costeira — Computação Gráfica
+# Visualização de Elevação Costeira
 
-[![Abrir o artigo (PDF)](https://img.shields.io/badge/%F0%9F%93%84%20Abrir%20o%20artigo-PDF-b31b1b?style=for-the-badge)](docs/artigo_final/artigo_final_v4_previa.pdf)
+Visualizador 3D em tempo real do relevo da Baixada Santista (SP), com nível de detalhe adaptativo (CDLOD) e superfície oceânica animada, para observar áreas submersas em cenários de subida do nível do mar.
 
-> 📄 Se o botão acima não aparecer, [clique aqui para abrir o artigo (PDF)](docs/artigo_final/artigo_final_v4_previa.pdf).
+![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)
+![OpenGL 3.3 core](https://img.shields.io/badge/OpenGL-3.3%20core-informational)
 
-Visualizador 3D interativo do relevo real da **Baixada Santista (Santos/SP)**
-com uma superfície de água animada cuja altura o usuário ajusta em tempo real
-(0, +0,5, +1 e +2 m, além de cenários extremos de demonstração), para ver quais
-áreas ficariam submersas a cada cenário de subida do nível do mar.
+[![Ler o artigo](https://img.shields.io/badge/Artigo-ler_o_PDF-B31B1B?style=for-the-badge)](docs/artigo_final/artigo_final_v5_previa.pdf)
 
-O projeto também responde a uma pergunta de desempenho: **a partir de quantos
-triângulos o LOD adaptativo (CDLOD) deixa de ser um refinamento e passa a ser
-necessário?** A resposta medida está no artigo: cerca de 4 milhões de triângulos
-numa RTX 3060, ou cerca de 2,3 milhões com *frustum culling*.
+## Sumário
 
-- **Disciplina:** Computação Gráfica (FHO/Uniararas) — **Eixo 6**, Topografia e Sistemas Mobile
-- **Stack:** Python 3.11 · ModernGL · GLFW · PyGLM · NumPy · Pillow · opensimplex · matplotlib · psutil
-- **Terreno:** DEM real da Baixada Santista (AWS Terrain Tiles) ou ruído procedural
-- **LOD:** CDLOD (quadtree + seleção por distância + *morphing* de vértices) e *frustum culling*
-- **Água:** ondas de Gerstner no *vertex shader*
-- **Para começar:** veja [Instalação](#instalação) e [Como rodar](#como-rodar) (`python src/main.py`)
+- [Sobre o projeto](#sobre-o-projeto)
+- [Funcionalidades](#funcionalidades)
+- [Início rápido](#início-rápido)
+- [Instalação](#instalação)
+- [Uso](#uso)
+- [Controles](#controles)
+- [Parâmetros principais](#parâmetros-principais)
+- [Arquitetura](#arquitetura)
+- [Tratamento de erros](#tratamento-de-erros)
+- [Testes](#testes)
+- [Benchmark](#benchmark)
+- [Estrutura do projeto](#estrutura-do-projeto)
+- [Limitações conhecidas](#limitações-conhecidas)
+- [Solução de problemas](#solução-de-problemas)
+- [Documentação](#documentação)
+- [Referências](#referências)
+- [Autores](#autores)
+- [Licença](#licença)
+
+## Sobre o projeto
+
+Trabalho final da disciplina de Computação Gráfica (Engenharia de Computação, 10.º semestre, FHO/Uniararas), Eixo 6 (Topografia), adaptado ao cenário de erosão costeira e subida do nível do mar.
+
+O projeto trata dos seguintes problemas:
+
+1. **Custo de renderizar terreno extenso.** Uma malha uniforme de alta resolução tem milhões de triângulos. O projeto implementa CDLOD (*Continuous Distance-Dependent Level of Detail*), que usa uma quadtree e seleciona o detalhe de cada bloco pela distância da câmera.
+2. **Descontinuidades entre níveis de detalhe.** O *geomorphing* no *vertex shader* evita fendas (*cracks*) entre blocos de resoluções diferentes.
+3. **Representação do mar.** Seis ondas de Gerstner, com iluminação de Blinn-Phong e termo de Fresnel, formam uma superfície de nível ajustável.
+4. **Medição do ganho.** Um *benchmark* sem janela compara a malha completa, o CDLOD, o CDLOD sem *morphing* e o CDLOD com *frustum culling*, em tempo de quadro e memória.
+
+## Funcionalidades
+
+- Terreno real (DEM da Baixada Santista, AWS Terrain Tiles) ou procedural (ruído Simplex).
+- CDLOD com quadtree de 5 níveis, blocos de 32×32 subdivisões e *geomorphing*.
+- *Frustum culling* vetorizado, sem alteração da imagem.
+- Água com 6 ondas de Gerstner e nível ajustável (cenários 0 / +0,5 / +1 / +2 m).
+- Interface de apoio: tela de boas-vindas, legenda em dois níveis, painel de status, bússola e minimapa.
+- *Benchmark* de tempo de quadro e memória, com gráficos e resumo estatístico.
+
+## Início rápido
+
+Requer Python 3.11 ou superior e GPU compatível com OpenGL 3.3.
+
+```bash
+git clone https://github.com/Scaglia05/ComputacaoGrafica_BaixadaSantista.git
+cd ComputacaoGrafica_BaixadaSantista
+pip install -r requirements.txt
+python src/main.py
+```
+
+Na primeira execução, `src/dem.py` baixa os tiles do DEM (20 arquivos PNG, cerca de 1 MB) e os guarda em `src/data/tiles/`. É necessário acesso à internet nessa etapa.
 
 ## Instalação
 
-O projeto usa o ambiente virtual `.venv` (**Python 3.11.9**), que já vem com
-tudo instalado. No VS Code, selecione esse interpretador:
-`Ctrl+Shift+P` → **Python: Select Interpreter** → `.venv (Python 3.11.9)`.
+| Requisito | Versão | Finalidade |
+|---|---|---|
+| Python | 3.11 ou 3.12 | Linguagem. Em 3.13, algumas bibliotecas tentam compilar do código-fonte e falham sem o Visual C++ Build Tools |
+| moderngl | 5.11 ou superior | API OpenGL |
+| glfw | 2.7 ou superior | Janela, teclado e mouse |
+| PyGLM | 2.7 ou superior | Vetores e matrizes |
+| numpy | 1.26 ou superior | Operações vetorizadas |
+| Pillow | 10.4 ou superior | Leitura de imagens |
+| opensimplex | 0.4.5 ou superior | Terreno procedural |
+| matplotlib | 3.8 ou superior | Gráficos do benchmark |
+| psutil | 5.9 ou superior | Medição de RAM |
+| `nvidia-smi` | opcional | VRAM e uso de GPU no benchmark (apenas GPUs NVIDIA) |
 
-Para recriar do zero (use Python 3.11 ou 3.12 — em 3.13 algumas libs tentam
-compilar do fonte e falham sem o Visual C++ Build Tools):
+Criação do ambiente virtual:
 
 ```bash
 py -3.11 -m venv .venv
+```
+
+Ativação:
+
+```bash
+# Windows (PowerShell)
 .venv\Scripts\Activate.ps1
+
+# Linux ou macOS
+source .venv/bin/activate
+```
+
+Instalação das dependências:
+
+```bash
 pip install -r requirements.txt
 ```
 
-## Estrutura
+## Uso
 
-```
-ComputacaoGrafica/
-├── requirements.txt
-├── README.md
-├── CLAUDE.md                 # contexto do projeto p/ sessões de IA (estado, parâmetros, pendências)
-├── docs/
-│   ├── especificacao_eixo6.pdf # especificação oficial do professor (Eixo 6, etapas, referências obrigatórias)
-│   ├── APRESENTACAO.md       # guia de ponta a ponta (tema, libs, código, o que é novo)
-│   ├── DESENVOLVIMENTO.md    # relato de como o projeto foi construído, fase a fase
-│   ├── metodologia_atual.md/.pdf  # valores exatos de cada parâmetro (fonte da verdade)
-│   ├── COMPLEMENTO_TECNICO.md # companheiro do artigo: glossário + fórmulas + por que cada lib
-│   ├── resumo_projeto.pdf    # resumo de 3 páginas
-│   ├── artigo_final/         # ARTIGO FINAL (ABNT em duas colunas, template IEEE do Overleaf, até 8 páginas)
-│   │   ├── artigo_final_v4_abnt.tex       # fonte LaTeX (versão atual)
-│   │   ├── artigo_final_v4_overleaf.zip   # pacote pronto para subir no Overleaf (.tex + figuras)
-│   │   └── artigo_final_v4_previa.pdf     # prévia em PDF (botão no topo deste README)
-│   ├── ArtigoCompGrafica_ElevacaoCosteira.pdf  # versão anterior do artigo (IEEE) — histórico
-│   ├── artigo_v4.tex         # fonte LaTeX da versão anterior — histórico
-│   └── figuras/              # capturas do sistema e gráfico de custo × carga usados no artigo
-├── exemplos/                 # estudos isolados (fundamentos do pipeline)
-│   ├── janela.py             # janela + contexto OpenGL + render loop
-│   └── triangulo.py          # VBO, shaders, VAO, rasterização/interpolação
-├── bench/                   # saídas do benchmark (CSV + gráficos); bench/v2/ = medições novas
-├── tests/                   # testes automatizados (unittest): culling, memória isolada, benchmark
-└── src/                      # a engine
-    ├── dem.py                # baixa o DEM real da Baixada Santista (tiles AWS terrarium)
-    ├── heightmap.py          # ruído procedural -> textura de altura + grade unitária reusável
-    ├── lod.py                # quadtree do terreno + seleção de blocos por distância (CDLOD)
-    ├── water.py              # plano de água (grade plana; ondas ficam no shader)
-    ├── camera.py             # câmera livre (yaw/pitch, matrizes view/projection)
-    ├── scene.py              # classe Cena: todo o setup de GPU + desenhar() (usada por main e bench)
-    ├── hud.py                # sobreposições 2D: legenda de comandos + foto de referência
-    ├── area_alagada.py       # área emersa alagada em cada cenário de nível do mar (tabela do artigo)
-    ├── main.py               # janela + input + laço
-    ├── bench.py              # mede tempo de frame com/sem LOD -> bench/*.csv e *.png
-    ├── data/referencia_santos.jpg      # foto da Baía de Santos (CC BY 2.0 — ver _CREDITO.txt)
-    ├── data/tiles/           # cache dos tiles de DEM (gerado, fora do git)
-    └── shaders/
-        ├── terrain.vert/.frag  # heightmap por bloco + morphing; cor por altitude, faixa submersa
-        └── water.vert/.frag    # ondas de Gerstner; Blinn-Phong + Fresnel + transparência
-```
-
-### Fonte do terreno
-
-Em `src/main.py`, `FONTE_TERRENO = "dem"` usa o DEM real; `"procedural"` usa ruído.
-
-O DEM vem dos **AWS Terrain Tiles** (formato *terrarium*, sem chave de API),
-derivados de SRTM + batimetria GEBCO. `src/dem.py` baixa e faz cache dos tiles
-na 1ª execução (~1 MB), remove *spikes*, reamostra para 1024² e aplica
-**exagero vertical de 6×** — a Baixada Santista tem ~50 km de largura para
-~1,2 km de relevo (≈40:1), então sem exagero a Serra do Mar some. 6× é o
-suficiente para a escarpa aparecer como uma parede de montanhas; é prática
-padrão em geovisualização e **deve ser declarado no artigo** (ajustável em
-`carregar_heightmap(exagero_vertical=...)`).
-Com o DEM, os cenários de nível do mar (`1`–`4`) são metros reais.
-
-## Como rodar
+### Aplicação interativa
 
 ```bash
-python exemplos/janela.py       # janela vazia (ESC fecha)
-python exemplos/triangulo.py    # triângulo colorido
-python src/heightmap.py         # testa geração da malha sem abrir janela
-python src/dem.py               # baixa/prepara o DEM da Baixada Santista
-python src/lod.py               # testa a seleção de blocos do quadtree
-python src/main.py              # cena completa: terreno + LOD + água
-python src/bench.py             # benchmark (--rapido para subconjunto)
-python src/bench.py --saida bench/v2             # idem, em outra pasta (sem sobrescrever os dados do artigo)
-python src/bench.py --memoria --saida bench/v2   # RAM/VRAM de cada modo, cada um em processo separado
-python -m unittest discover -s tests -v          # testes automatizados (parte deles precisa de GPU)
-python src/area_alagada.py      # área emersa alagada em cada cenário de nível do mar
+python src/main.py
 ```
 
-### Benchmark (Etapa 4)
+A fonte do terreno é definida pela constante `FONTE_TERRENO` em `src/main.py`: `"dem"` (padrão, DEM real) ou `"procedural"` (ruído). Com o DEM, os cenários de nível do mar são expressos em metros reais. Os controles estão na seção [Controles](#controles).
 
-`python src/bench.py` roda sem janela e varre `{sem LOD, CDLOD, CDLOD sem morph}
-× {256..2048} × {4 câmeras}`, sincronizando a GPU a cada frame. Também tira uma
-amostra de **RAM (processo, via `psutil`) e VRAM/uso de GPU (via `nvidia-smi`,
-quando disponível)** por combinação. Gera `bench/resultados.csv` e 5 gráficos.
-Resultado numa RTX 3060:
+### Área emersa alagada por cenário
 
-- o CDLOD segura o tempo de frame ~constante (~1 ms) em qualquer resolução,
-  porque desenha sempre ~0,4 M triângulos;
-- a malha ingênua cresce linear com a resolução e **ultrapassa o CDLOD em cerca
-  de 4 M de triângulos (2,7 a 4,3 M, conforme o critério — média ou p95 — e a
-  execução)** — esse é o "ponto de virada";
-- o custo do *morphing* é desprezível (dentro do ruído de medição);
-- o ~1 ms fixo do CDLOD é overhead de CPU (percorrer o quadtree + 100–184
-  *draw calls* em Python) — a hipótese é que numa GPU fraca / mobile o ponto de
-  virada chegue antes, mas isso **não foi medido** (falta hardware);
-- nesta varredura a RAM e a VRAM medidas (com as 3 condições na mesma cena de
-  teste) refletem a **resolução do DEM**, não o modo de LOD; a diferença entre
-  os modos aparece na medição isolada abaixo.
+```bash
+python src/area_alagada.py
+```
 
-#### Extensões: frustum culling e memória isolada por modo
+O script calcula, sobre o DEM, a área emersa (elevação maior ou igual a 0 m) abaixo de cada nível. Resultado obtido em execução de verificação:
 
-Medidas novas, gravadas em `bench/v2/` (os dados do artigo em `bench/` não foram
-alterados). RTX 3060, 3 execuções independentes.
+```
+área emersa (elev >= 0 m): 1927 km²
+células com elev ~ 0 m (< 1 mm): 104.6 km²
 
-- **Frustum culling** (`C` no app; condição `cdlod_frustum` no benchmark): poda os
-  blocos da quadtree fora do campo de visão. A imagem é **idêntica pixel a pixel**
-  (testada em 4 + 40 câmeras). O ganho depende de para onde a câmera olha:
+nível   alagada(km²)  % da emersa  sem células a 0 m(km²)
++ 0.5 m        119.4         6.2%                  14.8
++ 1.0 m        127.7         6.6%                  23.1
++ 2.0 m        143.5         7.4%                  38.9
++10.0 m        505.0        26.2%                 400.4
+```
 
-  | Câmera | Blocos | Tempo de quadro |
-  |---|---|---|
-  | rasante | 178 → 57 | −33% |
-  | encosta | 184 → 52 | −38% |
-  | horizonte | 124 → 73 | −7% |
-  | aérea | 100 → 67 | ≈ 0% (dentro do ruído) |
+### Demais scripts
 
-  Média geral: 1,04 → 0,81 ms (−22%). **O ponto de virada, ao se comparar com a
-  malha sem LOD, cai de ~4,0 M para ~2,3 M de triângulos.** O culling é medido
-  como condição *a mais*; a malha sem LOD não tem culling.
-- **Memória isolada** (`--memoria`): cada modo em um processo novo, só com a malha
-  que usa. A 2048², o CDLOD aloca **19 MB** na GPU contra **153 MB** da malha
-  completa (−88%), e o pico de RAM é 191 MB contra 595 MB. Morphing e culling não
-  mudam a memória. A economia vem só da malha (vértices + índices): a textura de
-  altura (16,8 MB a 2048²) fica inteira na GPU em todos os modos.
-
-### Controles (`src/main.py`)
-
-| Tecla            | Ação                                         |
-|------------------|----------------------------------------------|
-| `W` `A` `S` `D`  | mover na horizontal                          |
-| `Espaço` / `Ctrl`| subir / descer                               |
-| `Shift`          | mover mais rápido                            |
-| Mouse            | olhar ao redor                               |
-| `R`              | volta pro ponto de partida (se você se perder) |
-| `Tab`            | solta / prende o mouse (solto: dá para usar o outro monitor) |
-| `F11`            | tela cheia ↔ janela (no monitor onde a janela está) |
-| `,` / `.`        | baixar / subir o nível do mar (contínuo)     |
-| `1` `2` `3` `4`  | cenários de nível do mar (0 / +0,5 / +1 / +2 m) — os científicos |
-| `5` `6` `7`      | cenários extremos p/ demonstração (+5 / +10 / +20 m) |
-| `L`              | liga/desliga o LOD (CDLOD × malha ingênua)   |
-| `M`              | liga/desliga o morphing (OFF → cracks)       |
-| `C`              | liga/desliga o frustum culling (não desenha o que está fora da tela) |
-| `K`              | debug: cor por profundidade de bloco         |
-| `Z`              | alterna wireframe (ver malha)                |
-| `H`              | legenda: nenhuma → básica → completa → nenhuma |
-| `P`              | alterna o canto inferior-direito: minimapa ↔ foto real |
-| `I`              | mostra de novo a tela de boas-vindas          |
-| `ESC`            | sair                                         |
-
-Ao abrir, uma **tela de boas-vindas** explica o objetivo em linguagem
-simples (some ao começar a andar; `I` traz de volta). A legenda (`H`) tem
-2 níveis — a básica só com o essencial pra explorar a inundação, a completa
-acrescenta LOD/morphing explicados em 1 linha cada.
-
-O **nível do mar, o modo atual (LOD/morphing) e o tempo de render do
-quadro** ficam sempre visíveis (canto superior-direito) — o nível tem um
-selo colorido (azul = nível atual, amarelo = risco de alagamento, vermelho
-= alagamento); o tempo de render é medido do mesmo jeito que o `bench.py`
-e é o número que **muda de verdade** ao apertar `L` (o FPS da tela, com
-V-Sync, fica travado em ~60 e não mostra a diferença). Uma **bússola**
-(canto inferior-esquerdo) mostra pra onde você está olhando, e um
-**minimapa** com a posição da câmera (canto inferior-direito, alterna com
-a foto real via `P`) ajuda a não se perder no terreno.
-
-## Versões do código
-
-| Onde | Conteúdo |
-|---|---|
-| branch `main` | código **simplificado para leitura**, com frustum culling, memória isolada, testes e as teclas `Tab` e `F11` |
-| commit `3f30ace` (branch `feat/frustum-culling-memoria-isolada`, antes da simplificação) | código **original**, mesma funcionalidade, sem `Tab`/`F11` — gerou os números do artigo |
-
-A simplificação não muda a funcionalidade. Para ver a versão original:
-`git switch --detach 3f30ace`. Os 38 testes passam na versão original; rode
-`python -m unittest discover -s tests -v` também na `main` antes de usá-la.
-
-## Artigo
-
-O artigo final fica em `docs/artigo_final/` (ABNT, duas colunas, template IEEE do
-Overleaf, até 8 páginas). A prévia em PDF foi gerada fora do Overleaf; **a versão
-oficial deve ser compilada no Overleaf** a partir do `.zip`. Para trocar o PDF do
-botão, substitua `artigo_final_v4_previa.pdf` pelo PDF compilado, com o mesmo nome.
-
-## Roteiro do projeto
-
-| Fase | Conteúdo | Status |
+| Comando | Finalidade | Pré-requisito |
 |---|---|---|
-| 1 | Fundamentação e revisão bibliográfica | referências levantadas |
-| 2 | Arquitetura da engine + estruturas de dados base | **concluída** (`exemplos/` + `src/`) |
-| 3 | Algoritmo core | **concluída** — ondas de Gerstner + nível do mar ✅ · DEM real ✅ · CDLOD (quadtree + seleção + morphing) ✅ |
-| 4 | Avaliação experimental + artigo | **concluída, exceto um item** — benchmark + gráficos ✅ · RAM/VRAM isolada por modo ✅ · frustum culling ✅ · artigo ✅ (falta só compilar no Overleaf e conferir o limite de 8 páginas) · **trabalho futuro:** repetir o benchmark em GPU integrada / celular |
+| `python exemplos/janela.py` | Janela vazia com contexto OpenGL (ESC fecha) | GPU |
+| `python exemplos/triangulo.py` | Triângulo colorido (VBO, VAO, shaders) | GPU |
+| `python src/heightmap.py` | Gera a malha sem abrir janela | Nenhum |
+| `python src/dem.py` | Baixa e prepara o DEM | Internet na primeira vez |
+| `python src/lod.py` | Mostra a seleção de blocos da quadtree | Nenhum |
+| `python src/bench.py` | Benchmark de tempo de quadro | GPU |
+| `python src/resumo_bench.py bench/v3/run1 bench/v3/run2 bench/v3/run3` | Média, desvio-padrão e ponto de virada | Nenhum |
+| `PYTHONPATH=src python src/figura_artigo.py <saida.png>` | Regenera a Figura 3 do artigo | Nenhum |
+
+## Controles
+
+| Tecla | Ação |
+|---|---|
+| `W` `A` `S` `D` | Mover na horizontal |
+| `Espaço` / `Ctrl` | Subir / descer |
+| `Shift` | Mover mais rápido |
+| Mouse | Olhar ao redor |
+| `R` | Voltar ao ponto de partida |
+| `Tab` | Soltar / prender o mouse |
+| `F11` | Alternar tela cheia e janela |
+| `,` / `.` | Baixar / subir o nível do mar (contínuo) |
+| `1` `2` `3` `4` | Cenários 0 / +0,5 / +1 / +2 m |
+| `5` `6` `7` | Cenários extremos de demonstração (+5 / +10 / +20 m) |
+| `L` | Liga/desliga o LOD (CDLOD × malha completa) |
+| `M` | Liga/desliga o *morphing* |
+| `C` | Liga/desliga o *frustum culling* |
+| `K` | Depuração: cor por profundidade de bloco |
+| `Z` | Alterna *wireframe* |
+| `H` | Legenda: nenhuma, básica, completa |
+| `P` | Canto inferior direito: minimapa ou foto de referência |
+| `I` | Reexibe a tela de boas-vindas |
+| `ESC` | Sair |
+
+O painel de status (canto superior direito) exibe o nível do mar, o modo atual e o tempo de render do quadro. Esse tempo é medido como no `bench.py` e muda ao se pressionar `L`; o FPS exibido pela tela fica limitado pelo V-Sync.
+
+## Parâmetros principais
+
+Valores extraídos do código. A lista completa está em [`docs/metodologia_atual.md`](docs/metodologia_atual.md).
+
+| Parâmetro | Valor |
+|---|---|
+| Região (caixa delimitadora) | lat −23,70 a −24,10; lon −46,60 a −46,05 |
+| Resolução do DEM | 1024×1024 |
+| Exagero vertical | 6× |
+| Profundidade da quadtree | 5 níveis |
+| Vértices por bloco | 33×33 (32×32 subdivisões) |
+| Critério de divisão | distância < tamanho do bloco × 2,2 |
+| Ondas de Gerstner | 6 |
+| Campo de visão (FOV) | 60° |
+| Planos de projeção | 0,1 e 2000 |
+
+## Arquitetura
+
+```mermaid
+flowchart LR
+    A["AWS Terrain Tiles"] --> B["dem.py"]
+    B --> C["heightmap.py"]
+    C --> D["scene.py"]
+    E["lod.py: quadtree e culling"] --> D
+    F["water.py"] --> D
+    D --> G["main.py: janela e laço"]
+    D --> H["bench.py: medição"]
+    I["camera.py"] --> D
+    J["hud.py"] --> G
+```
+
+| Módulo | Responsabilidade |
+|---|---|
+| `src/dem.py` | Baixa e armazena tiles, remove *spikes* (mediana 3×3), reamostra para 1024² e aplica o exagero vertical |
+| `src/heightmap.py` | Terreno procedural e grade unitária reutilizada por todos os blocos |
+| `src/lod.py` | Quadtree, seleção de blocos por distância e *frustum culling* vetorizado |
+| `src/water.py` | Geometria do plano de água |
+| `src/scene.py` | Classe `Cena`: monta os recursos de GPU e desenha um quadro (usada por `main.py` e `bench.py`) |
+| `src/camera.py` | Câmera livre e constantes de projeção (fonte única) |
+| `src/hud.py` | Legenda, painel de status, bússola, minimapa e foto de referência |
+| `src/area_alagada.py` | Área emersa alagada por cenário |
+| `src/main.py` | Janela, entrada e laço principal |
+| `src/bench.py` | Benchmark de tempo de quadro e memória |
+| `src/resumo_bench.py` | Média, desvio-padrão e ponto de virada a partir dos CSV |
+| `src/figura_artigo.py` | Gráfico de custo por carga do artigo |
+| `src/shaders/terrain.*` | Altura por bloco, *morphing*, cor por altitude e faixa submersa |
+| `src/shaders/water.*` | Ondas de Gerstner, Fresnel e Blinn-Phong |
+
+Decisões de projeto:
+
+- A projeção (FOV e planos) é definida em `src/camera.py` e usada por aplicação, benchmark e testes.
+- O *geomorphing* usa a distância horizontal entre a câmera e o vértice.
+- O *frustum culling* usa caixas alinhadas aos eixos com margem de 2 texels e não altera a imagem (verificado por teste de igualdade pixel a pixel).
+- O exagero vertical de 6× é declarado, pois a razão entre relevo e largura da região é de cerca de 40:1.
+
+## Tratamento de erros
+
+| Origem | Exceção | Situação |
+|---|---|---|
+| `src/dem.py` | `urllib.error.URLError` | Falha de rede ao baixar um tile ainda ausente do cache. Tiles já baixados não exigem rede |
+| `src/main.py` | `RuntimeError` | `Não foi possível inicializar o GLFW` ou `Não foi possível criar a janela GLFW` |
+| `src/scene.py` | `RuntimeError` | `Cena criada sem a malha do CDLOD (construir_lod=False).` |
+| `src/bench.py` | `ValueError` | Modo de benchmark desconhecido |
+| `src/bench.py` | `RuntimeError` | `medição de memória falhou (<modo>, <resolução>)`, com a saída de erro do processo filho |
+| `src/bench.py` | tolerado | Sem `nvidia-smi`, o benchmark segue sem os dados de VRAM e uso de GPU |
+
+## Testes
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+Resultado da verificação: `Ran 51 tests ... OK`, em 15,5 s, nesta máquina (com GPU).
+
+| Arquivo | Testes | Cobertura |
+|---|---|---|
+| `tests/test_frustum.py` | 22 | *Frustum culling*, incluindo imagem idêntica com e sem culling |
+| `tests/test_memoria.py` | 16 | Contabilidade de memória da cena e medição isolada por modo |
+| `tests/test_dem_area.py` | 13 | Decodificação terrarium, remoção de *spikes*, coordenadas de tiles e área alagada |
+
+Parte dos testes cria um contexto OpenGL sem janela; sem GPU, esses testes são ignorados.
+
+## Benchmark
+
+O comando abaixo executa a varredura completa, sem janela. Sem `--saida`, ele sobrescreve `bench/resultados.csv`, que sustenta a série original do artigo.
+
+```bash
+python src/bench.py --saida bench/novo
+python src/bench.py --memoria --saida bench/novo
+```
+
+A varredura combina 4 condições (`sem_lod`, `cdlod`, `cdlod_sem_morph`, `cdlod_frustum`), 5 resoluções (256 a 2048) e 4 câmeras, com 30 quadros de aquecimento e 150 medidos, sincronizando a GPU a cada quadro. A opção `--rapido` executa um subconjunto.
+
+Resultados da série `bench/v3/` (código atual; 3 execuções; RTX 3060), usados no artigo:
+
+| Medida | Resultado |
+|---|---|
+| Ponto de virada (CDLOD × malha completa) | cerca de 5 milhões de triângulos (4,4 a 5,6 M) |
+| Ponto de virada com *culling* | cerca de 3 milhões de triângulos (2,0 a 3,5 M) |
+| Ganho do *culling* no tempo de quadro | −22% em média (1,12 para 0,88 ms) |
+| Memória de GPU a 2048² | 19 MB (CDLOD) × 153 MB (malha completa) |
+| Pico de RAM a 2048² | 183 MB (CDLOD) × 593 MB (malha completa) |
+
+As séries `bench/` e `bench/v2/` são históricas. O ponto de virada variou entre sessões de medição (3,4 a 4,3 M na série v2), o que o artigo declara como limitação.
+
+## Estrutura do projeto
+
+```
+.
+├── CLAUDE.md                  # contexto do projeto para sessões de IA
+├── README.md
+├── requirements.txt
+├── bench/                     # CSV e gráficos; v3/ é a série usada no artigo
+├── docs/
+│   ├── especificacao_eixo6.pdf    # especificação do professor
+│   ├── metodologia_atual.md/.pdf  # parâmetros exatos (fonte da verdade)
+│   ├── APRESENTACAO.md            # guia de ponta a ponta
+│   ├── DESENVOLVIMENTO.md         # relato do desenvolvimento por fase
+│   ├── COMPLEMENTO_TECNICO.md     # glossário, fórmulas e justificativas
+│   ├── GUIA_CONCEITUAL.md         # guia conceitual do projeto
+│   ├── GUIA_DO_CODIGO.md          # guia do código
+│   ├── AVALIACAO_*.md             # avaliações internas (histórico)
+│   ├── resumo_projeto.pdf         # resumo de 3 páginas
+│   ├── artigo_final/              # versões do artigo; a atual é a v5
+│   ├── figuras/                   # capturas e gráficos de versões anteriores
+│   ├── ArtigoCompGrafica_ElevacaoCosteira.pdf  # versão anterior (histórico)
+│   └── artigo_v4.tex                           # fonte da versão anterior (histórico)
+├── exemplos/
+│   ├── janela.py
+│   └── triangulo.py
+├── src/                       # módulos descritos em Arquitetura
+│   ├── data/                  # foto de referência e crédito (tiles em cache ficam fora do Git)
+│   └── shaders/
+└── tests/
+    ├── _base.py
+    ├── test_dem_area.py
+    ├── test_frustum.py
+    └── test_memoria.py
+```
+
+## Limitações conhecidas
+
+- O *benchmark* usou uma única GPU (RTX 3060 de computador de mesa); em outras GPUs o ponto de virada pode ser diferente. Não há medição em GPU integrada.
+- Os resultados não têm intervalos de confiança, e o ponto de virada variou entre sessões.
+- O tempo do CDLOD é dominado pela CPU (percurso da quadtree e chamadas de desenho em Python), não pela GPU.
+- A água não interage com o terreno, e o relevo tem exagero vertical de 6×.
+- A exatidão vertical do DEM não foi validada; as áreas alagadas ilustram o método e não constituem previsão.
+- A caixa delimitadora não é quadrada (cerca de 44 × 56 km), o que causa distorção de aproximadamente 20% na reamostragem para 1024×1024.
+- O artigo foi compilado localmente (MiKTeX); a compilação no Overleaf e a conferência do limite de 8 páginas ainda não foram feitas.
+- As referências complementares ainda não foram confirmadas com o professor. O intervalo de páginas de Strugar e de Tanner et al., e o tipo e o ano do trabalho de Welch, não foram confirmados.
+
+## Solução de problemas
+
+| Sintoma | Causa provável | Ação |
+|---|---|---|
+| Falha na instalação de pacotes no Python 3.13 | Bibliotecas tentam compilar do código-fonte | Usar Python 3.11 ou 3.12 |
+| `URLError` ao iniciar | Sem internet e sem tiles em cache | Conectar-se uma vez para baixar os tiles |
+| `Não foi possível criar a janela GLFW` | Driver sem suporte a OpenGL 3.3 | Atualizar o driver de vídeo |
+| Testes de renderização ignorados | Sem GPU ou contexto OpenGL | Executar em máquina com GPU |
+| `ModuleNotFoundError: glm` | Ambiente virtual não ativado | Ativar a `.venv` e instalar `requirements.txt` |
+| Colunas de VRAM vazias no benchmark | `nvidia-smi` indisponível | Esperado em GPUs não NVIDIA |
+
+## Documentação
+
+O artigo final (ABNT em duas colunas, template IEEE do Overleaf, até 8 páginas) está em `docs/artigo_final/`. A fonte LaTeX é `artigo_final_v5_abnt.tex`, e a prévia em PDF foi gerada localmente; a versão oficial deve ser compilada no Overleaf.
+
+[![Ler o artigo](https://img.shields.io/badge/Artigo-ler_o_PDF-B31B1B?style=for-the-badge)](docs/artigo_final/artigo_final_v5_previa.pdf)
+
+Documentos de apoio: [`docs/metodologia_atual.md`](docs/metodologia_atual.md), [`docs/APRESENTACAO.md`](docs/APRESENTACAO.md), [`docs/COMPLEMENTO_TECNICO.md`](docs/COMPLEMENTO_TECNICO.md) e [`docs/DESENVOLVIMENTO.md`](docs/DESENVOLVIMENTO.md).
 
 ## Referências
 
-**Obrigatórias do eixo**
+Obrigatórias do eixo:
 
 1. Tanner, C. C.; Migdal, C. J.; Jones, M. T. (1998). *The Clipmap: A Virtual Mipmap.*
-2. Welch, R. (2019). *Real-time ocean simulation* (TCC de B.Sc.). Disponível em:
-   ryanwelch.co.uk/project/ocean-simulation.
+2. Welch, R. (2019). *Real-time ocean simulation* (TCC de B.Sc.). Disponível em: ryanwelch.co.uk/project/ocean-simulation.
 
-**Complementares** (uso a confirmar com o professor)
+Complementares (uso a confirmar com o professor):
 
 3. Clasen, M.; Hege, H.-C. (2006). *Terrain Rendering using Spherical Clipmaps.*
 4. Strugar, F. (2009). *Continuous Distance-Dependent Level of Detail for Rendering Heightmaps* (CDLOD).
@@ -238,22 +351,9 @@ botão, substitua `artigo_final_v4_previa.pdf` pelo PDF compilado, com o mesmo n
 6. DiPaola, F.; Bhardwaj, A.; Sam, L. (2023). *Generating an interactive online map of future sea level rise along the North Shore of Vancouver* (arXiv:2304.07469).
 7. Brown, I.; Jude, S. et al. (2006). *Dynamic Simulation and Visualisation of Coastal Erosion.*
 
-Título, autoria e ano das referências foram conferidos contra a fonte original
-— ver o item 8 de `CLAUDE.md` para o histórico das 2 correções encontradas
-(título/ano de Strugar; título de Welch, que na especificação oficial do
-eixo aparece erroneamente como "GPU Clipmaps and Ocean Simulation").
-**Ainda não confirmados:** o intervalo de páginas de Strugar e de Tanner et al.
-(omitido do artigo por isso). O trabalho de Welch foi confirmado na página do
-autor como projeto final de B.Sc. em Ciência da Computação, de 2019.
+Dados e mídia: AWS Terrain Tiles (`registry.opendata.aws/terrain-tiles`), derivados de NASA SRTM (terra) e GEBCO (batimetria). Foto de referência: "Baía de Santos, vista da Ponta da Praia", Emilio Pechini, Wikimedia Commons, CC BY 2.0 (ver `src/data/referencia_santos_CREDITO.txt`).
 
-**Dados e mídia**
-
-- AWS Terrain Tiles (`registry.opendata.aws/terrain-tiles`) — DEM, formato terrarium.
-- Fontes primárias do DEM: NASA SRTM (terra) e GEBCO (batimetria).
-- Foto de referência: "Baía de Santos, vista da Ponta da Praia", Emilio Pechini,
-  Wikimedia Commons, CC BY 2.0 — ver `src/data/referencia_santos_CREDITO.txt`.
-
-## Integrantes
+## Autores
 
 | Nome | RA | E-mail |
 |---|---|---|
@@ -261,11 +361,8 @@ autor como projeto final de B.Sc. em Ciência da Computação, de 2019.
 | João Pedro Denardo | 113036 | denardo749@alunos.fho.edu.br |
 | Pedro Henrique Oliveira de Souza | 113364 | pedro1204@alunos.fho.edu.br |
 
-## Agradecimentos
+Engenharia de Computação, FHO (Fundação Hermínio Ometto), Araras, SP. Orientação do professor Renato Luciano Cagnin, na disciplina de Computação Gráfica.
 
-Ao professor **Renato Luciano Cagnin**, pela orientação na disciplina de
-Computação Gráfica.
+## Licença
 
----
-
-Projeto acadêmico — uso educacional.
+Nenhuma licença foi definida até o momento. Projeto acadêmico, de uso educacional.

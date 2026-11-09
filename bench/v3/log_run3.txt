@@ -1,0 +1,94 @@
+GPU: NVIDIA GeForce RTX 3060/PCIe/SSE2
+
+=== heightmap 256 x 256 ===
+  rasante   sem_lod            0.26 M tri |    0.161 ms |   6225.8 fps |    113 MB RAM | 1237 MB VRAM
+  rasante   cdlod              0.49 M tri |    1.203 ms |    831.6 fps |    113 MB RAM | 1237 MB VRAM
+  rasante   cdlod_sem_morph    0.49 M tri |    1.188 ms |    841.9 fps |    113 MB RAM | 1233 MB VRAM
+  rasante   cdlod_frustum      0.25 M tri |    0.806 ms |   1241.4 fps |    114 MB RAM | 1233 MB VRAM
+  encosta   sem_lod            0.26 M tri |    0.181 ms |   5526.6 fps |    114 MB RAM | 1233 MB VRAM
+  encosta   cdlod              0.51 M tri |    1.390 ms |    719.6 fps |    114 MB RAM | 1233 MB VRAM
+  encosta   cdlod_sem_morph    0.51 M tri |    1.403 ms |    712.7 fps |    114 MB RAM | 1221 MB VRAM
+  encosta   cdlod_frustum      0.24 M tri |    0.815 ms |   1227.2 fps |    114 MB RAM | 1222 MB VRAM
+  aerea     sem_lod            0.26 M tri |    0.208 ms |   4809.3 fps |    114 MB RAM | 1222 MB VRAM
+  aerea     cdlod              0.33 M tri |    0.939 ms |   1064.9 fps |    114 MB RAM | 1222 MB VRAM
+  aerea     cdlod_sem_morph    0.33 M tri |    0.999 ms |   1000.5 fps |    114 MB RAM | 1222 MB VRAM
+  aerea     cdlod_frustum      0.26 M tri |    0.946 ms |   1056.7 fps |    114 MB RAM | 1222 MB VRAM
+  horizonte sem_lod            0.26 M tri |    0.257 ms |   3884.9 fps |    114 MB RAM | 1222 MB VRAM
+  horizonte cdlod              0.38 M tri |    1.094 ms |    914.0 fps |    114 MB RAM | 1221 MB VRAM
+  horizonte cdlod_sem_morph    0.38 M tri |    1.263 ms |    791.5 fps |    114 MB RAM | 1206 MB VRAM
+  horizonte cdlod_frustum      0.28 M tri |    1.259 ms |    794.6 fps |    114 MB RAM | 1194 MB VRAM
+
+=== heightmap 512 x 512 ===
+  rasante   sem_lod            0.65 M tri |    0.820 ms |   1218.8 fps |    141 MB RAM | 1202 MB VRAM
+  rasante   cdlod              0.49 M tri |    1.232 ms |    811.8 fps |    141 MB RAM | 1202 MB VRAM
+  rasante   cdlod_sem_morph    0.49 M tri |    1.243 ms |    804.4 fps |    141 MB RAM | 1202 MB VRAM
+  rasante   cdlod_frustum      0.25 M tri |    0.865 ms |   1155.5 fps |    141 MB RAM | 1202 MB VRAM
+  encosta   sem_lod            0.65 M tri |    0.328 ms |   3048.0 fps |    141 MB RAM | 1202 MB VRAM
+  encosta   cdlod              0.51 M tri |    1.246 ms |    802.8 fps |    141 MB RAM | 1201 MB VRAM
+  encosta   cdlod_sem_morph    0.51 M tri |    1.263 ms |    791.5 fps |    141 MB RAM | 1201 MB VRAM
+  encosta   cdlod_frustum      0.24 M tri |    0.927 ms |   1078.6 fps |    141 MB RAM | 1201 MB VRAM
+  aerea     sem_lod            0.65 M tri |    0.396 ms |   2524.4 fps |    141 MB RAM | 1201 MB VRAM
+  aerea     cdlod              0.33 M tri |    0.946 ms |   1056.8 fps |    141 MB RAM | 1201 MB VRAM
+  aerea     cdlod_sem_morph    0.33 M tri |    1.022 ms |    978.2 fps |    141 MB RAM | 1201 MB VRAM
+  aerea     cdlod_frustum      0.26 M tri |    0.950 ms |   1052.8 fps |    141 MB RAM | 1201 MB VRAM
+  horizonte sem_lod            0.65 M tri |    0.431 ms |   2321.1 fps |    141 MB RAM | 1201 MB VRAM
+  horizonte cdlod              0.38 M tri |    1.210 ms |    826.2 fps |    138 MB RAM | 1203 MB VRAM
+  horizonte cdlod_sem_morph    0.38 M tri |    1.146 ms |    873.0 fps |    138 MB RAM | 1204 MB VRAM
+  horizonte cdlod_frustum      0.28 M tri |    1.128 ms |    886.6 fps |    138 MB RAM | 1204 MB VRAM
+
+=== heightmap 1024 x 1024 ===
+  rasante   sem_lod            2.23 M tri |    0.841 ms |   1189.3 fps |    199 MB RAM | 1233 MB VRAM
+  rasante   cdlod              0.49 M tri |    1.271 ms |    786.8 fps |    199 MB RAM | 1201 MB VRAM
+  rasante   cdlod_sem_morph    0.49 M tri |    1.285 ms |    778.5 fps |    199 MB RAM | 1207 MB VRAM
+  rasante   cdlod_frustum      0.25 M tri |    0.862 ms |   1160.1 fps |    199 MB RAM | 1206 MB VRAM
+  encosta   sem_lod            2.23 M tri |    0.650 ms |   1539.1 fps |    199 MB RAM | 1206 MB VRAM
+  encosta   cdlod              0.51 M tri |    1.210 ms |    826.7 fps |    199 MB RAM | 1206 MB VRAM
+  encosta   cdlod_sem_morph    0.51 M tri |    1.263 ms |    791.8 fps |    199 MB RAM | 1206 MB VRAM
+  encosta   cdlod_frustum      0.24 M tri |    0.743 ms |   1345.3 fps |    199 MB RAM | 1206 MB VRAM
+  aerea     sem_lod            2.23 M tri |    0.771 ms |   1297.5 fps |    199 MB RAM | 1206 MB VRAM
+  aerea     cdlod              0.33 M tri |    0.897 ms |   1115.1 fps |    199 MB RAM | 1206 MB VRAM
+  aerea     cdlod_sem_morph    0.33 M tri |    0.913 ms |   1094.7 fps |    199 MB RAM | 1206 MB VRAM
+  aerea     cdlod_frustum      0.27 M tri |    0.913 ms |   1095.6 fps |    199 MB RAM | 1206 MB VRAM
+  horizonte sem_lod            2.23 M tri |    0.607 ms |   1646.7 fps |    199 MB RAM | 1198 MB VRAM
+  horizonte cdlod              0.38 M tri |    1.117 ms |    895.5 fps |    198 MB RAM | 1198 MB VRAM
+  horizonte cdlod_sem_morph    0.38 M tri |    1.071 ms |    933.3 fps |    198 MB RAM | 1198 MB VRAM
+  horizonte cdlod_frustum      0.28 M tri |    0.974 ms |   1026.5 fps |    198 MB RAM | 1198 MB VRAM
+
+=== heightmap 1536 x 1536 ===
+  rasante   sem_lod            4.85 M tri |    0.852 ms |   1174.0 fps |    260 MB RAM | 1262 MB VRAM
+  rasante   cdlod              0.49 M tri |    1.857 ms |    538.4 fps |    260 MB RAM | 1255 MB VRAM
+  rasante   cdlod_sem_morph    0.49 M tri |    1.188 ms |    842.0 fps |    260 MB RAM | 1253 MB VRAM
+  rasante   cdlod_frustum      0.25 M tri |    0.820 ms |   1219.0 fps |    261 MB RAM | 1255 MB VRAM
+  encosta   sem_lod            4.85 M tri |    1.118 ms |    894.2 fps |    261 MB RAM | 1257 MB VRAM
+  encosta   cdlod              0.51 M tri |    1.296 ms |    771.4 fps |    261 MB RAM | 1199 MB VRAM
+  encosta   cdlod_sem_morph    0.51 M tri |    1.263 ms |    791.6 fps |    261 MB RAM | 1199 MB VRAM
+  encosta   cdlod_frustum      0.24 M tri |    0.785 ms |   1273.3 fps |    261 MB RAM | 1195 MB VRAM
+  aerea     sem_lod            4.85 M tri |    1.413 ms |    707.9 fps |    261 MB RAM | 1195 MB VRAM
+  aerea     cdlod              0.33 M tri |    0.907 ms |   1102.0 fps |    261 MB RAM | 1195 MB VRAM
+  aerea     cdlod_sem_morph    0.33 M tri |    0.941 ms |   1062.8 fps |    261 MB RAM | 1196 MB VRAM
+  aerea     cdlod_frustum      0.27 M tri |    0.964 ms |   1036.9 fps |    261 MB RAM | 1195 MB VRAM
+  horizonte sem_lod            4.85 M tri |    1.571 ms |    636.7 fps |    252 MB RAM | 1207 MB VRAM
+  horizonte cdlod              0.38 M tri |    1.169 ms |    855.1 fps |    252 MB RAM | 1208 MB VRAM
+  horizonte cdlod_sem_morph    0.38 M tri |    1.285 ms |    778.5 fps |    252 MB RAM | 1205 MB VRAM
+  horizonte cdlod_frustum      0.28 M tri |    1.066 ms |    938.1 fps |    252 MB RAM | 1205 MB VRAM
+
+=== heightmap 2048 x 2048 ===
+  rasante   sem_lod            8.52 M tri |    1.874 ms |    533.6 fps |    329 MB RAM | 1297 MB VRAM
+  rasante   cdlod              0.49 M tri |    1.193 ms |    838.3 fps |    329 MB RAM | 1297 MB VRAM
+  rasante   cdlod_sem_morph    0.49 M tri |    1.189 ms |    840.7 fps |    329 MB RAM | 1297 MB VRAM
+  rasante   cdlod_frustum      0.25 M tri |    0.786 ms |   1271.8 fps |    330 MB RAM | 1297 MB VRAM
+  encosta   sem_lod            8.52 M tri |    1.971 ms |    507.3 fps |    329 MB RAM | 1288 MB VRAM
+  encosta   cdlod              0.51 M tri |    1.242 ms |    805.1 fps |    329 MB RAM | 1296 MB VRAM
+  encosta   cdlod_sem_morph    0.51 M tri |    1.221 ms |    819.3 fps |    329 MB RAM | 1297 MB VRAM
+  encosta   cdlod_frustum      0.24 M tri |    1.093 ms |    914.7 fps |    329 MB RAM | 1297 MB VRAM
+  aerea     sem_lod            8.52 M tri |    2.542 ms |    393.3 fps |    329 MB RAM | 1297 MB VRAM
+  aerea     cdlod              0.33 M tri |    0.901 ms |   1110.4 fps |    329 MB RAM | 1297 MB VRAM
+  aerea     cdlod_sem_morph    0.33 M tri |    0.931 ms |   1074.0 fps |    329 MB RAM | 1297 MB VRAM
+  aerea     cdlod_frustum      0.27 M tri |    0.910 ms |   1098.9 fps |    329 MB RAM | 1295 MB VRAM
+  horizonte sem_lod            8.52 M tri |    2.294 ms |    436.0 fps |    329 MB RAM | 1300 MB VRAM
+  horizonte cdlod              0.38 M tri |    0.996 ms |   1003.8 fps |    329 MB RAM | 1298 MB VRAM
+  horizonte cdlod_sem_morph    0.38 M tri |    1.049 ms |    953.5 fps |    329 MB RAM | 1310 MB VRAM
+  horizonte cdlod_frustum      0.28 M tri |    0.928 ms |   1077.6 fps |    329 MB RAM | 1311 MB VRAM
+
+CSV salvo em bench\v3\run3\resultados.csv
+Graficos salvos em bench\v3\run3
