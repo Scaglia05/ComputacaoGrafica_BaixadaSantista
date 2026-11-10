@@ -137,6 +137,7 @@ nível   alagada(km²)  % da emersa  sem células a 0 m(km²)
 | `python src/dem.py` | Baixa e prepara o DEM | Internet na primeira vez |
 | `python src/lod.py` | Mostra a seleção de blocos da quadtree | Nenhum |
 | `python src/bench.py` | Benchmark de tempo de quadro | GPU |
+| `python src/verificar_fendas.py` | Conta as fendas finas com e sem morphing (40 câmeras) | GPU |
 | `python src/resumo_bench.py bench/v3/run1 bench/v3/run2 bench/v3/run3` | Média, desvio-padrão e ponto de virada | Nenhum |
 | `PYTHONPATH=src python src/figura_artigo.py <saida.png>` | Regenera a Figura 3 do artigo | Nenhum |
 
@@ -211,6 +212,7 @@ flowchart LR
 | `src/bench.py` | Benchmark de tempo de quadro e memória |
 | `src/resumo_bench.py` | Média, desvio-padrão e ponto de virada a partir dos CSV |
 | `src/figura_artigo.py` | Gráfico de custo por carga do artigo |
+| `src/verificar_fendas.py` | Verifica se o geomorphing fecha as fendas entre blocos |
 | `src/shaders/terrain.*` | Altura por bloco, *morphing*, cor por altitude e faixa submersa |
 | `src/shaders/water.*` | Ondas de Gerstner, Fresnel e Blinn-Phong |
 
