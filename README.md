@@ -336,7 +336,7 @@ O artigo final (ABNT em duas colunas, template IEEE do Overleaf, até 8 páginas
 
 [![Ler o artigo](https://img.shields.io/badge/Artigo-ler_o_PDF-B31B1B?style=for-the-badge)](docs/artigo_final/artigo_final_v5_previa.pdf)
 
-Documentos de apoio: [`docs/metodologia_atual.md`](docs/metodologia_atual.md), [`docs/APRESENTACAO.md`](docs/APRESENTACAO.md), [`docs/COMPLEMENTO_TECNICO.md`](docs/COMPLEMENTO_TECNICO.md) e [`docs/DESENVOLVIMENTO.md`](docs/DESENVOLVIMENTO.md).
+Documentos de apoio: [`docs/TEORIA_DE_PONTA_A_PONTA.md`](docs/TEORIA_DE_PONTA_A_PONTA.md) (guia de estudo), [`docs/metodologia_atual.md`](docs/metodologia_atual.md), [`docs/APRESENTACAO.md`](docs/APRESENTACAO.md), [`docs/COMPLEMENTO_TECNICO.md`](docs/COMPLEMENTO_TECNICO.md) e [`docs/DESENVOLVIMENTO.md`](docs/DESENVOLVIMENTO.md).
 
 ## Referências
 
