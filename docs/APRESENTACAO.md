@@ -352,7 +352,7 @@ com 30 frames de aquecimento + 150 medidos. Salva `bench/resultados.csv` e
 | Dados | — | **DEM real da Baixada Santista** (SRTM + batimetria GEBCO), com despike e reamostragem |
 | Aplicação | Embasamento (estudos de erosão / subida do mar sobre DEM) | **Realce da faixa submersa** reagindo ao nível do mar; **cenários em metros reais** (0 / +0,5 / +1 / +2 m) |
 | Combinação | Cada artigo trata terreno **ou** água | **Acoplamento** terreno + água + parâmetro de inundação, com propósito analítico |
-| Avaliação | Os artigos **apresentam** o algoritmo | **Experimento controlado** que mediu o *trade-off* e achou o **ponto de virada** (~4 M de triângulos numa RTX 3060 (2,7 a 4,3 M conforme o critério e a execução; ~2,3 M com culling)) |
+| Avaliação | Os artigos **apresentam** o algoritmo | **Experimento controlado** que mediu o *trade-off* e achou o **ponto de virada** (~5 M de triângulos numa RTX 3060 (4,4 a 5,6 M conforme o critério e a execução; ~3 M com culling)) |
 
 **Frase-resumo para a apresentação:** *"Pegamos o LOD de terreno de um
 artigo e a água dinâmica de outro, implementamos os dois em cima de um DEM

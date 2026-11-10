@@ -61,7 +61,7 @@ o tamanho e a profundidade (uniforms). A altura vem da **textura**, não dos vé
 | `src/main.py` | Janela GLFW, teclado, laço principal, `Tab`/`F11` | `scene`, `hud`, `camera` |
 | `src/bench.py` | Benchmark sem janela: tempo e memória por modo | `scene` |
 | `src/area_alagada.py` | Calcula a área emersa que alaga em cada cenário (tabela do artigo) | `dem` |
-| `tests/` | 38 testes (culling, memória isolada, benchmark) | — |
+| `tests/` | 51 testes (culling, memória isolada, DEM e área alagada) | — |
 
 `main.py` e `bench.py` usam **a mesma `Cena`** — por isso o benchmark mede exatamente o que o
 usuário vê.
@@ -80,7 +80,7 @@ usuário vê.
 | **opensimplex** | Ruído do terreno procedural | Puro Python, sem compilar | Perlin próprio |
 | **matplotlib** | Gráficos do benchmark | Padrão para figuras do artigo | — |
 | **psutil** | RAM/pico por processo no `--memoria` | Cross-platform | — |
-| **unittest** (stdlib) | 38 testes, sem pytest | Sem dependência extra | pytest |
+| **unittest** (stdlib) | 51 testes, sem pytest | Sem dependência extra | pytest |
 
 Sem GDAL/rasterio: o DEM vem em PNG *terrarium*, com `elev = R·256 + G + B/256 − 32768`.
 
@@ -316,11 +316,11 @@ que o benchmark registra.
 distância < tamanho × 2,2 · 6 ondas · FOV 60° · velocidade 40 u/s (120 com Shift) ·
 heightmap 1024² · mundo 300 u · água 256×256 · cenários 0 / +0,5 / +1 / +2 m (e 5/10/20 m só para demonstração).
 
-**Resultados** (RTX 3060, 3 execuções extras):
+**Resultados** (RTX 3060, 3 execuções em `bench/v3`):
 - CDLOD fica em ~1 ms por quadro em qualquer resolução (~0,4 M triângulos).
-- Malha sem LOD cresce linearmente e **cruza o CDLOD em ~4 M de triângulos** (2,7 a 4,3 M conforme o critério e a execução).
-- **Culling:** −22% de tempo de quadro em média (rasante −33%, encosta −38%, horizonte −7%, aérea ≈ 0%); blocos 100–184 → 52–73; ponto de virada → **~2,3 M**.
-- **Memória a 2048²:** malha 19 MB (CDLOD) × 153 MB (completa); pico de RAM 191 × 595 MB.
+- Malha sem LOD cresce linearmente e **cruza o CDLOD em ~5 M de triângulos** (4,4 a 5,6 M conforme o critério e a execução).
+- **Culling:** −22% de tempo de quadro em média (rasante −37%, encosta −37%, horizonte −6%, aérea ≈ 0%); blocos 100–184 → 52–74; ponto de virada → **~3 M**.
+- **Memória a 2048²:** malha 19 MB (CDLOD) × 153 MB (completa); pico de RAM 183 × 593 MB.
 - O ~1 ms do CDLOD é **overhead de CPU** (percorrer a árvore + draw calls em Python), não GPU.
 
 ---

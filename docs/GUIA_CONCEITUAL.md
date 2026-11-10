@@ -169,8 +169,8 @@ num cenário ambiental real, com **nível do mar ajustável**, e **medimos** qua
 
 - Sem LOD, o custo cresce **proporcionalmente** ao tamanho do terreno.
 - Com LOD, o custo fica **quase constante** (~1 ms por quadro).
-- **Ponto de virada:** a partir de **~4 milhões de triângulos** (2,7 a 4,3 M conforme o critério) o
-  LOD passa a ser mais rápido que desenhar tudo. Com culling cai para ~2,3 M.
+- **Ponto de virada:** a partir de **~5 milhões de triângulos** (4,4 a 5,6 M conforme o critério e a execução) o
+  LOD passa a ser mais rápido que desenhar tudo. Com culling cai para ~3 M.
 - **Frustum culling:** reduz **22%** do tempo de quadro em média, sem mudar a imagem.
 - **Memória:** a 2048², o LOD usa **19 MB** contra **153 MB** da malha completa.
 - Testado em **uma** placa (RTX 3060). Em outras GPUs: **não medido** (trabalho futuro).
