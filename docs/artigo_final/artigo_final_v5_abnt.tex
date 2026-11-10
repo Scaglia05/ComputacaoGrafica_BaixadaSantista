@@ -506,7 +506,7 @@ cenário extremo usado apenas para demonstração; (c) blocos da
 \emph{quadtree} coloridos por profundidade, do azul (blocos grandes e
 distantes) ao vermelho (blocos pequenos e próximos)}
 \label{fig:capturas}
-\includegraphics[width=0.85\textwidth]{capturas_sistema.png}
+\includegraphics[width=0.7\textwidth]{capturas_sistema.png}
 \fonte{Elaborado pelos autores (2026).}
 \end{figure*}
 
@@ -623,7 +623,7 @@ transparência sobre o terreno submerso; (b) interface, com a legenda de
 comandos, o painel de status (nível do mar em +2,00 m, modo de detalhe e
 tempo de quadro), a bússola e o minimapa}
 \label{fig:detalhes}
-\includegraphics[width=0.5\textwidth]{detalhes_agua_interface.png}
+\includegraphics[width=0.42\textwidth]{detalhes_agua_interface.png}
 \fonte{Elaborado pelos autores (2026).}
 \end{figure*}
 
@@ -784,7 +784,7 @@ milhões de triângulos, ela leva cerca de 2 ms por quadro, muito abaixo dos
 confirmada quanto à eficiência, mas não quanto à perda de interatividade
 nesta GPU. O custo do
 \emph{geomorphing} (diferença entre ``CDLOD'' e ``CDLOD sem \emph{morphing}'')
-foi de no máximo 0,06 ms, dentro do ruído; logo, o \emph{geomorphing} custa pouco. Em 40 câmeras aleatórias, as fendas finas (faixas verticais de 1 a 3 pixels de céu entre terreno, ausentes na malha completa) somaram 512 sem \emph{morphing} e 1 com ele (\texttt{src/verificar\_fendas.py}); o \emph{popping} não foi verificado.
+foi de no máximo 0,06 ms, dentro do ruído; logo, o \emph{geomorphing} custa pouco. O efeito foi medido em 40 câmeras aleatórias: as fendas finas (faixas verticais de 1 a 3 pixels de céu entre terreno, ausentes na malha completa) somaram 512 sem \emph{morphing} e 1 com ele (\texttt{src/verificar\_fendas.py}). A fenda restante não foi analisada; supõe-se que decorra de a seleção usar a distância ao bloco e a transição, a distância ao vértice, o que não foi testado. A contagem detecta só fendas verticais e não mede o \emph{popping}.
 
 O descarte por campo de visão reduziu o número de blocos de 100--184 para 52--74 e o tempo médio de quadro do CDLOD em 22\%, de cerca de 1,12 para 0,88 ms (média das três execuções). O ganho depende da câmera: $-37\%$ nas posições rasante e de encosta, em que boa parte do terreno fica fora do campo de visão, contra $-6\%$ no horizonte e $0\%$ na vista aérea, que enquadra quase todo o terreno. Com o descarte, o cruzamento ocorre em 2,7 a 3,2 milhões de triângulos pela média e em 2,0 a 3,5 milhões pelo p95, isto é, em cerca de 3 milhões; a malha completa deixa de compensar mais cedo.
 
@@ -798,12 +798,12 @@ Santista, com água animada e nível do mar de 0 a $+2$ m.
 
 O principal resultado vem do teste de desempenho. Com o CDLOD, o tempo para
 desenhar um quadro da cena completa (terreno e água) ficou próximo de 1 ms
-em todas as resoluções de terreno testadas. Sem LOD, esse tempo cresce com a malha. As duas curvas se cruzam em cerca de 5 milhões de triângulos (4,4 a 5,6 milhões, conforme o critério e a execução): abaixo desse valor, desenhar a malha completa é mais rápido; acima dele, o CDLOD é mais rápido. O descarte reduziu o tempo de quadro em 22\% e o ponto de virada para cerca de 3 milhões, e o CDLOD usou cerca de oito vezes menos memória de malha a 2048. A eficácia do CDLOD já é conhecida (STRUGAR,
-2009); este trabalho acrescenta a medição do ponto de virada em um cenário de inundação costeira. A hipótese foi confirmada quanto à eficiência (tempo e memória), mas não quanto à perda de interatividade: nesta GPU, a malha completa permaneceu interativa em todas as resoluções, e esse efeito não foi investigado em outras GPUs.
+em todas as resoluções de terreno testadas. Sem LOD, esse tempo cresce com a malha. As duas curvas se cruzam em cerca de 5 milhões de triângulos (4,4 a 5,6 milhões, conforme o critério e a execução): abaixo desse valor, desenhar a malha completa é mais rápido; acima dele, o CDLOD é mais rápido. A eficácia do CDLOD já é conhecida (STRUGAR,
+2009); este trabalho acrescenta a medição do ponto de virada em um cenário de inundação costeira. A hipótese foi confirmada quanto à eficiência (tempo e memória), mas não quanto à perda de interatividade: nesta GPU, a malha completa permaneceu interativa em todas as resoluções, e esse efeito não foi investigado em outras GPUs. O \emph{geomorphing} fechou quase todas as fendas (512 para 1), a custo desprezível.
 
-Algumas limitações devem ser consideradas. Primeiro, o CDLOD implementado é simplificado: as faixas do \emph{geomorphing} não seguem exatamente as fórmulas originais (STRUGAR, 2009) e o descarte usa caixas conservadoras, sem oclusão. Segundo, o teste usou uma única GPU (RTX 3060 de computador de mesa); em outras GPUs o ponto de virada pode ser diferente. Terceiro, o relevo tem exagero vertical de $6\times$ (Equação~\eqref{eq:escala}) e a água não interage com o terreno. Quarto, a exatidão vertical dos dados não foi validada; se for da ordem dos cenários (+0,5 a +2 m), as áreas alagadas são demonstração, e não previsão. Quinto, a análise se limita à média e ao p95 de três execuções, sem intervalos de confiança; o ponto de virada, interpolado linearmente entre duas resoluções, variou de 4,4 a 5,6 milhões de triângulos entre execuções (3,4 a 4,3 milhões em série anterior, de outra sessão); os valores são estimativas. Sexto, o custo de cerca de 1 ms do CDLOD é provavelmente limitado pela CPU. Sétimo, a caixa geográfica (cerca de 44 $\times$ 56 km) é mapeada em terreno quadrado, distorcendo a escala horizontal em cerca de 20\%.
+Algumas limitações devem ser consideradas. Primeiro, o CDLOD implementado é simplificado: as faixas do \emph{geomorphing} não seguem exatamente as fórmulas originais (STRUGAR, 2009) e o descarte usa caixas conservadoras, sem oclusão; a verificação das fendas é indireta (fendas verticais, em uma cena) e o \emph{popping} não foi medido. Segundo, o teste usou uma única GPU (RTX 3060 de computador de mesa); em outras GPUs o ponto de virada pode ser diferente. Terceiro, o relevo tem exagero vertical de $6\times$ (Equação~\eqref{eq:escala}) e a água não interage com o terreno. Quarto, a exatidão vertical dos dados não foi validada; se for da ordem dos cenários (+0,5 a +2 m), as áreas alagadas são demonstração, e não previsão. Quinto, a análise se limita à média e ao p95 de três execuções, sem intervalos de confiança; o ponto de virada, interpolado linearmente entre duas resoluções, variou de 4,4 a 5,6 milhões de triângulos entre execuções (3,4 a 4,3 milhões em série anterior, de outra sessão); os valores são estimativas. Sexto, o custo de cerca de 1 ms do CDLOD é provavelmente limitado pela CPU. Sétimo, a caixa geográfica (cerca de 44 $\times$ 56 km) é mapeada em terreno quadrado, distorcendo a escala horizontal em cerca de 20\%.
 
-Como trabalhos futuros, propõem-se: a) repetir o teste em outras GPUs, inclusive integradas; b) acrescentar espuma e arrebentação; c) avaliar a ferramenta com especialistas costeiros; d) validar a exatidão vertical do DEM; e e) testar mais resoluções e execuções, para obter intervalos de confiança.
+Como trabalhos futuros, propõem-se: a) repetir o teste em outras GPUs, inclusive integradas; b) acrescentar espuma e arrebentação; c) avaliar a ferramenta com especialistas costeiros; d) validar a exatidão vertical do DEM; e) medir o \emph{popping} e alinhar as faixas do \emph{geomorphing} às fórmulas originais; e f) testar mais resoluções e execuções, para obter intervalos de confiança.
 
 \section*{Referências}
 \begingroup
