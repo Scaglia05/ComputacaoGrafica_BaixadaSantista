@@ -46,7 +46,7 @@ def criar_contexto_gl():
 
 
 def projecao() -> glm.mat4:
-    """Mesma projeção do app e do bench.py (constantes de camera.py: FOV 60°, near 0,1, far 2000)."""
+    """Mesma projeção do programa e do bench.py (constantes de camera.py: FOV 60°, near 0,1, far 2000)."""
     from camera import FOV_GRAUS, PLANO_LONGE, PLANO_PERTO
     return glm.perspective(glm.radians(FOV_GRAUS), LARGURA / ALTURA, PLANO_PERTO, PLANO_LONGE)
 

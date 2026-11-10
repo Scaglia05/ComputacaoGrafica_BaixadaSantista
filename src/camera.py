@@ -33,7 +33,7 @@ import math
 
 import glm
 
-# Planos de recorte e FOV da projeção. FONTE ÚNICA: o app (main.py), o benchmark
+# Planos de recorte e FOV da projeção. FONTE ÚNICA: o programa (main.py), o benchmark
 # (bench.py) e os testes usam estes mesmos valores, para que o que se mede seja
 # exatamente o que se vê (e o que o artigo, Tabela 2, informa).
 FOV_GRAUS = 60.0
