@@ -315,7 +315,7 @@ As séries `bench/` e `bench/v2/` são históricas. O ponto de virada variou ent
 - A exatidão vertical do DEM não foi validada; as áreas alagadas ilustram o método e não constituem previsão.
 - A caixa delimitadora não é quadrada (cerca de 44 × 56 km), o que causa distorção de aproximadamente 20% na reamostragem para 1024×1024.
 - O artigo foi compilado localmente (MiKTeX); a compilação no Overleaf e a conferência do limite de 8 páginas ainda não foram feitas.
-- As referências complementares ainda não foram confirmadas com o professor. O intervalo de páginas de Strugar e de Tanner et al., e o tipo e o ano do trabalho de Welch, não foram confirmados.
+- As referências complementares ainda não foram confirmadas com o professor. As páginas de Strugar (57-74) e de Tanner et al. (151-158) foram confirmadas por busca, em fontes secundárias (listas de referências e patentes), e não nas páginas das editoras; o trabalho de Welch é um projeto final de BSc publicado em página web em 1 ago. 2019.
 
 ## Solução de problemas
 
