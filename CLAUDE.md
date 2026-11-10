@@ -111,7 +111,7 @@ na raiz — foram renomeados/reorganizados para `exemplos/` e `src/`.
 7. ⬜ Relatório da Etapa 1 (revisão bibliográfica) — não escrito.
 8. ✅ Artigo — **versão atual: `docs/artigo_final/artigo_final_v5_abnt.tex`** (ABNT em duas colunas no
    template IEEE do Overleaf, decisão do grupo; já inclui culling, memória isolada, link do repositório e fonte do IPCC; v5 espelha o código atual (bench/v3);
-   páginas de Strugar e Tanner foram omitidas por não confirmadas; falta compilar no Overleaf e
+   páginas de Strugar (57-74) e Tanner (151-158) incluídas, confirmadas por busca em fontes secundárias; falta compilar no Overleaf (pacote `artigo_final_v5_overleaf.zip`) e
    conferir o limite de 8 páginas). Histórico da versão anterior: PDF em
    `docs/ArtigoCompGrafica_ElevacaoCosteira.pdf`, fonte em `docs/artigo_v4.tex`
    (reescrita completa a partir do rascunho `artigo_v2.pdf` do colega, já removido do repo, seguindo o
