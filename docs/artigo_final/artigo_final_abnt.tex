@@ -66,8 +66,7 @@ Santista (SP). Os dados combinam observações de radar orbital e batimetria,
 isto é, a profundidade do fundo do mar. O objetivo foi determinar, por meio
 de experimento, a partir de qual carga geométrica a técnica de nível de
 detalhe adaptativo CDLOD (\emph{Continuous Distance-Dependent Level of
-Detail}) torna-se indispensável para manter a interatividade da aplicação,
-que tem dispositivos móveis como público-alvo final. A superfície oceânica
+Detail}) torna-se indispensável para manter a interatividade da aplicação em uma GPU de computador de mesa. A superfície oceânica
 foi modelada por seis ondas de Gerstner, com altura de base ajustável em
 tempo real, o que permite visualizar cenários de subida do mar de 0, +0,5,
 +1 e +2 metros. Um teste de desempenho automatizado, sem janela gráfica,
@@ -92,8 +91,7 @@ Santista region (Brazil). The data combine orbital radar observations and
 bathymetry, that is, the depth of the seafloor. The goal was to determine
 experimentally the geometric load beyond which the adaptive level of detail
 technique CDLOD (Continuous Distance-Dependent Level of Detail) becomes
-indispensable to keep the application interactive, considering mobile
-devices as the final target audience. The ocean surface was modeled with
+indispensable to keep the application interactive on the tested desktop GPU. The ocean surface was modeled with
 six Gerstner waves, with a base height adjustable in real time, which
 allows sea level rise scenarios of 0, +0.5, +1 and +2 meters to be
 visualized. An automated windowless benchmark, run on an NVIDIA RTX 3060
@@ -139,10 +137,7 @@ não é se a técnica CDLOD (\emph{Continuous Distance-Dependent Level of
 Detail}) funciona, o que já foi estabelecido por Strugar (2009),
 mas a partir de que carga geométrica, em um cenário real de visualização
 de inundação costeira, o CDLOD deixa de ser um refinamento de desempenho e
-passa a ser condição necessária para a interatividade. A questão é
-especialmente relevante quando o público-alvo inclui dispositivos móveis,
-cuja capacidade gráfica é inferior à de uma unidade de processamento
-gráfico (GPU) de computador de mesa.
+passa a ser condição necessária para a interatividade. A questão é relevante porque o ponto em que isso ocorre depende da unidade de processamento gráfico (GPU) utilizada, e a medição foi feita em uma única GPU.
 
 O objetivo geral é construir uma ferramenta interativa de visualização de
 cenários de subida do nível do mar sobre um Modelo Digital de Elevação
@@ -818,8 +813,7 @@ cargas pequenas. Como o p95 representa o pior caso de regularidade, a
 interatividade se perde na malha completa antes do que o tempo médio sugere.
 O resultado valida a hipótese da Seção~\ref{sec:intro}: o CDLOD não é
 vantajoso de forma incondicional, mas passa a ser indispensável a partir de
-uma carga geométrica identificável. Em uma GPU de menor capacidade, como as
-de dispositivos móveis, espera-se que o ponto de virada ocorra em resolução
+uma carga geométrica identificável. Em uma GPU de menor capacidade, espera-se que o ponto de virada ocorra em resolução
 menor, o que não foi medido (Seção~\ref{sec:conclusao}). O custo do
 \emph{geomorphing}, dado pela diferença entre as condições ``CDLOD'' e
 ``CDLOD sem \emph{morphing}'', foi de no máximo 0,06 ms, dentro da margem de
@@ -864,8 +858,7 @@ Algumas limitações devem ser consideradas. Primeiro, o CDLOD implementado é
 simplificado: não descarta blocos fora do campo de visão (\emph{frustum
 culling}) e as faixas do \emph{geomorphing} não seguem exatamente as
 fórmulas originais (STRUGAR, 2009). Segundo, o teste foi feito em uma única
-GPU de computador de mesa (RTX 3060); que o ponto de virada ocorra mais cedo
-em celulares, público-alvo final, é uma hipótese razoável, mas não medida.
+GPU de computador de mesa (RTX 3060); em outras GPUs o ponto de virada pode ser diferente.
 Terceiro, o relevo foi exagerado verticalmente em $6\times$
 (Equação~\eqref{eq:escala}), distorção deliberada, comum em geovisualização.
 Quarto, a água não interage com o terreno (sem espuma nem refração) e a
@@ -878,8 +871,7 @@ como previsão. Sexto, a análise se limita à média e ao percentil 95 de uma
 interpolado linearmente entre duas resoluções; os valores de 2,7 e 4,2
 milhões de triângulos são, portanto, estimativas.
 
-Como trabalhos futuros, propõem-se: a) repetir o teste em um celular ou GPU
-mais fraca e medir a memória de cada modo separadamente; b) implementar o
+Como trabalhos futuros, propõem-se: a) repetir o teste em outras GPUs, inclusive integradas, e medir a memória de cada modo separadamente; b) implementar o
 \emph{frustum culling}; c) acrescentar espuma e arrebentação na costa;
 d) avaliar a ferramenta com especialistas em gestão costeira; e) validar a
 exatidão vertical do DEM contra uma fonte mais precisa e tratar as células de
