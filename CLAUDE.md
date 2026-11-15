@@ -65,7 +65,7 @@ ComputacaoGrafica\
 │   │                                por que cada lib, como tudo é calculado, com fórmulas)
 │   ├── resumo_projeto.pdf          (resumo de 3 páginas)
 │   ├── artigo_final\               (ARTIGO FINAL: ABNT em duas colunas, template IEEE do Overleaf, até 8 págs;
-│   │                                artigo_final_v5_abnt.tex / _previa.pdf)
+│   │                                artigo_final_v5_abnt.tex / PDF com o título do artigo como nome)
 │   ├── ArtigoCompGrafica_ElevacaoCosteira.pdf  (versão anterior do artigo, IEEE — histórico)
 │   ├── artigo_v4.tex               (fonte LaTeX da versão anterior — histórico)
 │   └── especificacao_eixo6.pdf     (especificação oficial do professor)
