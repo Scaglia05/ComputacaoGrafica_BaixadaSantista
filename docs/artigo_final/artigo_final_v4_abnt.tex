@@ -65,8 +65,7 @@ implementado sobre um Modelo Digital de Elevação (DEM) real da Baixada
 Santista (SP). Os dados combinam radar orbital e batimetria.  O objetivo foi determinar, por meio
 de experimento, a partir de qual carga geométrica a técnica de nível de
 detalhe adaptativo CDLOD (\emph{Continuous Distance-Dependent Level of
-Detail}) torna-se indispensável para manter a interatividade da aplicação,
-que tem dispositivos móveis como público-alvo final. A superfície oceânica
+Detail}) torna-se indispensável para manter a interatividade da aplicação em uma GPU de computador de mesa. A superfície oceânica
 foi modelada por seis ondas de Gerstner, com altura de base ajustável em
 tempo real, o que permite visualizar cenários de subida do mar de 0, +0,5,
 +1 e +2 metros. Um teste de desempenho automatizado, sem janela gráfica,
@@ -88,8 +87,7 @@ scenarios, built on a real Digital Elevation Model (DEM) of the Baixada
 Santista region (Brazil).  The goal was to determine
 experimentally the geometric load beyond which the adaptive level of detail
 technique CDLOD (Continuous Distance-Dependent Level of Detail) becomes
-indispensable to keep the application interactive, considering mobile
-devices as the final target audience. The ocean surface was modeled with
+indispensable to keep the application interactive on the tested desktop GPU. The ocean surface was modeled with
 six Gerstner waves, with a base height adjustable in real time, which
 allows sea level rise scenarios of 0, +0.5, +1 and +2 meters to be
 visualized. An automated windowless benchmark, run on an NVIDIA RTX 3060
@@ -128,10 +126,7 @@ não é se a técnica CDLOD (\emph{Continuous Distance-Dependent Level of
 Detail}) funciona, o que já foi estabelecido por Strugar (2009),
 mas a partir de que carga geométrica, em um cenário real de visualização
 de inundação costeira, o CDLOD deixa de ser um refinamento de desempenho e
-passa a ser condição necessária para a interatividade. A questão é
-especialmente relevante quando o público-alvo inclui dispositivos móveis,
-cuja capacidade gráfica é inferior à de uma unidade de processamento
-gráfico (GPU) de computador de mesa.
+passa a ser condição necessária para a interatividade. A questão é relevante porque o ponto em que isso ocorre depende da unidade de processamento gráfico (GPU) utilizada, e a medição foi feita em uma única GPU.
 
 O objetivo geral é construir uma ferramenta interativa de visualização de
 cenários de subida do nível do mar sobre um Modelo Digital de Elevação
@@ -810,9 +805,9 @@ um cenário aplicado de inundação costeira. Assim, a hipótese inicial, de que
 viabiliza a visualização tridimensional de inundação costeira em tempo real,
 foi confirmada.
 
-Algumas limitações devem ser consideradas. Primeiro, o CDLOD implementado é simplificado: as faixas do \emph{geomorphing} não seguem exatamente as fórmulas originais (STRUGAR, 2009) e o descarte usa caixas conservadoras, sem oclusão. Segundo, o teste foi feito em uma única GPU de computador de mesa (RTX 3060); que o ponto de virada ocorra mais cedo em celulares, público-alvo final, é uma hipótese razoável, mas não medida, por falta de hardware com GPU integrada. Terceiro, o relevo foi exagerado verticalmente em $6\times$ (Equação~\eqref{eq:escala}) e a água não interage com o terreno (sem espuma nem refração). Quarto, a exatidão vertical dos dados de origem não foi validada: se for da ordem dos cenários (+0,5 a +2 m), as áreas alagadas devem ser lidas como demonstração do método, e não como previsão. Quinto, a análise se limita à média e ao percentil 95 de poucas execuções, sem intervalos de confiança, e o ponto de virada foi interpolado linearmente entre duas resoluções; o p95 variou de 2,7 a 4,3 milhões de triângulos entre execuções, e os valores são, portanto, estimativas.
+Algumas limitações devem ser consideradas. Primeiro, o CDLOD implementado é simplificado: as faixas do \emph{geomorphing} não seguem exatamente as fórmulas originais (STRUGAR, 2009) e o descarte usa caixas conservadoras, sem oclusão. Segundo, o teste foi feito em uma única GPU de computador de mesa (RTX 3060); em outras GPUs o ponto de virada pode ser diferente, o que não foi medido por falta de hardware com GPU integrada. Terceiro, o relevo foi exagerado verticalmente em $6\times$ (Equação~\eqref{eq:escala}) e a água não interage com o terreno (sem espuma nem refração). Quarto, a exatidão vertical dos dados de origem não foi validada: se for da ordem dos cenários (+0,5 a +2 m), as áreas alagadas devem ser lidas como demonstração do método, e não como previsão. Quinto, a análise se limita à média e ao percentil 95 de poucas execuções, sem intervalos de confiança, e o ponto de virada foi interpolado linearmente entre duas resoluções; o p95 variou de 2,7 a 4,3 milhões de triângulos entre execuções, e os valores são, portanto, estimativas.
 
-Como trabalhos futuros, propõem-se: a) repetir o teste em GPU integrada ou em um celular, para confirmar o deslocamento do ponto de virada; b) acrescentar espuma e arrebentação na costa; c) avaliar a ferramenta com especialistas em gestão costeira; d) validar a exatidão vertical do DEM contra uma fonte mais precisa e tratar as células de elevação nula; e e) repetir o teste com mais resoluções entre 1024 e 1536 e mais execuções, para obter intervalos de confiança.
+Como trabalhos futuros, propõem-se: a) repetir o teste em outras GPUs, inclusive integradas, para confirmar o deslocamento do ponto de virada; b) acrescentar espuma e arrebentação na costa; c) avaliar a ferramenta com especialistas em gestão costeira; d) validar a exatidão vertical do DEM contra uma fonte mais precisa e tratar as células de elevação nula; e e) repetir o teste com mais resoluções entre 1024 e 1536 e mais execuções, para obter intervalos de confiança.
 
 \section*{Referências}
 \begingroup
