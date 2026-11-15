@@ -5,7 +5,7 @@ Visualizador 3D em tempo real do relevo da Baixada Santista (SP), com nível de 
 ![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)
 ![OpenGL 3.3 core](https://img.shields.io/badge/OpenGL-3.3%20core-informational)
 
-[![Ler o artigo](https://img.shields.io/badge/Artigo-ler_o_PDF-B31B1B?style=for-the-badge)](docs/artigo_final/artigo_final_v5_previa.pdf)
+[![Ler o artigo](https://img.shields.io/badge/Artigo-ler_o_PDF-B31B1B?style=for-the-badge)](docs/artigo_final/Visualiza%C3%A7%C3%A3o%20Interativa%20de%20Eleva%C3%A7%C3%A3o%20Costeira%20com%20N%C3%ADvel%20de%20Detalhe%20Adaptativo%20e%20Simula%C3%A7%C3%A3o%20Oce%C3%A2nica%20para%20An%C3%A1lise%20de%20Cen%C3%A1rios%20de%20Subida%20do%20N%C3%ADvel%20do%20Mar.pdf)
 
 ## Sumário
 
@@ -348,7 +348,7 @@ As séries `bench/` e `bench/v2/` são históricas. O ponto de virada variou ent
 
 O artigo final (ABNT em duas colunas, template IEEE do Overleaf, até 8 páginas) está em `docs/artigo_final/`. A fonte LaTeX é `artigo_final_v5_abnt.tex`, e a prévia em PDF foi gerada localmente; a versão oficial deve ser compilada no Overleaf.
 
-[![Ler o artigo](https://img.shields.io/badge/Artigo-ler_o_PDF-B31B1B?style=for-the-badge)](docs/artigo_final/artigo_final_v5_previa.pdf)
+[![Ler o artigo](https://img.shields.io/badge/Artigo-ler_o_PDF-B31B1B?style=for-the-badge)](docs/artigo_final/Visualiza%C3%A7%C3%A3o%20Interativa%20de%20Eleva%C3%A7%C3%A3o%20Costeira%20com%20N%C3%ADvel%20de%20Detalhe%20Adaptativo%20e%20Simula%C3%A7%C3%A3o%20Oce%C3%A2nica%20para%20An%C3%A1lise%20de%20Cen%C3%A1rios%20de%20Subida%20do%20N%C3%ADvel%20do%20Mar.pdf)
 
 Documentos de apoio: [`docs/TEORIA_DE_PONTA_A_PONTA.md`](docs/TEORIA_DE_PONTA_A_PONTA.md) (guia de estudo), [`docs/metodologia_atual.md`](docs/metodologia_atual.md), [`docs/APRESENTACAO.md`](docs/APRESENTACAO.md), [`docs/COMPLEMENTO_TECNICO.md`](docs/COMPLEMENTO_TECNICO.md) e [`docs/DESENVOLVIMENTO.md`](docs/DESENVOLVIMENTO.md).
 
