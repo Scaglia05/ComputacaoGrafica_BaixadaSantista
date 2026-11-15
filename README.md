@@ -16,6 +16,7 @@ Visualizador 3D em tempo real do relevo da Baixada Santista (SP), com nível de 
 - [Uso](#uso)
 - [Controles](#controles)
 - [Parâmetros principais](#parâmetros-principais)
+- [Exemplos incluídos](#exemplos-incluídos)
 - [Arquitetura](#arquitetura)
 - [Tratamento de erros](#tratamento-de-erros)
 - [Testes](#testes)
@@ -183,6 +184,17 @@ Valores extraídos do código. A lista completa está em [`docs/metodologia_atua
 | Campo de visão (FOV) | 60° |
 | Planos de projeção | 0,1 e 2000 |
 
+## Exemplos incluídos
+
+| Arquivo | Descrição | Pré-requisitos |
+|---|---|---|
+| `exemplos/janela.py` | Janela vazia com contexto OpenGL e laço de renderização (ESC fecha) | GPU e tela |
+| `exemplos/triangulo.py` | Triângulo colorido: VBO, VAO, shaders e interpolação | GPU e tela |
+| `src/data/referencia_santos.jpg` | Foto de referência exibida no canto da tela (`P`); crédito em `src/data/referencia_santos_CREDITO.txt` | Nenhum |
+| `bench/v3/` | Série de medições usada no artigo: 3 execuções (`run1` a `run3`) e `memoria.csv` | Nenhum |
+
+Os exemplos de `exemplos/` abrem janela e não foram executados na elaboração deste README; os demais comandos citados foram.
+
 ## Arquitetura
 
 ```mermaid
@@ -277,6 +289,7 @@ As séries `bench/` e `bench/v2/` são históricas. O ponto de virada variou ent
 
 ```
 .
+├── .gitignore
 ├── CLAUDE.md                  # contexto do projeto para sessões de IA
 ├── README.md
 ├── requirements.txt
@@ -289,6 +302,7 @@ As séries `bench/` e `bench/v2/` são históricas. O ponto de virada variou ent
 │   ├── COMPLEMENTO_TECNICO.md     # glossário, fórmulas e justificativas
 │   ├── GUIA_CONCEITUAL.md         # guia conceitual do projeto
 │   ├── GUIA_DO_CODIGO.md          # guia do código
+│   ├── TEORIA_DE_PONTA_A_PONTA.md # guia de estudo: como funciona cada parte e por que
 │   ├── AVALIACAO_*.md             # avaliações internas (histórico)
 │   ├── resumo_projeto.pdf         # resumo de 3 páginas
 │   ├── artigo_final/              # versões do artigo; a atual é a v5
@@ -336,7 +350,7 @@ O artigo final (ABNT em duas colunas, template IEEE do Overleaf, até 8 páginas
 
 [![Ler o artigo](https://img.shields.io/badge/Artigo-ler_o_PDF-B31B1B?style=for-the-badge)](docs/artigo_final/artigo_final_v5_previa.pdf)
 
-Documentos de apoio: [`docs/metodologia_atual.md`](docs/metodologia_atual.md), [`docs/APRESENTACAO.md`](docs/APRESENTACAO.md), [`docs/COMPLEMENTO_TECNICO.md`](docs/COMPLEMENTO_TECNICO.md) e [`docs/DESENVOLVIMENTO.md`](docs/DESENVOLVIMENTO.md).
+Documentos de apoio: [`docs/TEORIA_DE_PONTA_A_PONTA.md`](docs/TEORIA_DE_PONTA_A_PONTA.md) (guia de estudo), [`docs/metodologia_atual.md`](docs/metodologia_atual.md), [`docs/APRESENTACAO.md`](docs/APRESENTACAO.md), [`docs/COMPLEMENTO_TECNICO.md`](docs/COMPLEMENTO_TECNICO.md) e [`docs/DESENVOLVIMENTO.md`](docs/DESENVOLVIMENTO.md).
 
 ## Referências
 
