@@ -1,231 +1,111 @@
 # CLAUDE.md — Projeto de Computação Gráfica (Visualização de Elevação Costeira)
 
-Lido automaticamente pelo Claude Code ao iniciar nesta pasta. Mantenha atualizado.
+Lido automaticamente pelo Claude Code ao iniciar nesta pasta. Mantenha atualizado e curto.
 
-> **Se você (Claude) está lendo isto numa sessão nova de outro integrante do
-> grupo:** o estado técnico real do projeto está em
-> [docs/metodologia_atual.md](docs/metodologia_atual.md) (valores exatos de
-> cada parâmetro, extraídos do código) e [docs/APRESENTACAO.md](docs/APRESENTACAO.md)
-> (guia de ponta a ponta). Antes de assumir qualquer coisa sobre parâmetros,
-> estrutura de pastas ou o que já foi implementado, **leia esses dois arquivos
-> primeiro** — este CLAUDE.md é só um resumo de orientação.
+> **Se você (Claude) está lendo isto numa sessão nova de outro integrante do grupo:**
+> o estado técnico real está em [docs/metodologia_atual.md](docs/metodologia_atual.md)
+> (valores de cada parâmetro, extraídos do código) e em
+> [docs/TEORIA_DE_PONTA_A_PONTA.md](docs/TEORIA_DE_PONTA_A_PONTA.md) (como funciona cada
+> parte e por que). Antes de assumir parâmetros, estrutura ou o que já foi
+> implementado, leia esses dois arquivos. Este CLAUDE.md é só um resumo.
 
-## Visão geral do projeto
+## Visão geral
 
-Trabalho final da disciplina de Computação Gráfica (Engenharia de Computação,
-10º semestre, FHO/Uniararas). Eixo 6 (Topografia), adaptado para o cenário de
-**erosão costeira / subida do nível do mar**.
+Trabalho final de Computação Gráfica (Engenharia de Computação, 10.º semestre,
+FHO/Uniararas), Eixo 6 (Topografia), adaptado para erosão costeira e subida do
+nível do mar. O sistema roda apenas em computador (Windows, Python, OpenGL 3.3 core).
 
-**Objetivo técnico:** renderizar um terreno costeiro real com nível de
-detalhe adaptativo (CDLOD) e simular uma superfície oceânica (ondas de
-Gerstner) com nível ajustável, para visualizar quais áreas ficam submersas
-em cenários de subida do mar (0 / +0,5 m / +1 m / +2 m).
+**Objetivo técnico:** renderizar terreno costeiro real com nível de detalhe adaptativo
+(CDLOD) e uma superfície oceânica (ondas de Gerstner) de nível ajustável, para ver
+quais áreas ficam submersas em 0 / +0,5 / +1 / +2 m.
 
 **Grupo:**
 - Guilherme Augusto Scaglia — RA 111598 — scaglia@alunos.fho.edu.br
 - João Pedro Denardo — RA 113036 — denardo749@alunos.fho.edu.br
 - Pedro Henrique Oliveira de Souza — RA 113364 — pedro1204@alunos.fho.edu.br
 
-## Stack tecnológica (o que está REALMENTE em uso)
+## Stack (o que está em uso)
 
-- Python 3.11 (ambiente em `.venv`)
-- ModernGL 5.11 (OpenGL 3.3 core / GLSL 330)
-- GLFW 2.7 (janela e input)
-- PyGLM 2.7 (álgebra linear: vetores, matrizes, view/projection)
-- NumPy, Pillow, opensimplex (ruído procedural), matplotlib (gráficos do benchmark)
-- **Não usamos** `rasterio`/GDAL — descartado por instabilidade de instalação
-  no Windows fora do conda. O DEM real é lido via tiles PNG da AWS (ver abaixo).
+Python 3.11 (`.venv`) · ModernGL 5.11 (OpenGL 3.3 core / GLSL 330) · GLFW 2.7 ·
+PyGLM 2.7 · NumPy · Pillow · opensimplex · matplotlib · psutil. Sem `rasterio`/GDAL
+(instalação instável no Windows). O DEM vem de tiles PNG da AWS.
 
-## Fonte de dados de elevação (implementado e testado)
+## Dados de elevação
 
-- **Fonte:** AWS Terrain Tiles (`registry.opendata.aws/terrain-tiles`),
-  formato *terrarium*, **sem chave de API**. Dados primários: NASA SRTM
-  (terra) + GEBCO (batimetria).
-- **Local:** Baixada Santista — Santos, São Vicente, Guarujá (SP).
-- **Bounding box real usada:** lat -23,70 a -24,10 · lon -46,60 a -46,05
-  (mais larga que um recorte só de Cubatão: inclui a escarpa da Serra do
-  Mar **e** o estuário/oceano, necessários para a inundação fazer sentido).
-- **Implementado em** `src/dem.py`: baixa e cacheia tiles, remove *spikes*
-  (mediana 3×3, 2 passadas), reamostra para 1024×1024, aplica exagero
-  vertical 6× (declarado — necessário porque a região real tem razão
-  relevo:largura de ~40:1).
+- **Fonte:** AWS Terrain Tiles (`registry.opendata.aws/terrain-tiles`), formato
+  *terrarium*, sem chave de API; dados primários NASA SRTM (terra) e GEBCO (batimetria).
+- **Região:** Baixada Santista (Santos, São Vicente, Guarujá). Caixa: lat −23,70 a
+  −24,10, lon −46,60 a −46,05 (inclui a escarpa da Serra do Mar e o estuário).
+- **Tratamento** (`src/dem.py`): cache dos tiles, remoção de *spikes* (mediana 3×3,
+  2 passadas, limiar 60 m), reamostragem para 1024×1024 e exagero vertical de 6×
+  (declarado: a região tem razão relevo:largura de cerca de 40:1).
 
-## Estrutura de arquivos ATUAL
+## Estrutura do projeto
 
-```
-ComputacaoGrafica\
-├── CLAUDE.md                   (este arquivo)
-├── README.md
-├── requirements.txt
-├── docs\
-│   ├── metodologia_atual.md/.pdf   (fonte da verdade sobre parâmetros — leia primeiro)
-│   ├── DESENVOLVIMENTO.md          (relato de como o projeto foi construído, fase a fase)
-│   ├── APRESENTACAO.md             (guia de ponta a ponta / estudo pra apresentação)
-│   ├── COMPLEMENTO_TECNICO.md      (companheiro do artigo: glossário de todo termo técnico,
-│   │                                por que cada lib, como tudo é calculado, com fórmulas)
-│   ├── resumo_projeto.pdf          (resumo de 3 páginas)
-│   ├── artigo_final\               (ARTIGO FINAL: ABNT em duas colunas, template IEEE do Overleaf, até 8 págs;
-│   │                                artigo_final_v5_abnt.tex / PDF com o título do artigo como nome)
-│   ├── ArtigoCompGrafica_ElevacaoCosteira.pdf  (versão anterior do artigo, IEEE — histórico)
-│   ├── artigo_v4.tex               (fonte LaTeX da versão anterior — histórico)
-│   └── especificacao_eixo6.pdf     (especificação oficial do professor)
-├── bench\                        (resultados.csv + gráficos do benchmark — DADOS DO ARTIGO, não sobrescrever;
-│                                 medições novas ficam em bench\v3\: memoria.csv, run1..run3; v2 é histórico)
-├── tests\                        (unittest: culling, memória isolada, benchmark — ver "Testes" abaixo)
-├── exemplos\
-│   ├── janela.py                  (concluído — fundamentos: janela + contexto OpenGL)
-│   └── triangulo.py               (concluído — fundamentos: VBO/VAO/shaders)
-└── src\
-    ├── dem.py                     (DEM real da Baixada Santista)
-    ├── heightmap.py               (terreno procedural + grade unitária do CDLOD)
-    ├── lod.py                     (quadtree + seleção de blocos por distância + frustum culling vetorizado)
-    ├── water.py                   (geometria do plano de água)
-    ├── shaders\terrain.*          (heightmap por bloco, morphing, cor, faixa submersa)
-    ├── shaders\water.*            (ondas de Gerstner, Fresnel, Blinn-Phong)
-    ├── camera.py                  (câmera livre)
-    ├── scene.py                   (classe Cena: monta tudo na GPU + desenha 1 frame)
-    ├── hud.py                     (legenda de comandos + foto de referência)
-    ├── main.py                    (janela + input + laço)
-    └── bench.py                   (mede FPS com/sem LOD -> CSV + gráficos)
-```
+A árvore completa está na seção "Estrutura do projeto" do [README.md](README.md).
+Resumo: `src/` (engine e shaders), `tests/` (unittest), `exemplos/` (fundamentos),
+`bench/v3/` (dados do artigo) e `bench/v2/` (série anterior citada no artigo),
+`docs/` (guias, metodologia, especificação do professor e `docs/artigo_final/`).
 
-Não existem mais `passo1_janela/`, `passo2_triangulo/` nem `heightmap.py`
-na raiz — foram renomeados/reorganizados para `exemplos/` e `src/`.
+## Status
 
-## Status atual / o que falta
-
-1. ✅ Terreno (DEM real + procedural), câmera livre, textura de altura.
-2. ✅ CDLOD: quadtree, seleção por distância, morphing anti-*crack*.
+1. ✅ Terreno (DEM real e procedural), câmera livre, textura de altura.
+2. ✅ CDLOD: quadtree, seleção por distância, morphing anti-*crack* (distância horizontal).
 3. ✅ Água: 6 ondas de Gerstner, Fresnel, Blinn-Phong, nível ajustável.
-4. ✅ Avaliação de desempenho: benchmark headless achou o "ponto de virada"
-   (~5 M de triângulos, faixa 4,4–5,6 M conforme critério/execução, numa RTX 3060; com culling ~3 M) + perfilamento de RAM/VRAM/GPU (`psutil` +
-   `nvidia-smi`) — ver `docs/metodologia_atual.md` §8.
-5. ✅ UX para leigos (`src/hud.py` + `src/main.py`): tela de boas-vindas
-   (`I`), legenda em 2 níveis (`H`: nenhuma→básica→completa), painel de
-   status sempre visível (nível do mar + selo colorido + modo LOD/morphing
-   + **tempo de render do quadro** — o número que muda de verdade ao
-   apertar `L`, já que o FPS da tela fica travado pelo V-Sync), bússola
-   (inferior-esquerda), minimapa com marcador de posição (inferior-direita,
-   alterna com a foto via `P`), e tecla `R` pra resetar a câmera
-   (`Camera.resetar`/`Camera.bearing_graus` em `camera.py`).
-7. ⬜ Relatório da Etapa 1 (revisão bibliográfica) — não escrito.
-8. ✅ Artigo — **versão atual: `docs/artigo_final/artigo_final_v5_abnt.tex`** (ABNT em duas colunas no
-   template IEEE do Overleaf, decisão do grupo; já inclui culling, memória isolada, link do repositório e fonte do IPCC; v5 espelha o código atual (bench/v3);
-   páginas de Strugar (57-74) e Tanner (151-158) incluídas, confirmadas por busca em fontes secundárias; falta compilar no Overleaf (pacote `artigo_final_v5_overleaf.zip`) e
-   conferir o limite de 8 páginas). Histórico da versão anterior: PDF em
-   `docs/ArtigoCompGrafica_ElevacaoCosteira.pdf`, fonte em `docs/artigo_v4.tex`
-   (reescrita completa a partir do rascunho `artigo_v2.pdf` do colega, já removido do repo, seguindo o
-   "IEEE Conference Template" oficial, com rigor de linguagem/parágrafo em
-   português formal e, a pedido do grupo, **normas ABNT** aplicadas à linguagem e à
-   estrutura: texto impessoal, resumo + abstract + palavras-chave, numeração
-   arábica, citações autor-data (NBR 10520), referências NBR 6023, legendas
-   com "Fonte:". O leiaute em duas colunas segue o template IEEE, exigido pela
-   especificação). Correções aplicadas em relação ao artigo_v2: (a)
-   III-F/Seção IV corrigida — o valor certo é ~8,4 milhões de triângulos
-   na resolução máxima testada (2048), não 2,1 milhões (esse é o valor de
-   1024); (b) Seção IV ("Resultados e Avaliação de Desempenho") separada
-   como seção própria, como a especificação pede; (c) **todas as 7
-   referências validadas via busca web em 2026-09** — 2 correções: Strugar
-   tinha título/ano errados ("Height Maps"/2010 → correto é "Heightmaps"
-   [uma palavra]/2009, conforme o DOI); e a referência [5] (Welch) estava
-   citada com o título "GPU Clipmaps and Ocean Simulation" (copiado da
-   especificação oficial do eixo), que **não corresponde a nenhuma fonte
-   real localizável** — o título verificado e real é "Real-time ocean
-   simulation", o TCC (B.Sc.) de 2019 de Ryan Welch, disponível em
-   https://ryanwelch.co.uk/project/ocean-simulation/. Esse é o mesmo tipo
-   de erro já identificado no item 9 (mixup Tanner/Clasen na especificação
-   do professor) — vale reportar ao professor.
-9. ⬜ Confirmar com o professor se as referências complementares podem ser
-   citadas junto às duas obrigatórias do eixo (o artigo já cita Tanner,
-   Migdal & Jones [1998, "The Clipmap"] E Clasen & Hege [2006, "spherical
-   clipmaps"] como referências distintas e corretas — mais rigoroso do que
-   uma correção anterior deste arquivo, que tinha fundido as duas).
-10. ⬜ (trabalho futuro, declarado no artigo) Rodar o benchmark também em outras GPUs (inclusive integradas). **Bloqueado por
-    hardware:** esta máquina (i5-10400F, sem vídeo integrado) só tem a RTX 3060; precisa de
-    um notebook com GPU integrada de um colega.
-11. ✅ Frustum culling + memória isolada por modo (branch `feat/frustum-culling-memoria-isolada`,
-    escrito com testes antes). Resultados em `bench/v3/` (código atual; README, seção "Extensões"):
-    culling −22% de tempo de quadro em média (−37% nas câmeras rasante/encosta, ≈0% na
-    aérea) e ponto de virada ~5 M → ~3 M de triângulos; memória a 2048²: 19 MB (CDLOD) × 153 MB
-    (malha completa). **O artigo (v2 em diante) já reflete isso.** O código original com culling (antes da simplificação) é o commit `3f30ace`; a `main` tem a versão
-    simplificada para leitura, com as teclas Tab e F11 (PRs #3 e #4 mesclados). Cuidado: `bench.py` SEM `--saida` sobrescreve
-    `bench/resultados.csv`, que sustenta os números do artigo.
-    **Séries:** `bench/` (execução original) e `bench/v2/` (3 execuções, versão `3f30ace`) são histórico;
-    o artigo v5 usa `bench/v3/` (3 execuções + memória, código atual, projeção única em `camera.py`).
-    O ponto de virada variou entre sessões (v2: 3,4–4,3 M; v3: 4,4–5,6 M), o que o artigo declara
-    como limitação (sem intervalos de confiança).
+4. ✅ Frustum culling vetorizado (a imagem é idêntica com e sem culling) e memória medida por modo, em processo isolado.
+5. ✅ Benchmark headless numa RTX 3060: ponto de virada em cerca de 5 M de triângulos (4,4 a 5,6 M); com culling, cerca de 3 M. Culling: −22% no tempo de quadro. Memória a 2048²: 19 MB (CDLOD) × 153 MB (malha completa). Morphing: 512 fendas finas sem ele, 1 com ele (`src/verificar_fendas.py`).
+6. ✅ UX (`src/hud.py`, `src/main.py`): boas-vindas, legenda em 2 níveis, painel de status com o tempo de render do quadro, bússola, minimapa, tecla `R`.
+7. ✅ Artigo: `docs/artigo_final/artigo_final_v5_abnt.tex` (ABNT em duas colunas sobre o template IEEE do Overleaf; 8 páginas). Pacote para o Overleaf: `artigo_final_v5_overleaf.zip`. O PDF tem o título do artigo como nome. A etiqueta `artigo-v5` é citada no artigo.
+8. ⬜ Compilar o artigo no Overleaf e confirmar as 8 páginas (hoje só compilado localmente, com MiKTeX).
+9. ⬜ Confirmar com o professor: referências complementares podem ser citadas junto às obrigatórias? Limite de páginas (8 ou 10)? Reportar que, na especificação, "GPU Clipmaps and Ocean Simulation" (Welch) não corresponde a nenhuma fonte localizável (o trabalho real é "Real-time ocean simulation", 2019) e que "Terrain Rendering using Spherical Clipmaps" é de Clasen e Hege (2006), não de Tanner, Migdal e Jones.
+10. ⬜ Rodar o benchmark em outras GPUs (inclusive integradas). Bloqueado por hardware: esta máquina só tem a RTX 3060.
+11. ⬜ Relatório da Etapa 1 (revisão bibliográfica): não escrito.
+
+Limitações declaradas no artigo: uma única GPU, sem intervalos de confiança, ponto de
+virada variável entre sessões (v2: 3,4 a 4,3 M; v3: 4,4 a 5,6 M), custo do CDLOD
+provavelmente de CPU, exatidão vertical do DEM não validada, popping não medido.
 
 ## Testes
 
-`python -m unittest discover -s tests -v` (só biblioteca padrão — não há pytest). Parte deles
-cria contexto OpenGL sem janela; sem GPU eles são pulados. O mais importante é
-`test_imagem_identica_*`: o culling NÃO pode mudar a imagem. Lição registrada: `np.array(glm.mat4)`
-já vem como `[linha][coluna]` (não transpor) — um erro nisso passou despercebido num auxiliar de
-teste até um teste de mutação (bug injetado de propósito) mostrar que ele estava fraco.
+`python -m unittest discover -s tests -v` — 51 testes, só biblioteca padrão (sem pytest).
+Parte deles cria contexto OpenGL sem janela; sem GPU eles são pulados. O mais importante é
+`test_imagem_identica_*`: o culling NÃO pode mudar a imagem. Lição registrada:
+`np.array(glm.mat4)` já vem como `[linha][coluna]` (não transpor).
 
-## Parâmetros principais (valores REAIS do código — ver `docs/metodologia_atual.md` para a lista completa)
+## Parâmetros principais (valores do código; lista completa em `docs/metodologia_atual.md`)
 
 | Parâmetro | Valor |
 |---|---|
-| Oitavas de ruído (modo procedural) | 5 |
-| Profundidade da quadtree (CDLOD) | 5 níveis |
+| Profundidade da quadtree | 5 níveis (1365 nós) |
 | Subdivisões por bloco | 32×32 (33×33 vértices) |
-| Fator de seleção do LOD | distância < tamanho_do_bloco × 2,2 |
-| Componentes de onda de Gerstner | 6 |
-| FOV da câmera | 60° |
-| Velocidade de translação | 40 u.m./s (120 turbo) |
+| Critério de seleção | distância à borda do bloco < tamanho × 2,2 |
+| Ondas de Gerstner | 6 |
+| Projeção | FOV 60°, planos 0,1 e 2000 (`camera.py`, fonte única) |
+| Velocidade da câmera | 40 u.m./s (120 com Shift) |
 | Cenários de nível do mar | 0 / +0,5 / +1 / +2 m |
 | Exagero vertical do DEM | 6× |
 
-## Convenções de código
+## Convenções
 
-- **Comentários pedagógicos**: o aluno está aprendendo do zero. Todo código
-  novo deve explicar o "porquê", não só o "o quê".
-- **Passos incrementais**: entregar funcionalidade em pequenos incrementos
-  que rodam e mostram algo visível.
-- Comentários e nomes de variáveis em português.
-- **Sempre validar com render headless** (`moderngl.create_standalone_context()`
-  + framebuffer) antes de dizer que algo funciona — esta máquina tem GPU
-  NVIDIA de verdade, então dá pra testar shaders/render, não só sintaxe.
-  Testar em **múltiplos frames em loop**, não só 1 — um bug real (HUD
-  roubando a unidade de textura do heightmap) só aparecia a partir do 2º frame.
+- Comentários pedagógicos (o aluno está aprendendo): explique o "porquê". Comentários e nomes em português.
+- Passos incrementais, que rodam e mostram algo visível.
+- Valide sempre com render headless (`moderngl.create_standalone_context()` + framebuffer),
+  em vários quadros em laço, não só um (um bug real só aparecia a partir do 2.º quadro).
+- Não sobrescreva dados do artigo: grave medições novas com `python src/bench.py --saida <pasta>`.
 
-## Referências usadas no projeto
+## Referências do projeto
 
-**Fonte oficial:** [`docs/especificacao_eixo6.pdf`](docs/especificacao_eixo6.pdf)
-— documento do professor ("Especificação de Projeto Científico: Projetos
-Avançados em Computação Gráfica e Visualização Científica") que define os 7
-Eixos de Pesquisa, as 4 etapas do projeto (semanas 1-16) e a estrutura
-obrigatória do artigo final (seções, 4-8 páginas conforme o PDF; o grupo informou que o
-limite real é de até 10 páginas; IEEE Conference Template via Overleaf). O Eixo 6 (Topografia, o nosso) lista como
-referências obrigatórias *"Terrain Rendering using Spherical Clipmaps"*
-(C. C. Tanner, C. J. Migdal, M. T. Jones) e *"GPU Clipmaps and Ocean
-Simulation"* (R. Welch) — ver a nota abaixo sobre os erros de atribuição
-confirmados nesse próprio documento.
+Fonte oficial: [`docs/especificacao_eixo6.pdf`](docs/especificacao_eixo6.pdf) (documento do
+professor; define as etapas e a estrutura do artigo; o grupo informou que o limite real é
+de até 10 páginas, enquanto o PDF diz 4 a 8).
 
-**IMPORTANTE — citações corrigidas em 2026-09:** conferindo `docs/especificacao_eixo6.pdf`
-diretamente, dois erros de atribuição ficaram confirmados na fonte primária:
-(a) o título *"Terrain Rendering using Spherical Clipmaps"*, que a
-especificação atribui a **C. C. Tanner, C. J. Migdal, M. T. Jones**, é na
-verdade de **Clasen & Hege (2006)** — o artigo real de Tanner/Migdal/Jones
-é "The Clipmap: A Virtual Mipmap" (1998); (b) não existe nenhuma fonte real
-localizável com o título *"GPU Clipmaps and Ocean Simulation"* atribuído a
-R. Welch — o trabalho real dele se chama "Real-time ocean simulation"
-(2019, TCC de B.Sc.). `docs/artigo_v4.tex` já cita as 4 referências
-corretamente (Tanner *e* Clasen&Hege como itens distintos e corretos, Welch
-com o título real) — ver item 8 do checklist acima.
+- Tanner, Migdal e Jones (1998) — *The Clipmap: A Virtual Mipmap* (obrigatória; p. 151-158)
+- Welch (2019) — *Real-time ocean simulation* (obrigatória; projeto final de BSc, página web)
+- Clasen e Hege (2006) — *Terrain rendering using spherical clipmaps* (complementar)
+- Strugar (2009) — *Continuous distance-dependent level of detail for rendering heightmaps* (complementar; é o algoritmo implementado; p. 57-74)
+- Fournier e Reeves (1986) — ondas de Gerstner (complementar)
+- Brown et al. (2006) — erosão costeira (complementar)
+- DiPaola, Bhardwaj e Sam (2023) — subida do nível do mar (complementar)
 
-- Tanner, Migdal & Jones (1998) — *The Clipmap: A Virtual Mipmap* (obrigatório do eixo, conforme especificação oficial)
-- Clasen & Hege (2006) — *Terrain rendering using spherical clipmaps* (complementar; a técnica de clipmap esférico propriamente dita)
-- Welch (2019) — *Real-time ocean simulation* (TCC de B.Sc., obrigatório do eixo; título real
-  validado via web — a especificação oficial do professor usa o título
-  "GPU Clipmaps and Ocean Simulation", que não corresponde a nenhuma fonte
-  real encontrada — ver item 8 do checklist acima)
-- Strugar (2009) — *Continuous distance-dependent level of detail for rendering heightmaps* (complementar; é o algoritmo realmente implementado — título/ano corrigidos via DOI, ver item 8)
-- Fournier & Reeves (1986) — ondas de Gerstner (complementar; é a base matemática real)
-- Brown et al. (2006) — visualização dinâmica de erosão costeira (complementar)
-- DiPaola, Bhardwaj & Sam (2023) — geovisualização de subida do nível do mar (complementar)
-
-**Pendência:** confirmar com o professor se as referências complementares
-podem ser citadas junto às duas obrigatórias do eixo, e reportar a ele o
-possível erro de título na referência [5] (Welch) da especificação oficial.
+As páginas de Strugar e de Tanner foram confirmadas por busca em fontes secundárias,
+não nas páginas das editoras.

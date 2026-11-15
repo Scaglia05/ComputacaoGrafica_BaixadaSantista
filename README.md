@@ -264,7 +264,7 @@ Parte dos testes cria um contexto OpenGL sem janela; sem GPU, esses testes são 
 
 ## Benchmark
 
-O comando abaixo executa a varredura completa, sem janela. Sem `--saida`, ele sobrescreve `bench/resultados.csv`, que sustenta a série original do artigo.
+O comando abaixo executa a varredura completa, sem janela. Os resultados do artigo estão em `bench/v3/`; grave medições novas em outra pasta com `--saida`.
 
 ```bash
 python src/bench.py --saida bench/novo
@@ -283,7 +283,7 @@ Resultados da série `bench/v3/` (código atual; 3 execuções; RTX 3060), usado
 | Memória de GPU a 2048² | 19 MB (CDLOD) × 153 MB (malha completa) |
 | Pico de RAM a 2048² | 183 MB (CDLOD) × 593 MB (malha completa) |
 
-As séries `bench/` e `bench/v2/` são históricas. O ponto de virada variou entre sessões de medição (3,4 a 4,3 M na série v2), o que o artigo declara como limitação.
+A série `bench/v2/` (versão anterior do código, outra sessão) é citada no artigo como limitação. O ponto de virada variou entre sessões de medição (3,4 a 4,3 M na série v2), o que o artigo declara como limitação.
 
 ## Estrutura do projeto
 
@@ -293,22 +293,15 @@ As séries `bench/` e `bench/v2/` são históricas. O ponto de virada variou ent
 ├── CLAUDE.md                  # contexto do projeto para sessões de IA
 ├── README.md
 ├── requirements.txt
-├── bench/                     # CSV e gráficos; v3/ é a série usada no artigo
+├── bench/                     # v3/: série usada no artigo (3 execuções e memória); v2/: série anterior citada na limitação 5
 ├── docs/
 │   ├── especificacao_eixo6.pdf    # especificação do professor
-│   ├── metodologia_atual.md/.pdf  # parâmetros exatos (fonte da verdade)
+│   ├── metodologia_atual.md       # parâmetros exatos (fonte da verdade)
 │   ├── APRESENTACAO.md            # guia de ponta a ponta
 │   ├── DESENVOLVIMENTO.md         # relato do desenvolvimento por fase
 │   ├── COMPLEMENTO_TECNICO.md     # glossário, fórmulas e justificativas
-│   ├── GUIA_CONCEITUAL.md         # guia conceitual do projeto
-│   ├── GUIA_DO_CODIGO.md          # guia do código
 │   ├── TEORIA_DE_PONTA_A_PONTA.md # guia de estudo: como funciona cada parte e por que
-│   ├── AVALIACAO_*.md             # avaliações internas (histórico)
-│   ├── resumo_projeto.pdf         # resumo de 3 páginas
-│   ├── artigo_final/              # versões do artigo; a atual é a v5
-│   ├── figuras/                   # capturas e gráficos de versões anteriores
-│   ├── ArtigoCompGrafica_ElevacaoCosteira.pdf  # versão anterior (histórico)
-│   └── artigo_v4.tex                           # fonte da versão anterior (histórico)
+│   └── artigo_final/              # artigo v5: .tex, pacote do Overleaf, 3 figuras e o PDF com o título como nome
 ├── exemplos/
 │   ├── janela.py
 │   └── triangulo.py

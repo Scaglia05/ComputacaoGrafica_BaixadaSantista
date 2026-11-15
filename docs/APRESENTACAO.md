@@ -80,7 +80,7 @@ para terrenos planos e limitados via quadtree, e que resolve de quebra
 o problema clássico de emenda entre níveis (*cracks*) com *morphing* de
 vértices — o que o clipmap original não endereça. Medimos esse custo
 (o *morphing*) experimentalmente e confirmamos que é desprezível (ver
-`bench/custo_do_morph.png`).
+`bench/v3/run1/custo_do_morph.png`).
 
 Em resumo: manter as **ideias** do artigo (LOD hierárquico por distância,
 independência entre resolução dos dados e custo de renderização) e trocar
@@ -320,9 +320,8 @@ Só a "cola": abre a janela GLFW, cria a `Cena` e a `Hud`, e roda o loop:
 ### `bench.py` (247 linhas) — avaliação experimental
 Roda **sem janela** (contexto standalone + framebuffer 1280×720),
 sincronizando a GPU a cada frame (`ctx.finish()`). Varre:
-`{sem_lod, cdlod, cdlod_sem_morph} × {256,512,1024,1536,2048} × {4 câmeras}`,
-com 30 frames de aquecimento + 150 medidos. Salva `bench/resultados.csv` e
-4 gráficos (matplotlib).
+`{sem_lod, cdlod, cdlod_sem_morph, cdlod_frustum} × {256,512,1024,1536,2048} × {4 câmeras}`,
+com 30 frames de aquecimento + 150 medidos. Salva `resultados.csv` e 5 gráficos (matplotlib) na pasta escolhida com `--saida`.
 
 ---
 
@@ -381,8 +380,8 @@ Rodando `bench.py` numa **RTX 3060**:
 - **Memória (cada modo em processo isolado):** a 2048², a malha do CDLOD ocupa
   19 MB contra 153 MB da malha completa; pico de RAM de 183 contra 593 MB.
 
-Gráficos em `bench/`: `fps_vs_resolucao.png`, `tempo_por_camera.png`,
-`triangulos_vs_tempo.png`, `custo_do_morph.png`.
+Gráficos em `bench/v3/run1/` (e `run2`, `run3`): `fps_vs_resolucao.png`, `tempo_por_camera.png`,
+`triangulos_vs_tempo.png`, `custo_do_morph.png`, `recursos_vs_resolucao.png`.
 
 ---
 

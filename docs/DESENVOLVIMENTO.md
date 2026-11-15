@@ -88,10 +88,9 @@ de sintaxe.
    malha ingênua é mais rápida (o CDLOD tem overhead fixo de organizar os
    blocos); acima, o CDLOD compensa.
 3. **Documentos de apoio** — depois de fechar o código, foram gerados
-   [APRESENTACAO.md](APRESENTACAO.md) (guia de estudo), o PDF
-   [resumo_projeto.pdf](resumo_projeto.pdf) e
-   [metodologia_atual.md/.pdf](metodologia_atual.md) (para alinhar com o
-   material de outro integrante do grupo, que tinha um plano com parâmetros
+   [APRESENTACAO.md](APRESENTACAO.md) e [TEORIA_DE_PONTA_A_PONTA.md](TEORIA_DE_PONTA_A_PONTA.md)
+   (guias de estudo) e [metodologia_atual.md](metodologia_atual.md) (parâmetros exatos, para
+   alinhar com o material de outro integrante do grupo, que tinha um plano com parâmetros
    diferentes — reconciliado e registrado no `CLAUDE.md`).
 
 *Pendente:* rodar o benchmark em outra GPU; escrever o artigo IEEE com estes resultados.
