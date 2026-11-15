@@ -16,7 +16,7 @@ e tira uma amostra de **consumo de recursos** (RAM do processo via `psutil`;
 VRAM e uso de GPU via `nvidia-smi`, quando disponível — placas não-NVIDIA
 ficam com essas colunas vazias no CSV, sem quebrar o benchmark).
 
-Saídas em  bench/:
+Saídas na pasta escolhida com --saida (padrão: bench/):
   resultados.csv
   fps_vs_resolucao.png
   tempo_por_camera.png
@@ -28,8 +28,7 @@ Uso
 ---
   python src/bench.py            # varredura completa (~1-2 min)
   python src/bench.py --rapido    # subconjunto rápido (~20 s)
-  python src/bench.py --saida bench/v2      # grava em outra pasta (não sobrescreve
-                                            # o bench/resultados.csv usado no artigo)
+  python src/bench.py --saida bench/v3      # grava em outra pasta (padrão: bench/)
 
   Memória ISOLADA por modo (cada modo × resolução num processo novo):
   python src/bench.py --memoria --saida bench/v2 [--resolucoes 256,1024] [--repeticoes 3]

@@ -32,7 +32,7 @@ ir além disso na demonstração).
 - A matriz de alturas (1024×1024 float32) sobe como **textura de 1 canal (R32F)**, filtro bilinear.
 - **Não** existe uma malha de vértices fixa correspondendo 1:1 ao heightmap. Existe uma **grade unitária reusável**, e o vertex shader amostra a altura na textura para cada instância dessa grade (*displacement mapping*).
 
-## 4. LOD — CDLOD (Strugar, 2010), implementação simplificada
+## 4. LOD — CDLOD (Strugar, 2009), implementação simplificada
 
 | Parâmetro | Valor implementado |
 |---|---|
@@ -41,8 +41,9 @@ ir além disso na demonstração).
 | Subdivisões por bloco | **32×32** (= 33×33 vértices, 2048 triângulos por bloco) |
 | Critério de seleção | um nó desce para os filhos se `distância_câmera_à_borda < tamanho_do_nó × 2,2`; senão desenha o próprio nó |
 | Alcance do LOD | **proporcional ao tamanho de cada bloco** (não uma tabela de raios fixos por nível — mas equivalente: como o tamanho do bloco dobra a cada nível, o alcance também dobra, exatamente como um esquema de raio-base com duplicação) |
-| Morphing anti-*crack* | sim — vértices de índice ímpar da grade deslizam para a posição dos pares conforme a distância cresce dentro da faixa de transição de cada bloco (`morph_start = borda_interna + 0,55·faixa`, `morph_end = borda_interna×2`) |
-| Blocos ativos (medido) | ~200–230 no uso típico (câmera a média altura sobre a costa) |
+| Morphing anti-*crack* | sim, com a distância **horizontal** do vértice à câmera (mesma métrica da seleção) — vértices de índice ímpar da grade deslizam para a posição dos pares conforme a distância cresce dentro da faixa de transição de cada bloco (`morph_start = borda_interna + 0,55·faixa`, `morph_end = borda_interna×2`) |
+| Blocos ativos (medido) | 100 a 184 por quadro nas 4 câmeras do benchmark; 52 a 74 com frustum culling |
+| Frustum culling | opcional (tecla `C`): caixa (AABB) por nó contra os 6 planos do frustum (Gribb-Hartmann), vetorizado em NumPy; margem de 2 texels; a imagem é idêntica com e sem culling |
 | Malha "ingênua" de comparação | 1 única grade na resolução total (1024×1024 → ~2,1 M triângulos), usada só para o experimento de custo/benefício |
 
 ## 5. Água — ondas de Gerstner (Fournier & Reeves, 1986)
@@ -58,7 +59,7 @@ ir além disso na demonstração).
 | Direções | 6 direções fixas, distribuídas ao redor do círculo |
 | Normal | calculada analiticamente (derivada da soma das ondas), não por diferenças finitas |
 | Shading | difuso de Lambert + especular Blinn-Phong (expoente 90) + Fresnel de Schlick + transparência (α = 0,80) |
-| Malha da água | plano de 256×256 subdivisões, 1,6× maior que o terreno (alcança o horizonte) |
+| Malha da água | plano de 256×256 vértices (130.050 triângulos), 480 u.m. de lado (1,6× o terreno, alcança o horizonte) |
 
 ## 6. Terreno — cor e iluminação
 
@@ -83,50 +84,27 @@ ir além disso na demonstração).
 ## 8. Avaliação experimental (já executada)
 
 - **Método:** benchmark headless (sem janela), sincronizando a GPU a cada frame (`ctx.finish()`), 30 frames de aquecimento + 150 medidos, por combinação.
-- **Variáveis:** `{sem LOD, CDLOD, CDLOD sem morphing}` × resolução do heightmap `{256, 512, 1024, 1536, 2048}` × 4 posições de câmera.
-- **GPU de teste:** NVIDIA RTX 3060.
-- **Métricas coletadas por combinação:** tempo de frame (média/p50/p95, ms) e FPS; **RAM do processo** (RSS, via `psutil`); **VRAM usada e utilização de GPU** (via `nvidia-smi`, quando disponível — placas não-NVIDIA ficam sem esses dois campos, sem quebrar o benchmark).
-- **Resultado (desempenho):** com CDLOD, tempo de frame ~constante (~1 ms) em qualquer resolução (~0,4 M triângulos sempre desenhados). Sem LOD, o tempo cresce linearmente com a resolução. As curvas se cruzam por volta de **5 milhões de triângulos** — o "ponto de virada" a partir do qual o CDLOD compensa nessa GPU (em outra GPU esse ponto pode ser diferente). Custo do morphing: dentro do ruído de medição (~gratuito).
-- **Resultado (recursos):** RAM do processo cresce de ~110 MB (heightmap 256²) a ~255 MB (2048²) — reflete o tamanho da textura de altura e dos buffers de vértice/índice, não o modo de LOD. VRAM cresce de ~740 MB a ~910 MB pelo mesmo motivo. **Importante:** neste benchmark as 3 condições compartilham a mesma cena (o VAO do CDLOD e o da malha ingênua ficam residentes juntos), então RAM/VRAM não isolam o ganho de memória do LOD — só mostram o crescimento com a resolução do DEM. Isolar isso exigiria montar cenas separadas por condição (melhoria futura).
-- **Saídas:** `bench/resultados.csv` + 5 gráficos (`bench/*.png`, incluindo `recursos_vs_resolucao.png`).
+- **Variáveis:** `{sem LOD, CDLOD, CDLOD sem morphing, CDLOD com frustum culling}` × resolução do heightmap `{256, 512, 1024, 1536, 2048}` × 4 posições de câmera, em 3 execuções independentes.
+- **GPU de teste:** NVIDIA RTX 3060 (única).
+- **Dados usados no artigo:** `bench/v3/` (`run1` a `run3` e `memoria.csv`). A série `bench/v2/` (versão `3f30ace`, outra sessão) é citada na limitação 5 do artigo. Resumo estatístico: `python src/resumo_bench.py bench/v3/run1 bench/v3/run2 bench/v3/run3`.
+- **Desempenho:** com CDLOD o tempo de quadro fica em cerca de 1 ms em qualquer resolução. Sem LOD, cresce com a malha (0,18 ms a 256² e 2,09 ms a 2048², média). As curvas se cruzam em cerca de **5 milhões de triângulos** (4,4 a 5,6 M conforme o critério e a execução); com culling, em cerca de 3 M. O custo do morphing é de no máximo 0,06 ms (dentro do ruído). O culling reduz o tempo de quadro em 22% em média (−37% nas câmeras rasante e de encosta).
+- **Memória (cada modo em processo isolado):** a 2048², 19 MB (CDLOD) contra 153 MB (malha completa) de buffers; VRAM 24 contra 154 MB; pico de RAM 183 contra 593 MB. Morphing e culling não alteram a memória.
+- **Fendas (`python src/verificar_fendas.py`):** em 40 câmeras aleatórias, 512 fendas finas sem morphing e 1 com morphing.
+- **Limites:** uma única GPU; sem intervalos de confiança; o ponto de virada variou entre sessões; o custo fixo de cerca de 1 ms do CDLOD é provavelmente de CPU (Python); o popping não foi medido.
 
 ## 9. Stack tecnológica
 
 Python 3.11 · ModernGL 5.11 (OpenGL 3.3 core / GLSL 330) · GLFW 2.7 · PyGLM 2.7
-· NumPy · Pillow · opensimplex (modo procedural) · matplotlib (gráficos do
-benchmark). **Sem** rasterio/GDAL — o DEM é lido via tiles PNG (ver seção 2).
+· NumPy · Pillow · opensimplex (modo procedural) · matplotlib e psutil (benchmark).
+**Sem** rasterio/GDAL — o DEM é lido via tiles PNG (ver seção 2).
 
-## 10. Estrutura de arquivos atual
+## 10. Estrutura de arquivos
 
-```
-ComputacaoGrafica/
-├── requirements.txt
-├── README.md
-├── docs/                    (este arquivo + guia de apresentação + PDF-resumo)
-├── bench/                   (resultados.csv + gráficos)
-├── exemplos/
-│   ├── janela.py            (fundamentos: janela + contexto OpenGL)
-│   └── triangulo.py         (fundamentos: VBO/VAO/shaders)
-└── src/
-    ├── dem.py                (DEM real — seção 2)
-    ├── heightmap.py          (procedural + grade unitária do CDLOD)
-    ├── lod.py                (quadtree + seleção — seção 4)
-    ├── water.py               (geometria do plano de água)
-    ├── shaders/terrain.*      (seções 4 e 6)
-    ├── shaders/water.*        (seção 5)
-    ├── camera.py              (seção 7)
-    ├── scene.py               (classe Cena: monta tudo na GPU + desenha 1 frame)
-    ├── hud.py                 (legenda de comandos + foto de referência)
-    ├── main.py                (janela + input + laço)
-    └── bench.py               (seção 8)
-```
+Ver a seção "Estrutura do projeto" do `README.md`.
 
 ## 11. O que ainda falta (não é código)
 
 - Relatório da Etapa 1 (revisão bibliográfica).
-- Redação do artigo IEEE (metodologia, resultados, conclusão) usando os
-  valores e resultados **deste documento** como fonte da verdade.
-- Confirmar com o professor se as referências complementares (Strugar,
-  Fournier & Reeves, Brown et al., estudo de Vancouver) podem ser citadas
-  junto às duas obrigatórias do eixo (Tanner/Migdal/Jones, Welch).
-- Ideal: rodar o benchmark também em outras GPUs (inclusive integradas).
+- Confirmar com o professor se as referências complementares (Strugar, Fournier & Reeves, Brown et al., estudo de Vancouver) podem ser citadas junto às duas obrigatórias do eixo (Tanner/Migdal/Jones, Welch), e reportar o título divergente de Welch na especificação.
+- Compilar o artigo no Overleaf e conferir as 8 páginas.
+- Rodar o benchmark também em outras GPUs (inclusive integradas).

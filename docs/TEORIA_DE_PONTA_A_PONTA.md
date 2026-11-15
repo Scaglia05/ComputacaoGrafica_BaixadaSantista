@@ -380,4 +380,4 @@ Arquivo: `src/bench.py`.
 | Área alagada | `src/area_alagada.py` |
 | Testes | `tests/` |
 
-Documentos complementares: [`docs/GUIA_CONCEITUAL.md`](GUIA_CONCEITUAL.md), [`docs/GUIA_DO_CODIGO.md`](GUIA_DO_CODIGO.md), [`docs/COMPLEMENTO_TECNICO.md`](COMPLEMENTO_TECNICO.md) e [`docs/metodologia_atual.md`](metodologia_atual.md) (alguns valores desse último estão desatualizados; o código e este guia prevalecem).
+Documentos complementares: [`docs/APRESENTACAO.md`](APRESENTACAO.md), [`docs/COMPLEMENTO_TECNICO.md`](COMPLEMENTO_TECNICO.md) (glossário e fórmulas), [`docs/DESENVOLVIMENTO.md`](DESENVOLVIMENTO.md) e [`docs/metodologia_atual.md`](metodologia_atual.md) (parâmetros exatos).
